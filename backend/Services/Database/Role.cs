@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.AuthService
+namespace Services.Database
 {
-    public interface ITokenService
+    public class Role
     {
-        string GetToken();
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }

@@ -1,18 +1,35 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Services.AuthService;
+using Services.Database;
+using Services.Interfaces;
+using Services.Services;
 using System.Text;
+using Mapster;
+using WebAPI.Hubs;using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddMapster();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ITokenService, TokenService>();
+builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<ICommentService, CommentService>();
+builder.Services.AddTransient<IPostService, PostService>();
+
+
+// Add SignalR
+builder.Services.AddSignalR();
+
 builder
     .Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -70,10 +87,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// Map SignalR hub
+app.MapHub<VideoCallHub>("/hubs/videocall");
 
 app.Run();

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'screens/login_screen.dart';
+import 'screens/registration_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,11 +9,10 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'JustSpeak',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -28,9 +29,14 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      initialRoute: '/register',
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegistrationScreen(),
+      },
     );
   }
 }
@@ -75,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
     return Scaffold(
       appBar: AppBar(
         // TRY THIS: Try changing the color here to a specific color (to
@@ -104,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('You have pushed the button this many times:'),
+            const Text('You have pushed the  many times:'),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
