@@ -27,14 +27,18 @@ namespace Services.Services
             var query = _context.Set<TEntity>().AsQueryable();
             query = ApplyFilter(query, search);
 
-            int? totalCount = null;
-            if (search.IncludeTotalCount)
-            {
-                totalCount = await query.CountAsync();
-            }
+           query = ApplyPagination(query, search);
 
-            if (!search.RetrieveAll)
+            var list = await query.ToListAsync();
+            return new PagedResult<T>
             {
+                Items = list.Select(MapToResponse).ToList(),
+                TotalCount = await query.CountAsync()
+            };
+        }
+
+        protected  IQueryable<TEntity> ApplyPagination(IQueryable<TEntity> query, TSearch search){
+            
                 if (search.Page.HasValue)
                 {
                     query = query.Skip(search.Page.Value * search.PageSize.Value);
@@ -43,16 +47,8 @@ namespace Services.Services
                 {
                     query = query.Take(search.PageSize.Value);
                 }
-            }
-
-
-
-            var list = await query.ToListAsync();
-            return new PagedResult<T>
-            {
-                Items = list.Select(MapToResponse).ToList(),
-                TotalCount = totalCount
-            };
+            
+            return query;
         }
 
         protected virtual IQueryable<TEntity> ApplyFilter(IQueryable<TEntity> query, TSearch search)

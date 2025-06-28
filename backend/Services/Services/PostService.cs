@@ -7,6 +7,7 @@ using Services.Database;
 using Services.Interfaces;
 using Services.Services;
 using Microsoft.EntityFrameworkCore;
+using Mapster;
 
 namespace Services.Services
 {
@@ -17,30 +18,24 @@ namespace Services.Services
             _context = context;
         }
 
-        public override async Task<PagedResult<PostResponse>> GetAsync(BaseSearchObject search)
+       public override async Task<PagedResult<PostResponse>> GetAsync(BaseSearchObject search)
         {
-            var posts = await _context.Posts
-                .Select(post => new PostResponse
-                {
-                    Id = post.Id,
-                    Title = post.Title,
-                    Content = post.Content,
-                    AuthorId = post.AuthorId,
-                    Comments = post.Comments
-                        .Select(c => new CommentResponse
-                        {
-                            Id = c.Id,
-                            Content = c.Content,
-                            AuthorId = c.AuthorId,
-                            CreatedAt = c.CreatedAt
-                        })
-                })
-                .ToListAsync();
+            var query =  _context.Posts.AsQueryable();
+            query = ApplyPagination(query, search);
+            
+             var posts = await query.Select(post=> new PostResponse{
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                AuthorId = post.Author.Id,
+                AuthorName = post.Author.FullName
+            }).ToListAsync();
+
             return new PagedResult<PostResponse>
             {
                 Items = posts,
                 TotalCount = posts.Count
             };
-    }
+        } 
     }
 }

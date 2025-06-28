@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import 'package:frontend/screens/login_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -14,14 +17,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  String _selectedRole = 'client';
-  List<String> _selectedLanguages = [];
-
-  final List<Map<String, dynamic>> _availableLanguages = [
-    {'name': 'English', 'code': 'en', 'flag': '🇬🇧'},
-    {'name': 'Spanish', 'code': 'es', 'flag': '🇪🇸'},
-    {'name': 'French', 'code': 'fr', 'flag': '🇫🇷'},
-  ];
 
   @override
   void dispose() {
@@ -32,23 +27,40 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     super.dispose();
   }
 
-  void _handleRegistration() {
-    if (_formKey.currentState!.validate()) {
-      if (_selectedLanguages.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select at least one language'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
+  Future<void> register({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required int roleId,
+  }) async {
+    final String apiUrl = 'http://10.0.2.2:5280/User/register';
+
+    final body = jsonEncode({
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'password': password,
+      'roleId': roleId,
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Registracija uspješna!');
+        final data = jsonDecode(response.body);
+        print('Response: $data');
+        // dalje možeš raditi npr. login odmah ili prikazati poruku korisniku
+      } else {
+        print('Greška prilikom registracije: ${response.body}');
       }
-      // TODO: Implement registration logic
-      print('Name: ${_nameController.text}');
-      print('Email: ${_emailController.text}');
-      print('Password: ${_passwordController.text}');
-      print('Role: $_selectedRole');
-      print('Selected Languages: $_selectedLanguages');
+    } catch (e) {
+      print('Exception: $e');
     }
   }
 
@@ -56,13 +68,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.purple[50]!, Colors.purple[100]!],
-          ),
-        ),
+        decoration: BoxDecoration(color: Colors.white),
         child: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -73,14 +79,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 20),
+
                     // Language Animation
-                    SizedBox(
-                      height: 150,
-                      child: Lottie.network(
-                        'https://assets2.lottiefiles.com/packages/lf20_xyadoh9h.json',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
                     const SizedBox(height: 20),
                     // Welcome Text
                     const Text(
@@ -100,84 +100,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                     const SizedBox(height: 40),
 
-                    // Role Selection
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.purple.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap:
-                                  () =>
-                                      setState(() => _selectedRole = 'client'),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color:
-                                      _selectedRole == 'client'
-                                          ? Colors.purple
-                                          : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'Client',
-                                  style: TextStyle(
-                                    color:
-                                        _selectedRole == 'client'
-                                            ? Colors.white
-                                            : Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap:
-                                  () =>
-                                      setState(() => _selectedRole = 'trainer'),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color:
-                                      _selectedRole == 'trainer'
-                                          ? Colors.purple
-                                          : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'Trainer',
-                                  style: TextStyle(
-                                    color:
-                                        _selectedRole == 'trainer'
-                                            ? Colors.white
-                                            : Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    const SizedBox(height: 24),
+
                     const SizedBox(height: 24),
 
                     // Name Field
@@ -334,84 +258,50 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Language Selection
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.purple.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text(
-                              'Select Languages',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          ..._availableLanguages.map((language) {
-                            return CheckboxListTile(
-                              title: Text(
-                                '${language['flag']} ${language['name']}',
-                              ),
-                              value: _selectedLanguages.contains(
-                                language['code'],
-                              ),
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  if (value == true) {
-                                    _selectedLanguages.add(language['code']);
-                                  } else {
-                                    _selectedLanguages.remove(language['code']);
-                                  }
-                                });
-                              },
-                              activeColor: Colors.purple,
-                            );
-                          }).toList(),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
                     // Register Button
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.purple.withOpacity(0.3),
+                            color: Colors.purple.withOpacity(0.2),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
                       child: ElevatedButton(
-                        onPressed: _handleRegistration,
+                        onPressed: () => {},
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: Colors.purple,
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            174,
+                            63,
+                            193,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Register',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        child: TextButton(
+                          onPressed: () {
+                            print("loooool");
+                            register(
+                              firstName: _nameController.text,
+                              lastName: _nameController.text,
+                              email: _emailController.text,
+                              password: _passwordController.text,
+                              roleId: 1,
+                            );
+                          },
+                          child: const Text(
+                            'Register',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -425,7 +315,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         const Text('Already have an account?'),
                         TextButton(
                           onPressed: () {
-                            // TODO: Navigate to login screen
+                            Navigator.pushNamed(context, '/login');
                           },
                           child: const Text(
                             'Login',
