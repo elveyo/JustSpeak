@@ -46,6 +46,8 @@ namespace Services.Database
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Like> Likes { get; set; }
         public DbSet<Role> Roles { get; set; }
+         public DbSet<TutorSchedule> Schedules { get; set; }
+         public DbSet<AvailableDay> AvailableDays { get; set; }
 
     }
 }
