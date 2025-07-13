@@ -26,9 +26,41 @@ namespace Services
             _context.AvailableDays.RemoveRange(daysToRemove);
         }
 
-        public override Task<PagedResult<ScheduleResponse>> GetAsync(BaseSearchObject search)
+        public override async Task<PagedResult<ScheduleResponse>> GetAsync(BaseSearchObject search)
         {
-            return base.GetAsync(search);
+            var schedule = await _context.Schedules
+            .Include(s => s.AvailableDays)
+            .FirstOrDefaultAsync();
+
+            // For each schedule, generate available lessons as a list of paired TimeSpans (start, end) for each day, based on duration
+         
+
+                // Dictionary to hold available lesson time pairs for each day of week
+                var availableLessons = new List<WeeklyAvailability>();
+
+
+                foreach (var day in schedule.AvailableDays ?? [])
+                {
+                    var startTime = day.StartTime;
+                    var endTime = day.EndTime;
+                    var duration = TimeSpan.FromMinutes(schedule.Duration);
+                    var breakTime = TimeSpan.FromMinutes(10);
+
+                    var lessonPairs = new List<TimeSpanPair>();
+                    var current = startTime;
+                    while (current + duration <= endTime)
+                    {
+                        lessonPairs.Add(new TimeSpanPair { Start = current, End = current + duration });
+                        current += duration+breakTime;
+                    }
+                    availableLessons.Add(new WeeklyAvailability { DayOfWeek = day.DayOfWeek, TimeSpans = lessonPairs });
+                   
+                }
+            
+
+            var response = _mapper.Map<ScheduleResponse>(schedule);
+            response.WeeklyAvailability = availableLessons;
+            return new PagedResult<ScheduleResponse> { Items = [response], TotalCount = 1 };
         }
 
     }
