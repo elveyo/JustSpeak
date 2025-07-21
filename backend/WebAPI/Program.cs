@@ -25,6 +25,8 @@ builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<ICommentService, CommentService>();
 builder.Services.AddTransient<IPostService, PostService>();
+builder.Services.AddTransient<IScheduleService, ScheduleService>();
+
 
 
 // Add SignalR

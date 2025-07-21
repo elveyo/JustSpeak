@@ -12,18 +12,45 @@ using Services.Database;
 namespace Services.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250515143343_UsersPostLikeComments")]
-    partial class UsersPostLikeComments
+    [Migration("20250629094609_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.4")
+                .HasAnnotation("ProductVersion", "7.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Services.Database.AvailableDay", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("TutorScheduleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TutorScheduleId");
+
+                    b.ToTable("AvailableDays");
+                });
 
             modelBuilder.Entity("Services.Database.Comment", b =>
                 {
@@ -57,6 +84,47 @@ namespace Services.Migrations
                     b.HasIndex("PostId");
 
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("Services.Database.Language", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Language");
+                });
+
+            modelBuilder.Entity("Services.Database.LanguageLevel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaxPoints")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LanguageLevel");
                 });
 
             modelBuilder.Entity("Services.Database.Like", b =>
@@ -130,7 +198,99 @@ namespace Services.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Role");
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("Services.Database.StudentLanguage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateAdded")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("LevelId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentLanguage");
+                });
+
+            modelBuilder.Entity("Services.Database.TutorLanguage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Experience")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PricePerHour")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TutorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("LevelId");
+
+                    b.HasIndex("TutorId");
+
+                    b.ToTable("TutorLanguage");
+                });
+
+            modelBuilder.Entity("Services.Database.TutorSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TutorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TutorId");
+
+                    b.ToTable("Schedules");
                 });
 
             modelBuilder.Entity("Services.Database.User", b =>
@@ -146,8 +306,7 @@ namespace Services.Migrations
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -187,7 +346,7 @@ namespace Services.Migrations
 
                     b.ToTable("Users");
 
-                    b.HasDiscriminator().HasValue("User");
+                    b.HasDiscriminator<string>("Discriminator").HasValue("User");
 
                     b.UseTphMappingStrategy();
                 });
@@ -204,6 +363,17 @@ namespace Services.Migrations
                     b.HasBaseType("Services.Database.User");
 
                     b.HasDiscriminator().HasValue("Tutor");
+                });
+
+            modelBuilder.Entity("Services.Database.AvailableDay", b =>
+                {
+                    b.HasOne("Services.Database.TutorSchedule", "TutorSchedule")
+                        .WithMany("AvailableDays")
+                        .HasForeignKey("TutorScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TutorSchedule");
                 });
 
             modelBuilder.Entity("Services.Database.Comment", b =>
@@ -266,6 +436,71 @@ namespace Services.Migrations
                     b.Navigation("Author");
                 });
 
+            modelBuilder.Entity("Services.Database.StudentLanguage", b =>
+                {
+                    b.HasOne("Services.Database.Language", "Language")
+                        .WithMany("StudentLanguages")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.LanguageLevel", "Level")
+                        .WithMany()
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.Student", "Student")
+                        .WithMany("StudentLanguages")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Level");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Services.Database.TutorLanguage", b =>
+                {
+                    b.HasOne("Services.Database.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.LanguageLevel", "Level")
+                        .WithMany()
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.Tutor", "Tutor")
+                        .WithMany("TutorLanguages")
+                        .HasForeignKey("TutorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Level");
+
+                    b.Navigation("Tutor");
+                });
+
+            modelBuilder.Entity("Services.Database.TutorSchedule", b =>
+                {
+                    b.HasOne("Services.Database.Tutor", "Tutor")
+                        .WithMany()
+                        .HasForeignKey("TutorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tutor");
+                });
+
             modelBuilder.Entity("Services.Database.User", b =>
                 {
                     b.HasOne("Services.Database.Role", "Role")
@@ -284,6 +519,11 @@ namespace Services.Migrations
                     b.Navigation("Replies");
                 });
 
+            modelBuilder.Entity("Services.Database.Language", b =>
+                {
+                    b.Navigation("StudentLanguages");
+                });
+
             modelBuilder.Entity("Services.Database.Post", b =>
                 {
                     b.Navigation("Comments");
@@ -291,9 +531,24 @@ namespace Services.Migrations
                     b.Navigation("Likes");
                 });
 
+            modelBuilder.Entity("Services.Database.TutorSchedule", b =>
+                {
+                    b.Navigation("AvailableDays");
+                });
+
             modelBuilder.Entity("Services.Database.User", b =>
                 {
                     b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("Services.Database.Student", b =>
+                {
+                    b.Navigation("StudentLanguages");
+                });
+
+            modelBuilder.Entity("Services.Database.Tutor", b =>
+                {
+                    b.Navigation("TutorLanguages");
                 });
 #pragma warning restore 612, 618
         }

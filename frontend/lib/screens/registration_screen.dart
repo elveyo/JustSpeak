@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -34,6 +35,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     required String password,
     required int roleId,
   }) async {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => FeedScreen()),
+    );
     final String apiUrl = 'http://10.0.2.2:5280/User/register';
 
     final body = jsonEncode({
@@ -286,7 +291,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         child: TextButton(
                           onPressed: () {
-                            print("loooool");
                             register(
                               firstName: _nameController.text,
                               lastName: _nameController.text,
