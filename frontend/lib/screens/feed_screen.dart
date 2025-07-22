@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/layouts/master_screen.dart';
+import 'package:frontend/models/post.dart';
+import 'package:frontend/models/search_result.dart';
+import 'package:frontend/providers/post_provider.dart';
+import 'package:provider/provider.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -9,85 +13,65 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  final List<Map<String, dynamic>> _feedItems = [
-    {
-      'id': 1,
-      'userName': 'Sarah Johnson',
-      'userRole': 'Tutor',
-      'language': 'Spanish',
-      'content':
-          'Just finished an amazing Spanish conversation session! 🗣️ My student made incredible progress today. Remember, practice makes perfect!',
-      'likes': 12,
-      'comments': 3,
-      'timeAgo': '2 hours ago',
-      'avatar': 'https://via.placeholder.com/50',
-    },
-    {
-      'id': 2,
-      'userName': 'Alex Chen',
-      'userRole': 'Student',
-      'language': 'French',
-      'content':
-          'Had my first French lesson today! 🇫🇷 My tutor was so patient and helpful. Can\'t wait for the next session!',
-      'likes': 8,
-      'comments': 5,
-      'timeAgo': '4 hours ago',
-      'avatar': 'https://via.placeholder.com/50',
-    },
-    {
-      'id': 3,
-      'userName': 'Maria Rodriguez',
-      'userRole': 'Tutor',
-      'language': 'English',
-      'content':
-          'Teaching English to beginners is so rewarding! 📚 Today we practiced basic greetings and introductions. Everyone did great!',
-      'likes': 15,
-      'comments': 7,
-      'timeAgo': '6 hours ago',
-      'avatar': 'https://via.placeholder.com/50',
-    },
-  ];
+  SearchResult<Post>? posts;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPosts();
+  }
+
+  Future<void> _loadPosts() async {
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final items = await postProvider.get();
+    setState(() {
+      posts = items;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
       title: 'Home',
-      child: Stack(
-        children: [
-          Container(
-            color: Colors.grey[50],
-            child: RefreshIndicator(
-              onRefresh: () async {
-                await Future.delayed(const Duration(seconds: 1));
-                setState(() {
-                  // Osvježi feed
-                });
-              },
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _feedItems.length,
-                itemBuilder: (context, index) {
-                  final item = _feedItems[index];
-                  return _buildFeedCard(item);
-                },
+      child:
+          posts == null
+              ? const Center(child: CircularProgressIndicator())
+              : Stack(
+                children: [
+                  Container(
+                    color: Colors.grey[50],
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        await Future.delayed(const Duration(seconds: 1));
+                        setState(() {
+                          // Osvježi feed
+                        });
+                      },
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: posts!.totalCount,
+                        itemBuilder: (context, index) {
+                          final item = posts!.items![index];
+                          return _buildFeedCard(item);
+                        },
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 16,
+                    right: 16,
+                    child: FloatingActionButton(
+                      onPressed: _showAddPostDialog,
+                      backgroundColor: Colors.purple,
+                      child: const Icon(Icons.add, color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _showAddPostDialog,
-              backgroundColor: Colors.purple,
-              child: const Icon(Icons.add, color: Colors.white),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _buildFeedCard(Map<String, dynamic> item) {
+  Widget _buildFeedCard(Post item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -111,7 +95,9 @@ class _FeedScreenState extends State<FeedScreen> {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundImage: NetworkImage(item['avatar']),
+                  backgroundImage: NetworkImage(
+                    'https://via.placeholder.com/50',
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -119,7 +105,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item['userName'],
+                        item.authorName!,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -134,17 +120,17 @@ class _FeedScreenState extends State<FeedScreen> {
                             ),
                             decoration: BoxDecoration(
                               color:
-                                  item['userRole'] == 'Tutor'
+                                  'Tutor' == 'Tutor'
                                       ? Colors.purple.withOpacity(0.1)
                                       : Colors.blue.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              item['userRole'],
+                              'Tutor',
                               style: TextStyle(
                                 fontSize: 12,
                                 color:
-                                    item['userRole'] == 'Tutor'
+                                    'Tutor' == 'Tutor'
                                         ? Colors.purple
                                         : Colors.blue,
                                 fontWeight: FontWeight.w500,
@@ -162,7 +148,7 @@ class _FeedScreenState extends State<FeedScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              item['language'],
+                              'English',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.green,
@@ -176,7 +162,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   ),
                 ),
                 Text(
-                  item['timeAgo'],
+                  '2 minute ago',
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
@@ -184,7 +170,7 @@ class _FeedScreenState extends State<FeedScreen> {
             const SizedBox(height: 12),
             // Content
             Text(
-              item['content'],
+              item.content,
               style: const TextStyle(fontSize: 14, height: 1.4),
             ),
             const SizedBox(height: 16),
@@ -193,17 +179,15 @@ class _FeedScreenState extends State<FeedScreen> {
               children: [
                 _buildActionButton(
                   icon: Icons.favorite_border,
-                  label: '${item['likes']}',
+                  label: '${20}',
                   onTap: () {
-                    setState(() {
-                      item['likes']++;
-                    });
+                    setState(() {});
                   },
                 ),
                 const SizedBox(width: 24),
                 _buildActionButton(
                   icon: Icons.chat_bubble_outline,
-                  label: '${item['comments']}',
+                  label: '${20}',
                   onTap: () {
                     // Show comments
                   },

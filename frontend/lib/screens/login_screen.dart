@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/registration_screen.dart';
+import 'package:frontend/providers/base_provider.dart';
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  String _selectedRole = 'client'; // Default role
+  final String _selectedRole = 'client'; // Default role
 
   @override
   void dispose() {
@@ -21,13 +26,45 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement login logic
-      print('Role: $_selectedRole');
-      print('Email: ${_emailController.text}');
-      print('Password: ${_passwordController.text}');
+      print('Login button pressed');
+      final token = await loginApi(
+        _emailController.text,
+        _passwordController.text,
+      );
+      if (token != null) {
+        BaseProvider.jwtToken = token;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => FeedScreen()),
+        );
+      }
     }
+  }
+
+  // Dummy loginApi for demonstration
+  Future<String?> loginApi(String email, String password) async {
+    final body = jsonEncode({'email': email, 'password': password});
+    try {
+      final response = await http.post(
+        Uri.parse("http://10.0.2.2:5280/User/login"),
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Registracija uspješna!');
+        final data = jsonDecode(response.body);
+        print('Response: $data');
+        return data['token'];
+      } else {
+        print('Greška prilikom registracije: ${response.body}');
+      }
+    } catch (e) {
+      print('Exception: $e');
+    }
+    return null;
   }
 
   @override
@@ -172,9 +209,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: _handleLogin,
                           child: const Text(
-                            'Register',
+                            'Login',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,

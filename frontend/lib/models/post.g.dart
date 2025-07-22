@@ -12,7 +12,7 @@ Post _$PostFromJson(Map<String, dynamic> json) => Post(
   content: json['content'] as String,
   createdAt: DateTime.parse(json['createdAt'] as String),
   authorId: (json['authorId'] as num).toInt(),
-  authorName: json['authorName'] as String,
+  authorName: json['authorName'] as String?,
 );
 
 Map<String, dynamic> _$PostToJson(Post instance) => <String, dynamic>{
