@@ -1,33 +1,48 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:frontend/providers/post_provider.dart';
 import 'package:frontend/screens/feed_screen.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
 
   @override
-  State<CreatePostScreen> createState() => _CreatePostScreenState();
+  State<CreatePostScreen> createState() => _UploadPostDialogState();
 }
 
-class _CreatePostScreenState extends State<CreatePostScreen> {
+class _UploadPostDialogState extends State<CreatePostScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
+  File? _selectedImage;
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
 
   Future<void> _submitForm() async {
-    print('čppččaffds');
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final values = _formKey.currentState!.value;
-
+      String? base64Image;
+      if (_selectedImage != null) {
+        final bytes = await _selectedImage!.readAsBytes();
+        base64Image = base64Encode(bytes);
+      }
       final postData = {
-        "title": values['title'],
+        "title": "Probajemo",
         "content": values['content'],
-        "authorId": values['authorId'],
+        "imageUrl": base64Image ?? '',
+        "authorId": 4,
       };
-
       try {
         final postProvider = Provider.of<PostProvider>(context, listen: false);
         await postProvider.insert(postData);
@@ -37,7 +52,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => FeedScreen()),
+          MaterialPageRoute(builder: (_) => const FeedScreen()),
         );
       } catch (e) {
         ScaffoldMessenger.of(
@@ -50,68 +65,149 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Post'),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: FormBuilder(
-          key: _formKey,
-          child: Column(
-            children: [
-              FormBuilderTextField(
-                name: 'title',
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'This field is required.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              FormBuilderTextField(
-                name: 'content',
-                decoration: const InputDecoration(
-                  labelText: 'Content',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 4,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'This field is required.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              FormBuilderTextField(
-                name: 'authorId',
-                decoration: const InputDecoration(
-                  labelText: 'Author ID',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submitForm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
+      // background to contrast the form
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'UPLOAD POST',
+                            style: TextStyle(
+                              color: Color(0xFF9B00FF),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.purple,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Form
+                      FormBuilder(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Content',
+                              style: TextStyle(
+                                color: Color(0xFF9B00FF),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            FormBuilderTextField(
+                              name: 'content',
+                              maxLines: 4,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                hintText: 'Enter post content...',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                              validator:
+                                  (value) =>
+                                      value == null || value.isEmpty
+                                          ? 'This field is required.'
+                                          : null,
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'Image',
+                              style: TextStyle(
+                                color: Color(0xFF9B00FF),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            GestureDetector(
+                              onTap: _pickImage,
+                              child: Center(
+                                child:
+                                    _selectedImage == null
+                                        ? Column(
+                                          children: const [
+                                            Icon(
+                                              Icons.image_outlined,
+                                              color: Colors.purple,
+                                              size: 60,
+                                            ),
+                                            Icon(
+                                              Icons.add_circle,
+                                              color: Colors.purple,
+                                              size: 24,
+                                            ),
+                                          ],
+                                        )
+                                        : Image.file(
+                                          _selectedImage!,
+                                          width:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.width *
+                                              0.5,
+                                          fit: BoxFit.contain,
+                                        ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // Submit Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7A1EA1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: const Text(
+                            'PUBLISH',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: const Text('Create Post'),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

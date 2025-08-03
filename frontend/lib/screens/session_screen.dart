@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/layouts/master_screen.dart';
 
 class SessionsScreen extends StatefulWidget {
   const SessionsScreen({super.key});
@@ -37,8 +38,8 @@ class _SessionsScreenState extends State<SessionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    return MasterScreen(
+      title: "Sessions",
       child: Column(
         children: [
           Row(

@@ -14,6 +14,8 @@ namespace Services.Database
         public string Content { get; set; } = null!;
         public int AuthorId { get; set; }
         public User Author { get; set; } = null!;
+
+        public string ImageUrl { get; set; } = string.Empty;
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<Like> Likes { get; set; } = new List<Like>();
     }

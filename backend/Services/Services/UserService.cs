@@ -124,7 +124,7 @@ public async Task<List<UserResponse>> GetAsync(UserSearchObject search)
 
             if (!VerifyPassword(request.Password!, user.PasswordHash, user.PasswordSalt))
                 return null;
-       var token = _tokenService.GetToken();
+       var token = _tokenService.GetToken(user);
       
             var response =  _mapper.Map<UserResponse>(user);
             response.Token = token;

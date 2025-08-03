@@ -6,7 +6,7 @@ import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
 
 abstract class BaseProvider<T> with ChangeNotifier {
-  static String? _baseUrl;
+  String? _baseUrl;
   static String? jwtToken;
   String _endpoint = "";
 
@@ -16,6 +16,10 @@ abstract class BaseProvider<T> with ChangeNotifier {
       "baseUrl",
       defaultValue: "http://10.0.2.2:5280/",
     );
+  }
+
+  Uri buildUri([String? path]) {
+    return Uri.parse('$_baseUrl$_endpoint${path ?? ''}');
   }
 
   Future<SearchResult<T>> get({dynamic filter}) async {
@@ -52,10 +56,8 @@ abstract class BaseProvider<T> with ChangeNotifier {
     var headers = createHeaders();
     var jsonRequest = jsonEncode(request);
     var response = await http.post(uri, headers: headers, body: jsonRequest);
-
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
-      print(data);
       return fromJson(data);
     } else {
       throw new Exception("Unknown error");

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Services.Database;
 using Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -20,15 +21,17 @@ namespace Services.Services
             _configuration = configuration;
 
         }
-        public string GetToken()
+        public string GetToken(User user)
         {
-            // Definiraj tokene i claimove
-            //var claims = new[]
-            //{
-            //    new Claim(ClaimTypes.Name, us),
-            //    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            //    new Claim(ClaimTypes.Role, user.Role),  // Dodajemo rolu korisnika u claimove
-            //};
+          var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.FirstName),
+            new Claim(ClaimTypes.GivenName, user.FirstName),
+            new Claim(ClaimTypes.Surname, user.LastName),
+            new Claim(ClaimTypes.Role, user.Role.Name),
+        };
+
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SecurityKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -36,8 +39,10 @@ namespace Services.Services
             var token = new JwtSecurityToken(
                 issuer: _configuration["JWT:Issuer"],
                 audience: _configuration["JWT:Audience"],
+                claims,
                 expires: DateTime.Now.AddHours(1), 
                 signingCredentials: creds
+                
             );
             
             return  new JwtSecurityTokenHandler().WriteToken(token);

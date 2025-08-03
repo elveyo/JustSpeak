@@ -5,6 +5,7 @@ import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/registration_screen.dart';
 import 'package:frontend/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:frontend/config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final body = jsonEncode({'email': email, 'password': password});
     try {
       final response = await http.post(
-        Uri.parse("http://10.0.2.2:5280/User/login"),
+        Uri.parse("$baseUrl/User/login"),
         headers: {'Content-Type': 'application/json'},
         body: body,
       );
