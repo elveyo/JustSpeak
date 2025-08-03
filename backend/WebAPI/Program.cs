@@ -26,6 +26,8 @@ builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<ICommentService, CommentService>();
 builder.Services.AddTransient<IPostService, PostService>();
 builder.Services.AddTransient<IScheduleService, ScheduleService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 
 
 
@@ -79,6 +81,10 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+/* builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5280);
+}); */
 
 var app = builder.Build();
 

@@ -2,82 +2,115 @@ import 'package:flutter/material.dart';
 import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/session_screen.dart';
 
-class MasterScreen extends StatefulWidget {
+class MasterScreen extends StatelessWidget {
   const MasterScreen({super.key, required this.child, required this.title});
+
   final Widget child;
   final String title;
-  @override
-  State<MasterScreen> createState() => _MasterScreenState();
-}
 
-class _MasterScreenState extends State<MasterScreen> {
+  int _getSelectedIndex(String title) {
+    switch (title) {
+      case 'Home':
+        return 0;
+      case 'Sessions':
+        return 1;
+      case 'Calendar':
+        return 2;
+      case 'Profile':
+        return 3;
+      default:
+        return 0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: widget.child,
-
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blueAccent,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        foregroundColor: Colors.purple,
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.purple,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: Padding(padding: const EdgeInsets.all(12.0), child: child),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _getSelectedIndex(title),
+        onDestinationSelected: (index) {
           switch (index) {
             case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => FeedScreen()),
-              );
+              if (title != 'Home') {
+                Navigator.pushReplacement(context, _fadeTo(const FeedScreen()));
+              }
               break;
             case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (_) => MasterScreen(
-                        title: 'Sessions',
-                        child: SessionsScreen(),
-                      ),
-                ),
-              );
+              if (title != 'Sessions') {
+                Navigator.pushReplacement(
+                  context,
+                  _fadeTo(const SessionsScreen()),
+                );
+              }
               break;
             case 2:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (_) =>
-                          MasterScreen(title: 'Calendar', child: FeedScreen()),
-                ),
-              );
+              if (title != 'Calendar') {
+                Navigator.pushReplacement(
+                  context,
+                  _fadeTo(const SessionsScreen()),
+                );
+              }
               break;
             case 3:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (_) => MasterScreen(
-                        title: 'Profile',
-                        child: SessionsScreen(),
-                      ),
-                ),
-              );
+              if (title != 'Profile') {
+                Navigator.pushReplacement(context, _fadeTo(const FeedScreen()));
+              }
               break;
           }
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.forum_outlined),
+            selectedIcon: Icon(Icons.forum_rounded),
             label: 'Sessions',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
+          NavigationDestination(
+            icon: Icon(Icons.calendar_today_outlined),
+            selectedIcon: Icon(Icons.calendar_month_rounded),
             label: 'Calendar',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Profile',
+          ),
         ],
+        elevation: 8,
+        indicatorColor: Colors.purple.withOpacity(0.1),
+        surfaceTintColor: Colors.white,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        animationDuration: Duration(milliseconds: 300),
       ),
+    );
+    // Helper function to determine selected index based on title
+  }
+
+  static PageRouteBuilder _fadeTo(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (_, __, ___) => page,
+      transitionsBuilder:
+          (_, animation, __, child) =>
+              FadeTransition(opacity: animation, child: child),
+      transitionDuration: const Duration(milliseconds: 300),
     );
   }
 }

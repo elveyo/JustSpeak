@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Services.Database;
 
@@ -11,9 +12,11 @@ using Services.Database;
 namespace Services.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250723202914_AddImageUrlToPost")]
+    partial class AddImageUrlToPost
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,13 +153,7 @@ namespace Services.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.HasIndex(new[] { "UserId", "CommentId" }, "IX_Like_User_Comment")
-                        .IsUnique()
-                        .HasFilter("[CommentId] IS NOT NULL");
-
-                    b.HasIndex(new[] { "UserId", "PostId" }, "IX_Like_User_Post")
-                        .IsUnique()
-                        .HasFilter("[PostId] IS NOT NULL");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Likes");
                 });

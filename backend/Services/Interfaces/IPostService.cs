@@ -6,6 +6,7 @@ namespace Services.Interfaces
 {
     public interface IPostService : ICRUDService<PostResponse, BaseSearchObject, PostUpsertRequest, PostUpsertRequest>
     {
+        Task LikePost(int postId);
          
     }
 }
