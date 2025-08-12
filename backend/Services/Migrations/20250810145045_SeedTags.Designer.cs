@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Services.Database;
 
@@ -11,9 +12,11 @@ using Services.Database;
 namespace Services.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250810145045_SeedTags")]
+    partial class SeedTags
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -365,10 +368,6 @@ namespace Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ChannelName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -381,7 +380,7 @@ namespace Services.Migrations
                     b.Property<int>("LevelId")
                         .HasColumnType("int");
 
-                    b.Property<int>("NumOfUsers")
+                    b.Property<int>("NumberOfUsers")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -692,7 +691,7 @@ namespace Services.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6337),
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 50, 45, 187, DateTimeKind.Utc).AddTicks(3057),
                             Email = "admin@justspeak.com",
                             FirstName = "Admin",
                             IsActive = true,
@@ -714,7 +713,7 @@ namespace Services.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6426),
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 50, 45, 187, DateTimeKind.Utc).AddTicks(3138),
                             Email = "hans@justspeak.com",
                             FirstName = "Hans",
                             IsActive = true,
@@ -727,7 +726,7 @@ namespace Services.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6430),
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 50, 45, 187, DateTimeKind.Utc).AddTicks(3142),
                             Email = "yuki@justspeak.com",
                             FirstName = "Yuki",
                             IsActive = true,
@@ -749,7 +748,7 @@ namespace Services.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6384),
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 50, 45, 187, DateTimeKind.Utc).AddTicks(3100),
                             Email = "maria@justspeak.com",
                             FirstName = "Maria",
                             IsActive = true,
@@ -762,7 +761,7 @@ namespace Services.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6388),
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 50, 45, 187, DateTimeKind.Utc).AddTicks(3104),
                             Email = "jean@justspeak.com",
                             FirstName = "Jean",
                             IsActive = true,

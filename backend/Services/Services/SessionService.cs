@@ -1,0 +1,168 @@
+using Microsoft.EntityFrameworkCore;
+using Services.Database;
+using Services.Interfaces;
+using Models.Requests;
+using Models.Responses;
+using Model.SearchObjects;
+using MapsterMapper;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
+using Model.Responses;
+
+namespace Services.Services
+{
+    public class SessionService : BaseCRUDService<SessionResponse, BaseSearchObject, Session, SessionUpsertRequest, SessionUpsertRequest>, ISessionService
+    {
+        private readonly IConfiguration _configuration;
+        private readonly IUserContextService _userContextService;
+        private readonly string _agoraAppId;
+        private readonly string _agoraAppCertificate;
+
+        public SessionService(ApplicationDbContext context, IMapper mapper, IConfiguration configuration, IUserContextService userContextService) : base(context, mapper)
+        {
+            _configuration = configuration;
+            _agoraAppId = _configuration["Agora:AppId"] ?? "";
+            _agoraAppCertificate = _configuration["Agora:AppCertificate"] ?? "";
+            _userContextService = userContextService;
+        }
+
+
+        public override async Task<SessionResponse> CreateAsync(SessionUpsertRequest request)
+        {
+            //int? currentUserId = _userContextService.GetUserId();
+            // Generate channel name for the session
+
+            var random = new Random();
+            int randomNumber = random.Next(1, 11); ;
+            var session = await base.CreateAsync(request);
+            var agoraToken = GenerateAgoraToken(request.ChannelName,randomNumber );
+            return new SessionResponse
+            {
+                Id = session.Id,
+                Language = session.Language,
+                Level = session.Level,
+                NumOfUsers = session.NumOfUsers,
+                Duration = session.Duration,
+                CreatedAt = session.CreatedAt,
+                ChannelName = session.ChannelName,
+                Token = agoraToken
+            };
+        }
+
+        public override async Task<PagedResult<SessionResponse>> GetAsync(BaseSearchObject search)
+        {
+            var sessions = await _context.Sessions
+            .Skip(search.Page.Value * search.PageSize.Value)
+            .Take(search.PageSize.Value)
+            .Select(s=>new SessionResponse {
+                Id = s.Id,
+                Language = s.Language.Name,
+                Level = s.Level.Name,
+                NumOfUsers = s.NumOfUsers,
+                Duration = s.Duration,
+                CreatedAt = s.CreatedAt,
+                ChannelName = s.ChannelName,
+            }).ToListAsync();
+
+              return new PagedResult<SessionResponse>
+            {
+                Items = sessions,
+                TotalCount = await _context.Sessions.CountAsync()
+            };
+        }
+
+
+
+
+        public string GenerateAgoraToken(string channelName, int userId)
+        {
+            if (string.IsNullOrEmpty(_agoraAppId) || string.IsNullOrEmpty(_agoraAppCertificate))
+            {
+                throw new InvalidOperationException("Agora App ID or App Certificate not configured");
+            }
+
+            // Set token expiration time (24 hours from now)
+            var expirationTimeInSeconds = 3600 * 24;
+            var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var privilegeExpiredTs = (uint)currentTimestamp + (uint)expirationTimeInSeconds;
+
+            // Create token builder with user-specific UID
+            var tokenBuilder = new AgoraTokenBuilder(_agoraAppId, _agoraAppCertificate, channelName, (uint)userId);
+            
+            // Add privileges based on user role
+            tokenBuilder.AddPrivilege(AgoraTokenBuilder.PrivilegeJoinChannel, privilegeExpiredTs);
+            tokenBuilder.AddPrivilege(AgoraTokenBuilder.PrivilegePublishAudioStream, privilegeExpiredTs);
+            tokenBuilder.AddPrivilege(AgoraTokenBuilder.PrivilegePublishVideoStream, privilegeExpiredTs);
+            tokenBuilder.AddPrivilege(AgoraTokenBuilder.PrivilegePublishDataStream, privilegeExpiredTs);
+
+  
+
+            // Build and return token
+            return tokenBuilder.Build();
+        }
+    }
+
+    // Agora Token Builder Implementation
+    public class AgoraTokenBuilder
+    {
+        public const int PrivilegeJoinChannel = 1;
+        public const int PrivilegePublishAudioStream = 2;
+        public const int PrivilegePublishVideoStream = 3;
+        public const int PrivilegePublishDataStream = 4;
+        public const int PrivilegeManageChannel = 5;
+
+        private readonly string _appId;
+        private readonly string _appCertificate;
+        private readonly string _channelName;
+        private readonly uint _uid;
+        private readonly Dictionary<int, uint> _privileges;
+
+        public AgoraTokenBuilder(string appId, string appCertificate, string channelName, uint uid)
+        {
+            _appId = appId;
+            _appCertificate = appCertificate;
+            _channelName = channelName;
+            _uid = uid;
+            _privileges = new Dictionary<int, uint>();
+        }
+
+        public void AddPrivilege(int privilege, uint expireTimestamp)
+        {
+            _privileges[privilege] = expireTimestamp;
+        }
+
+        public string Build()
+        {
+            var message = new
+            {
+                appid = _appId,
+                channel = _channelName,
+                uid = _uid,
+                privileges = _privileges
+            };
+
+            var messageJson = System.Text.Json.JsonSerializer.Serialize(message);
+            var messageBytes = Encoding.UTF8.GetBytes(messageJson);
+            var messageBase64 = Convert.ToBase64String(messageBytes);
+
+            // Create signature
+            var signature = CreateSignature(messageBase64);
+            var signatureBase64 = Convert.ToBase64String(signature);
+
+            // Build token
+            return $"{messageBase64}.{signatureBase64}";
+        }
+
+        private byte[] CreateSignature(string message)
+        {
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_appCertificate));
+            return hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
+        }
+    }
+
+   
+} 

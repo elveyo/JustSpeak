@@ -12,8 +12,8 @@ using Services.Database;
 namespace Services.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250728215233_PostCommentLikeConstraint")]
-    partial class PostCommentLikeConstraint
+    [Migration("20250810143346_SeedData")]
+    partial class SeedData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,6 +50,32 @@ namespace Services.Migrations
                     b.HasIndex("TutorScheduleId");
 
                     b.ToTable("AvailableDays");
+                });
+
+            modelBuilder.Entity("Services.Database.Certificate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TutorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TutorId");
+
+                    b.ToTable("Certificates");
                 });
 
             modelBuilder.Entity("Services.Database.Comment", b =>
@@ -100,7 +126,34 @@ namespace Services.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Language");
+                    b.ToTable("Languages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "English"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Bosnian"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "French"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "German"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Japanese"
+                        });
                 });
 
             modelBuilder.Entity("Services.Database.LanguageLevel", b =>
@@ -124,7 +177,44 @@ namespace Services.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LanguageLevel");
+                    b.ToTable("LanguageLevels");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Embarking on the language journey, learning greetings and essential words.",
+                            MaxPoints = 100,
+                            Name = "Wanderer"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Navigating simple conversations and discovering basic grammar structures.",
+                            MaxPoints = 200,
+                            Name = "Explorer"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Confidently sharing stories and engaging in daily discussions.",
+                            MaxPoints = 400,
+                            Name = "Storyteller"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Mastering complex topics, idioms, and nuanced expressions.",
+                            MaxPoints = 600,
+                            Name = "Sage"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Achieving legendary fluency and cultural mastery, speaking like a native.",
+                            MaxPoints = 1000,
+                            Name = "Polyglot"
+                        });
                 });
 
             modelBuilder.Entity("Services.Database.Like", b =>
@@ -162,6 +252,48 @@ namespace Services.Migrations
                         .HasFilter("[PostId] IS NOT NULL");
 
                     b.ToTable("Likes");
+                });
+
+            modelBuilder.Entity("Services.Database.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TutorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("TutorId");
+
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("Services.Database.Post", b =>
@@ -209,6 +341,55 @@ namespace Services.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Tutor"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Student"
+                        });
+                });
+
+            modelBuilder.Entity("Services.Database.Session", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumberOfUsers")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("LevelId");
+
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("Services.Database.StudentLanguage", b =>
@@ -242,7 +423,84 @@ namespace Services.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("StudentLanguage");
+                    b.ToTable("StudentLanguages");
+                });
+
+            modelBuilder.Entity("Services.Database.StudentTutorSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TutorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("LevelId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("TutorId");
+
+                    b.ToTable("StudentTutorSessions");
+                });
+
+            modelBuilder.Entity("Services.Database.Tag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("SessionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
+
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Services.Database.TutorLanguage", b =>
@@ -276,7 +534,7 @@ namespace Services.Migrations
 
                     b.HasIndex("TutorId");
 
-                    b.ToTable("TutorLanguage");
+                    b.ToTable("TutorLanguages");
                 });
 
             modelBuilder.Entity("Services.Database.TutorSchedule", b =>
@@ -361,11 +619,61 @@ namespace Services.Migrations
                     b.UseTphMappingStrategy();
                 });
 
+            modelBuilder.Entity("Services.Database.Admin", b =>
+                {
+                    b.HasBaseType("Services.Database.User");
+
+                    b.HasDiscriminator().HasValue("Admin");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6475),
+                            Email = "admin@justspeak.com",
+                            FirstName = "Admin",
+                            IsActive = true,
+                            IsEmailVerified = true,
+                            LastName = "User",
+                            PasswordHash = "hashed_password",
+                            PasswordSalt = "salt",
+                            RoleId = 1
+                        });
+                });
+
             modelBuilder.Entity("Services.Database.Student", b =>
                 {
                     b.HasBaseType("Services.Database.User");
 
                     b.HasDiscriminator().HasValue("Student");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6551),
+                            Email = "hans@justspeak.com",
+                            FirstName = "Hans",
+                            IsActive = true,
+                            IsEmailVerified = true,
+                            LastName = "Muller",
+                            PasswordHash = "hashed_password",
+                            PasswordSalt = "salt",
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6555),
+                            Email = "yuki@justspeak.com",
+                            FirstName = "Yuki",
+                            IsActive = true,
+                            IsEmailVerified = true,
+                            LastName = "Tanaka",
+                            PasswordHash = "hashed_password",
+                            PasswordSalt = "salt",
+                            RoleId = 3
+                        });
                 });
 
             modelBuilder.Entity("Services.Database.Tutor", b =>
@@ -373,6 +681,34 @@ namespace Services.Migrations
                     b.HasBaseType("Services.Database.User");
 
                     b.HasDiscriminator().HasValue("Tutor");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6517),
+                            Email = "maria@justspeak.com",
+                            FirstName = "Maria",
+                            IsActive = true,
+                            IsEmailVerified = true,
+                            LastName = "Garcia",
+                            PasswordHash = "hashed_password",
+                            PasswordSalt = "salt",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6522),
+                            Email = "jean@justspeak.com",
+                            FirstName = "Jean",
+                            IsActive = true,
+                            IsEmailVerified = true,
+                            LastName = "Dubois",
+                            PasswordHash = "hashed_password",
+                            PasswordSalt = "salt",
+                            RoleId = 2
+                        });
                 });
 
             modelBuilder.Entity("Services.Database.AvailableDay", b =>
@@ -384,6 +720,17 @@ namespace Services.Migrations
                         .IsRequired();
 
                     b.Navigation("TutorSchedule");
+                });
+
+            modelBuilder.Entity("Services.Database.Certificate", b =>
+                {
+                    b.HasOne("Services.Database.Tutor", "Tutor")
+                        .WithMany("Certificates")
+                        .HasForeignKey("TutorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tutor");
                 });
 
             modelBuilder.Entity("Services.Database.Comment", b =>
@@ -435,6 +782,33 @@ namespace Services.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Services.Database.Payment", b =>
+                {
+                    b.HasOne("Services.Database.StudentTutorSession", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.Tutor", "Tutor")
+                        .WithMany()
+                        .HasForeignKey("TutorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Session");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Tutor");
+                });
+
             modelBuilder.Entity("Services.Database.Post", b =>
                 {
                     b.HasOne("Services.Database.User", "Author")
@@ -444,6 +818,25 @@ namespace Services.Migrations
                         .IsRequired();
 
                     b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("Services.Database.Session", b =>
+                {
+                    b.HasOne("Services.Database.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.LanguageLevel", "Level")
+                        .WithMany()
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Level");
                 });
 
             modelBuilder.Entity("Services.Database.StudentLanguage", b =>
@@ -471,6 +864,48 @@ namespace Services.Migrations
                     b.Navigation("Level");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Services.Database.StudentTutorSession", b =>
+                {
+                    b.HasOne("Services.Database.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.LanguageLevel", "Level")
+                        .WithMany()
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Services.Database.Tutor", "Tutor")
+                        .WithMany()
+                        .HasForeignKey("TutorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Level");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Tutor");
+                });
+
+            modelBuilder.Entity("Services.Database.Tag", b =>
+                {
+                    b.HasOne("Services.Database.Session", null)
+                        .WithMany("Tags")
+                        .HasForeignKey("SessionId");
                 });
 
             modelBuilder.Entity("Services.Database.TutorLanguage", b =>
@@ -541,6 +976,11 @@ namespace Services.Migrations
                     b.Navigation("Likes");
                 });
 
+            modelBuilder.Entity("Services.Database.Session", b =>
+                {
+                    b.Navigation("Tags");
+                });
+
             modelBuilder.Entity("Services.Database.TutorSchedule", b =>
                 {
                     b.Navigation("AvailableDays");
@@ -558,6 +998,8 @@ namespace Services.Migrations
 
             modelBuilder.Entity("Services.Database.Tutor", b =>
                 {
+                    b.Navigation("Certificates");
+
                     b.Navigation("TutorLanguages");
                 });
 #pragma warning restore 612, 618

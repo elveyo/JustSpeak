@@ -26,6 +26,10 @@ builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<ICommentService, CommentService>();
 builder.Services.AddTransient<IPostService, PostService>();
 builder.Services.AddTransient<IScheduleService, ScheduleService>();
+builder.Services.AddTransient<ISessionService, SessionService>();
+builder.Services.AddTransient<ILanguageService, LanguageService>();
+builder.Services.AddTransient<ILanguageLevelService, LanguageLevelService>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 
