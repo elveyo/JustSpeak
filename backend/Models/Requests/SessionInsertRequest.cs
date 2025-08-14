@@ -10,6 +10,7 @@ namespace Models.Requests
     public int LevelId { get; set; }
     public int Duration { get; set; }
     public string ChannelName { get; set; } = String.Empty;
+    public List<int> Tags { get; set; } = [];
 }
 
 }

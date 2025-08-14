@@ -7,11 +7,17 @@ import 'package:frontend/screens/session_screen.dart';
 import 'package:frontend/providers/post_provider.dart';
 import 'package:frontend/screens/add_post_screen.dart';
 import 'package:frontend/screens/video_call_screen.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final authService = AuthService();
+  await authService.loadToken();
+  print(authService.decoded);
   runApp(
     MultiProvider(
       providers: [
@@ -28,24 +34,27 @@ void main() {
           create: (context) => LanguageLevelProvider(),
         ),
       ],
-      child: const MyApp(),
+      child: MyApp(isUserLogged: authService.isLoggedIn),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isUserLogged;
+
+  const MyApp({super.key, required this.isUserLogged});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.purple,
-          primary: Colors.white,
+          seedColor: Colors.white,
+          primary: Color.fromARGB(255, 152, 13, 216),
+          secondary: Color(0xFF6A1B9A),
         ),
       ),
-      home: SessionsScreen(),
+      home: isUserLogged ? SessionsScreen() : LoginScreen(),
     );
   }
 }

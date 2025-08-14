@@ -23,7 +23,6 @@ class _FeedScreenState extends State<FeedScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadPosts());
-    print(posts);
   }
 
   Future<void> _loadPosts() async {
@@ -78,17 +77,6 @@ class _FeedScreenState extends State<FeedScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Video call button
-                        FloatingActionButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/calls');
-                          },
-                          backgroundColor: Colors.green,
-                          mini: true,
-                          child: const Icon(
-                            Icons.video_call,
-                            color: Colors.white,
-                          ),
-                        ),
                         const SizedBox(height: 8),
                         // Add post button
                         FloatingActionButton(

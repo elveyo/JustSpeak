@@ -15,6 +15,10 @@ Session _$SessionFromJson(Map<String, dynamic> json) => Session(
   createdAt: DateTime.parse(json['createdAt'] as String),
   channelName: json['channelName'] as String?,
   token: json['token'] as String?,
+  tags:
+      (json['tags'] as List<dynamic>)
+          .map((e) => Tag.fromJson(e as Map<String, dynamic>))
+          .toList(),
 );
 
 Map<String, dynamic> _$SessionToJson(Session instance) => <String, dynamic>{
@@ -26,4 +30,5 @@ Map<String, dynamic> _$SessionToJson(Session instance) => <String, dynamic>{
   'createdAt': instance.createdAt.toIso8601String(),
   'channelName': instance.channelName,
   'token': instance.token,
+  'tags': instance.tags,
 };

@@ -1,3 +1,4 @@
+import 'package:frontend/models/tag.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'session.g.dart';
@@ -12,6 +13,7 @@ class Session {
   final DateTime createdAt;
   final String? channelName;
   final String? token;
+  final List<Tag> tags;
 
   Session({
     required this.id,
@@ -22,6 +24,7 @@ class Session {
     required this.createdAt,
     this.channelName,
     this.token,
+    required this.tags,
   });
 
   factory Session.fromJson(Map<String, dynamic> json) =>

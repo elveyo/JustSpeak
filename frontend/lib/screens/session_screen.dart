@@ -37,9 +37,13 @@ class _SessionsScreenState extends State<SessionsScreen> {
       context,
       listen: false,
     );
+    dynamic filter;
+    if (selectedLanguage != null && selectedLevel != null) {
+      filter = {"languageId": selectedLanguage, "levelId": selectedLevel};
+    }
 
     try {
-      final fetchedSessions = await sessionProvider.get();
+      final fetchedSessions = await sessionProvider.get(filter: filter);
       setState(() {
         sessions = fetchedSessions.items;
       });
@@ -75,7 +79,6 @@ class _SessionsScreenState extends State<SessionsScreen> {
     );
     try {
       String token = await sessionProvider.getToken(channelName);
-      print(token);
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -117,6 +120,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     onChanged: (val) {
                       setState(() {
                         selectedLanguage = val!;
+                        _loadSessions();
                       });
                     },
                     decoration: InputDecoration(
@@ -154,6 +158,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     onChanged: (val) {
                       setState(() {
                         selectedLevel = val!;
+                        _loadSessions();
                       });
                     },
                     decoration: InputDecoration(
@@ -194,125 +199,151 @@ class _SessionsScreenState extends State<SessionsScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: sessions?.length ?? 0,
-              itemBuilder: (context, index) {
-                final session = sessions![index];
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.purple,
-                    borderRadius: BorderRadius.circular(24),
+          (sessions == null || sessions?.isEmpty == true)
+              ? Center(
+                child: Text(
+                  "No sessions available.",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                ),
+              )
+              : Expanded(
+                child: ListView.builder(
+                  itemCount: sessions?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    final session = sessions![index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    session.language!,
-                                    style: const TextStyle(
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        session.language!,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                        ),
+                                      ),
+                                      Text(
+                                        session.level!,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${session.numOfUsers}/4',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.person,
                                       color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 22,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 6, // 60% of the Row
+                                  child: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children:
+                                        session.tags
+                                            .map<Widget>(
+                                              (tag) => Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 3,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: Color(
+                                                    int.parse(
+                                                      tag.color.replaceFirst(
+                                                        '#',
+                                                        '0xff',
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  tag.name,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 11,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                            .toList(),
+                                  ),
+                                ),
+                                const Spacer(),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF6A1B9A),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 8,
                                     ),
                                   ),
-                                  Text(
-                                    session.level!,
-                                    style: const TextStyle(
+                                  onPressed: () {
+                                    _joinSession(session.channelName!);
+                                  },
+                                  child: const Text(
+                                    'JOIN',
+                                    style: TextStyle(
                                       color: Colors.white,
+                                      fontWeight: FontWeight.bold,
                                       fontSize: 14,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  '${session.numOfUsers}/4',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                  size: 20,
                                 ),
                               ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            ...[].map<Widget>(
-                              (tag) => Container(
-                                margin: const EdgeInsets.only(right: 8),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  tag,
-                                  style: const TextStyle(
-                                    color: Colors.purple,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF6A1B9A),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 8,
-                                ),
-                              ),
-                              onPressed: () {
-                                print("looool");
-                                print(session.channelName);
-                                _joinSession(session.channelName!);
-                              },
-                              child: const Text(
-                                'JOIN',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
+                      ),
+                    );
+                  },
+                ),
+              ),
         ],
       ),
     );

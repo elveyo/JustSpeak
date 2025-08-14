@@ -1,5 +1,6 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:frontend/config/agora_config.dart';
+import 'package:frontend/services/auth_service.dart';
 
 class AgoraService {
   static final AgoraService _instance = AgoraService._internal();
@@ -23,10 +24,12 @@ class AgoraService {
   }
 
   Future<void> joinChannel(String channelName, String token) async {
+    print("TOKEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEN");
+    print(AuthService().userId);
     await _engine!.joinChannel(
       token: token,
       channelId: AgoraConfig.defaultChannelName,
-      uid: AgoraConfig.uid,
+      uid: AuthService().userId!,
       options: const ChannelMediaOptions(),
     );
   }

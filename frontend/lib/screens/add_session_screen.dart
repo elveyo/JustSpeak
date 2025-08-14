@@ -29,7 +29,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   int? selectedLanguage;
   int? selectedLevel;
-  int selectedPeople = 1;
+  int selectedPeople = 2;
 
   @override
   void initState() {
@@ -234,7 +234,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                             builder: (FormFieldState<int?> field) {
                               return Row(
                                 children: List.generate(3, (index) {
-                                  int peopleCount = index + 1;
+                                  int peopleCount = index + 2;
                                   bool isSelected = field.value == peopleCount;
                                   return Expanded(
                                     child: GestureDetector(
@@ -372,25 +372,106 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          FormBuilderTextField(
-                            name: 'tags',
-                            decoration: InputDecoration(
-                              hintText: '#music#tech',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                            ),
+                          // Dummy tags array
+                          StatefulBuilder(
+                            builder: (context, setState) {
+                              final List<String> dummyTags = [
+                                'Music',
+                                'Tech',
+                                'Travel',
+                                'Food',
+                                'Art',
+                                'Sports',
+                                'Gaming',
+                                'Books',
+                              ];
+                              // Use a Set to track selected tags
+                              final selectedTags = Set<String>.from(
+                                (_formKey.currentState?.fields['tags']?.value ??
+                                    <String>[]),
+                              );
+
+                              void toggleTag(String tag) {
+                                setState(() {
+                                  if (selectedTags.contains(tag)) {
+                                    selectedTags.remove(tag);
+                                  } else {
+                                    selectedTags.add(tag);
+                                  }
+                                  // Update the form field value
+                                  _formKey.currentState?.fields['tags']
+                                      ?.didChange(selectedTags.toList());
+                                });
+                              }
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children:
+                                        dummyTags.map((tag) {
+                                          final isSelected = selectedTags
+                                              .contains(tag);
+                                          return GestureDetector(
+                                            onTap: () => toggleTag(tag),
+                                            child: Opacity(
+                                              opacity: isSelected ? 0.5 : 1.0,
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 6,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      isSelected
+                                                          ? const Color(
+                                                            0xFFB000FF,
+                                                          )
+                                                          : Colors.transparent,
+                                                  border: Border.all(
+                                                    color: const Color(
+                                                      0xFFB000FF,
+                                                    ),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  tag,
+                                                  style: TextStyle(
+                                                    color:
+                                                        isSelected
+                                                            ? Colors.white
+                                                            : const Color(
+                                                              0xFFB000FF,
+                                                            ),
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                  ),
+                                  // Hidden field to store selected tags in the form
+                                  FormBuilderField<List<String>>(
+                                    name: 'tags',
+                                    initialValue: selectedTags.toList(),
+                                    builder: (field) => const SizedBox.shrink(),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ],
                       ),
                     ),
 
-                    const Spacer(),
-
+                    const SizedBox(height: 20),
                     // Create Button
                     SizedBox(
                       width: double.infinity,

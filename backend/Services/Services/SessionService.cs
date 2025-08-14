@@ -12,6 +12,9 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using Model.Responses;
+using AgoraNET;
+using Models.SearchObjects;
+
 
 namespace Services.Services
 {
@@ -34,76 +37,100 @@ namespace Services.Services
         public override async Task<SessionResponse> CreateAsync(SessionUpsertRequest request)
         {
             //int? currentUserId = _userContextService.GetUserId();
-            // Generate channel name for the session
+            var session = new Session
+            {
+                NumOfUsers = request.NumOfUsers,
+                LanguageId = request.LanguageId,
+                LevelId = request.LevelId,
+                Duration = request.Duration,
+                ChannelName = request.ChannelName,
+                CreatedAt = DateTime.UtcNow
+            };
 
-            var random = new Random();
-            int randomNumber = random.Next(1, 11); ;
-            var session = await base.CreateAsync(request);
-            var agoraToken = GenerateAgoraToken(request.ChannelName,randomNumber );
+            _context.Sessions.Add(session);
+            var tags = await _context.Tags
+                .Where(t => request.Tags.Contains(t.Id))
+                .ToListAsync();
+            session.Tags = tags;
+            await _context.SaveChangesAsync();
+
             return new SessionResponse
             {
                 Id = session.Id,
-                Language = session.Language,
-                Level = session.Level,
+                Language = session.Language.Name,
+                Level = session.Level.Name,
                 NumOfUsers = session.NumOfUsers,
                 Duration = session.Duration,
                 CreatedAt = session.CreatedAt,
                 ChannelName = session.ChannelName,
-                Token = agoraToken
+                Token = "agoraToken",
+                Tags = session.Tags.Select(tag => new TagResponse
+                {
+                    Id = tag.Id,
+                    Name = tag.Name,
+                    Color = tag.Color
+                }).ToList()
             };
         }
 
-        public override async Task<PagedResult<SessionResponse>> GetAsync(BaseSearchObject search)
+        public async Task<PagedResult<SessionResponse>> GetAsync(SessionSearchObject search)
         {
-            var sessions = await _context.Sessions
-            .Skip(search.Page.Value * search.PageSize.Value)
-            .Take(search.PageSize.Value)
-            .Select(s=>new SessionResponse {
-                Id = s.Id,
-                Language = s.Language.Name,
-                Level = s.Level.Name,
-                NumOfUsers = s.NumOfUsers,
-                Duration = s.Duration,
-                CreatedAt = s.CreatedAt,
-                ChannelName = s.ChannelName,
-            }).ToListAsync();
+            // Create query
+            var query = _context.Sessions.AsQueryable();
 
-              return new PagedResult<SessionResponse>
+            // Apply search filters if items exist
+            if (search.LanguageId.HasValue)
             {
-                Items = sessions,
-                TotalCount = await _context.Sessions.CountAsync()
-            };
-        }
-
-
-
-
-        public string GenerateAgoraToken(string channelName, int userId)
-        {
-            if (string.IsNullOrEmpty(_agoraAppId) || string.IsNullOrEmpty(_agoraAppCertificate))
+                query = query.Where(s => s.LanguageId == search.LanguageId.Value);
+            }
+            if (search.LevelId.HasValue)
             {
-                throw new InvalidOperationException("Agora App ID or App Certificate not configured");
+                query = query.Where(s => s.LevelId == search.LevelId.Value);
             }
 
-            // Set token expiration time (24 hours from now)
-            var expirationTimeInSeconds = 3600 * 24;
-            var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var privilegeExpiredTs = (uint)currentTimestamp + (uint)expirationTimeInSeconds;
+            var totalCount = await query.CountAsync();
 
-            // Create token builder with user-specific UID
-            var tokenBuilder = new AgoraTokenBuilder(_agoraAppId, _agoraAppCertificate, channelName, (uint)userId);
-            
-            // Add privileges based on user role
-            tokenBuilder.AddPrivilege(AgoraTokenBuilder.PrivilegeJoinChannel, privilegeExpiredTs);
-            tokenBuilder.AddPrivilege(AgoraTokenBuilder.PrivilegePublishAudioStream, privilegeExpiredTs);
-            tokenBuilder.AddPrivilege(AgoraTokenBuilder.PrivilegePublishVideoStream, privilegeExpiredTs);
-            tokenBuilder.AddPrivilege(AgoraTokenBuilder.PrivilegePublishDataStream, privilegeExpiredTs);
+            var sessions = await query
+                .Skip((search.Page ?? 0) * (search.PageSize ?? 10))
+                .Take(search.PageSize ?? 10)
+                .Select(s => new SessionResponse
+                {
+                    Id = s.Id,
+                    Language = s.Language.Name,
+                    Level = s.Level.Name,
+                    NumOfUsers = s.NumOfUsers,
+                    Duration = s.Duration,
+                    CreatedAt = s.CreatedAt,
+                    ChannelName = s.ChannelName,
+                           Tags = s.Tags.Select(tag => new TagResponse
+                {
+                    Id = tag.Id,
+                    Name = tag.Name,
+                    Color = tag.Color
+                }).ToList()
+                }).ToListAsync();
 
-  
-
-            // Build and return token
-            return tokenBuilder.Build();
+            return new PagedResult<SessionResponse>
+            {
+                Items = sessions,
+                TotalCount = totalCount
+            };
         }
+        
+
+
+
+public string GenerateAgoraToken(string channelName, int userId)
+{
+
+
+    var token = new RtcTokenBuilder();
+    // Set expireTime to one day (24 hours) from now as an absolute Unix timestamp
+    uint oneDayExpireTime = (uint)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 24 * 60 * 60);
+    return token.BuildToken(_agoraAppId, _agoraAppCertificate, channelName, (uint)userId, AgoraNET.RtcUserRole.Publisher, oneDayExpireTime);
+}
+
+
     }
 
     // Agora Token Builder Implementation

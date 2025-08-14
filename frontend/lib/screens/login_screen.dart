@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/registration_screen.dart';
 import 'package:frontend/providers/base_provider.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/config.dart';
 
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
       if (token != null) {
-        BaseProvider.jwtToken = token;
+        AuthService().saveToken(token);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => FeedScreen()),
