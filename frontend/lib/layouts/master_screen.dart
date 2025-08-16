@@ -33,8 +33,8 @@ class MasterScreen extends StatelessWidget {
         foregroundColor: Colors.purple,
         title: Text(
           title,
-          style: const TextStyle(
-            color: Colors.purple,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.bold,
           ),
         ),

@@ -2,12 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:frontend/models/search_result.dart';
+import 'package:frontend/services/agora_service.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
 
 abstract class BaseProvider<T> with ChangeNotifier {
   String? _baseUrl;
-  static String? jwtToken;
+  String? _jwtToken;
   String _endpoint = "";
 
   BaseProvider(String endpoint) {
@@ -16,6 +18,8 @@ abstract class BaseProvider<T> with ChangeNotifier {
       "baseUrl",
       defaultValue: "http://10.0.2.2:5280/",
     );
+    AuthService().loadToken();
+    _jwtToken = AuthService().token;
   }
 
   Uri buildUri([String? path]) {
@@ -32,12 +36,12 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
     var uri = Uri.parse(url);
     var headers = createHeaders();
-
+    print(uri);
     var response = await http.get(uri, headers: headers);
+    print(response.body);
 
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
-
       var result = SearchResult<T>();
 
       result.totalCount = data['totalCount'];
@@ -45,7 +49,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
       return result;
     } else {
-      throw new Exception("Unknown error");
+      return throw new Exception("Unknown error");
     }
     // print("response: ${response.request} ${response.statusCode}, ${response.body}");
   }
@@ -58,6 +62,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
     var response = await http.post(uri, headers: headers, body: jsonRequest);
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
+      print(data);
       return fromJson(data);
     } else {
       throw new Exception("Unknown error");
@@ -90,15 +95,17 @@ abstract class BaseProvider<T> with ChangeNotifier {
     } else if (response.statusCode == 401) {
       throw new Exception("Unauthorized");
     } else {
-      print(response.body);
       throw new Exception("Something bad happened please try again");
     }
   }
 
   Map<String, String> createHeaders() {
+    AuthService().loadToken();
+    _jwtToken = AuthService().token;
+    print(_jwtToken);
     final headers = {"Content-Type": "application/json"};
-    if (jwtToken != null && jwtToken!.isNotEmpty) {
-      headers["Authorization"] = "Bearer ${jwtToken!}";
+    if (_jwtToken != null && _jwtToken!.isNotEmpty) {
+      headers["Authorization"] = "Bearer ${_jwtToken!}";
     }
     return headers;
   }

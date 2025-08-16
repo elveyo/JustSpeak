@@ -10,6 +10,8 @@ using Services.Interfaces;
 namespace WebAPI.Controllers
 {
     [Authorize]
+    [ApiController]
+    [Route("[controller]")]
     public class PostController : BaseCRUDController<PostResponse, BaseSearchObject, PostUpsertRequest, PostUpsertRequest>
     {
         private readonly IPostService _postService;

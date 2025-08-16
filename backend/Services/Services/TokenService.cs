@@ -40,7 +40,7 @@ namespace Services.Services
                 issuer: _configuration["JWT:Issuer"],
                 audience: _configuration["JWT:Audience"],
                 claims,
-                expires: DateTime.Now.AddHours(1), 
+                expires: DateTime.Now.AddHours(24), 
                 signingCredentials: creds
                 
             );

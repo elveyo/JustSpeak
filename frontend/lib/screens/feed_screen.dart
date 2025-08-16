@@ -22,14 +22,19 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   void initState() {
     super.initState();
-    _loadPosts();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadPosts());
   }
 
   Future<void> _loadPosts() async {
     final postProvider = Provider.of<PostProvider>(context, listen: false);
-    final items = await postProvider.get();
-    setState(() {
+    try {
+      final items = await postProvider.get();
       posts = items;
+    } catch (e) {
+      posts = null; // Optionally show a snackbar or error UI
+    }
+    setState(() {
+      posts = posts;
     });
   }
 
@@ -68,17 +73,25 @@ class _FeedScreenState extends State<FeedScreen> {
                   Positioned(
                     bottom: 16,
                     right: 16,
-                    child: FloatingActionButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CreatePostScreen(),
-                          ),
-                        );
-                      },
-                      backgroundColor: Colors.purple,
-                      child: const Icon(Icons.add, color: Colors.white),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Video call button
+                        const SizedBox(height: 8),
+                        // Add post button
+                        FloatingActionButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CreatePostScreen(),
+                              ),
+                            );
+                          },
+                          backgroundColor: Colors.purple,
+                          child: const Icon(Icons.add, color: Colors.white),
+                        ),
+                      ],
                     ),
                   ),
                 ],
