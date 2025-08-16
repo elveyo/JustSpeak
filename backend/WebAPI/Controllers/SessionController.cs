@@ -4,6 +4,7 @@ using Models.Requests;
 using Models.Responses;
 using Model.SearchObjects;
 using Models.SearchObjects;
+using Model.Responses;
 
 namespace WebAPI.Controllers
 {
@@ -30,6 +31,22 @@ namespace WebAPI.Controllers
         public string GenerateToken([FromBody] ChannelNameRequest request){
             Console.WriteLine(request.UserId);
             return _sessionService.GenerateAgoraToken(request.ChannelName,request.UserId);
+        }
+
+        [HttpGet("Tags")]
+
+        public async Task<ActionResult<PagedResult<TagResponse>>> GetTags([FromQuery] BaseSearchObject query)
+        {
+            // Use the session service to get tags with pagination
+            var searchObject = new BaseSearchObject
+            {
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
+
+            // Assuming ISessionService has a method to get tags with pagination
+            var pagedTags = await _sessionService.GetTagsAsync(searchObject);
+            return Ok(pagedTags);
         }
 
 

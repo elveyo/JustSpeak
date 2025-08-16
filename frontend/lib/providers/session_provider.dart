@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:frontend/models/post.dart';
+import 'package:frontend/models/search_result.dart';
 import 'package:frontend/models/session.dart';
+import 'package:frontend/models/tag.dart';
 import 'package:frontend/providers/base_provider.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:http/http.dart' as http;
@@ -29,5 +31,21 @@ class SessionProvider extends BaseProvider<Session> {
     }
     print(response.body);
     return response.body;
+  }
+
+  Future<SearchResult<Tag>> getTags() async {
+    Uri uri = buildUri("/Tags");
+    var headers = createHeaders();
+    final response = await http.get(uri, headers: headers);
+    if (!isValidResponse(response)) {
+      throw Exception("Failed to fetch tags");
+    }
+    final dynamic tagJson = jsonDecode(response.body);
+    // Map the paginated response to SearchResult<Tag>
+    final result = SearchResult<Tag>();
+    result.totalCount = tagJson['totalCount'];
+    result.items =
+        (tagJson['items'] as List).map((item) => Tag.fromJson(item)).toList();
+    return result;
   }
 }

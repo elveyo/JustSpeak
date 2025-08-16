@@ -1,3 +1,4 @@
+using Model.Responses;
 using Model.SearchObjects;
 using Models.Requests;
 using Models.Responses;
@@ -10,5 +11,6 @@ namespace Services.Interfaces
     {
       
  string GenerateAgoraToken( string channelName, int userId);
+ Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query);
     }
 }

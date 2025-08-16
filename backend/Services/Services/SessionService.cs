@@ -53,7 +53,8 @@ namespace Services.Services
                 .ToListAsync();
             session.Tags = tags;
             await _context.SaveChangesAsync();
-
+           await _context.Entry(session).Reference(s => s.Language).LoadAsync();
+           await _context.Entry(session).Reference(s => s.Level).LoadAsync();
             return new SessionResponse
             {
                 Id = session.Id,
@@ -116,6 +117,8 @@ namespace Services.Services
                 TotalCount = totalCount
             };
         }
+
+    
         
 
 
@@ -131,6 +134,33 @@ public string GenerateAgoraToken(string channelName, int userId)
 }
 
 
+
+public async Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query)
+        {
+ var tagsQuery = _context.Tags.AsQueryable();
+
+            int page = query.Page ?? 0;
+            int pageSize = query.PageSize ?? 10;
+
+            var totalCount = await tagsQuery.CountAsync();
+
+            var tags = await tagsQuery
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .Select(tag => new TagResponse
+                {
+                    Id = tag.Id,
+                    Name = tag.Name,
+                    Color = tag.Color
+                })
+                .ToListAsync();
+
+            return new PagedResult<TagResponse>
+            {
+                Items = tags,
+                TotalCount = totalCount
+            };       
+             }
     }
 
     // Agora Token Builder Implementation

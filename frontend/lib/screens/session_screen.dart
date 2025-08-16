@@ -177,7 +177,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
               const SizedBox(width: 12),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.purple,
+                  color: Theme.of(context).colorScheme.secondary,
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(

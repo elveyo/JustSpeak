@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:frontend/models/language.dart';
 import 'package:frontend/models/languale_level.dart';
+import 'package:frontend/models/search_result.dart';
 import 'package:frontend/models/session.dart';
+import 'package:frontend/models/tag.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
 import 'package:frontend/providers/session_provider.dart';
@@ -31,9 +33,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   int? selectedLevel;
   int selectedPeople = 2;
 
+  List<Tag>? tags;
+
   @override
   void initState() {
     super.initState();
+    _getTags();
   }
 
   /// Generates a unique channel name for the session.
@@ -41,6 +46,24 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   String generateChannelName(int? languageId, int? levelId) {
     final now = DateTime.now().millisecondsSinceEpoch;
     return 'channel_${languageId ?? "lang"}_${levelId ?? "lvl"}_$now';
+  }
+
+  Future<void> _getTags() async {
+    try {
+      final sessionProvider = Provider.of<SessionProvider>(
+        context,
+        listen: false,
+      );
+      final fetchedTags = await sessionProvider.getTags();
+      setState(() {
+        tags = fetchedTags.items;
+      });
+    } catch (e) {
+      print('Failed to fetch tags: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to fetch tags')));
+    }
   }
 
   Future<void> createSession() async {
@@ -53,6 +76,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         "numOfUsers": values["people"],
         "duration": values["duration"],
         "channelName": generateChannelName(values['language'], values["level"]),
+        "tags":
+            (values["tags"])
+                .where((tag) => tag != null)
+                .map((tag) => tag.id)
+                .toList(),
       };
 
       print(postData);
@@ -375,23 +403,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                           // Dummy tags array
                           StatefulBuilder(
                             builder: (context, setState) {
-                              final List<String> dummyTags = [
-                                'Music',
-                                'Tech',
-                                'Travel',
-                                'Food',
-                                'Art',
-                                'Sports',
-                                'Gaming',
-                                'Books',
-                              ];
                               // Use a Set to track selected tags
-                              final selectedTags = Set<String>.from(
+                              final selectedTags = Set<Tag>.from(
                                 (_formKey.currentState?.fields['tags']?.value ??
                                     <String>[]),
                               );
 
-                              void toggleTag(String tag) {
+                              void toggleTag(Tag tag) {
                                 setState(() {
                                   if (selectedTags.contains(tag)) {
                                     selectedTags.remove(tag);
@@ -411,7 +429,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                                     spacing: 8,
                                     runSpacing: 8,
                                     children:
-                                        dummyTags.map((tag) {
+                                        (tags ?? []).map((tag) {
                                           final isSelected = selectedTags
                                               .contains(tag);
                                           return GestureDetector(
@@ -431,22 +449,24 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                                                             0xFFB000FF,
                                                           )
                                                           : Colors.transparent,
-                                                  border: Border.all(
-                                                    color: const Color(
-                                                      0xFFB000FF,
-                                                    ),
-                                                  ),
+
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                 ),
                                                 child: Text(
-                                                  tag,
+                                                  tag.name,
                                                   style: TextStyle(
                                                     color:
                                                         isSelected
                                                             ? Colors.white
-                                                            : const Color(
-                                                              0xFFB000FF,
+                                                            : Color(
+                                                              int.parse(
+                                                                tag.color
+                                                                    .replaceFirst(
+                                                                      '#',
+                                                                      '0xFF',
+                                                                    ),
+                                                              ),
                                                             ),
                                                     fontWeight: FontWeight.w600,
                                                     fontSize: 14,
@@ -458,7 +478,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                                         }).toList(),
                                   ),
                                   // Hidden field to store selected tags in the form
-                                  FormBuilderField<List<String>>(
+                                  FormBuilderField<List<Tag>>(
                                     name: 'tags',
                                     initialValue: selectedTags.toList(),
                                     builder: (field) => const SizedBox.shrink(),
