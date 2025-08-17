@@ -6,6 +6,7 @@ import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/session_screen.dart';
 import 'package:frontend/providers/post_provider.dart';
 import 'package:frontend/screens/add_post_screen.dart';
+import 'package:frontend/screens/tutor_onboading_screen.dart';
 import 'package:frontend/screens/video_call_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
           secondary: Color(0xFF6A1B9A),
         ),
       ),
-      home: isUserLogged ? SessionsScreen() : LoginScreen(),
+      home: isUserLogged ? TutorOnboardingScreen() : TutorOnboardingScreen(),
     );
   }
 }
