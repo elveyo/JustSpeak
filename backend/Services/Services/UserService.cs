@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Models.Requests;
@@ -5,39 +7,53 @@ using Models.Responses;
 using Models.SearchObjects;
 using Services.Database;
 using Services.Interfaces;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Services.Services
 {
-    public class UserService : BaseCRUDService<UserResponse, UserSearchObject, User, UserInsertRequest, UserUpdateRequest>, IUserService
+    public class UserService
+        : BaseCRUDService<
+            UserResponse,
+            UserSearchObject,
+            User,
+            UserInsertRequest,
+            UserUpdateRequest
+        >,
+            IUserService
     {
-          private const int SaltSize = 16;
+        private const int SaltSize = 16;
         private const int KeySize = 32;
         private const int Iterations = 10000;
         private readonly ITokenService _tokenService;
-        public UserService(ApplicationDbContext context, IMapper mapper, ITokenService tokenService) : base(context, mapper)
+
+        public UserService(
+            ApplicationDbContext context,
+            IUserContextService userContextService,
+            IMapper mapper,
+            ITokenService tokenService
+        )
+            : base(context, mapper)
         {
             _tokenService = tokenService;
         }
 
-public async Task<List<UserResponse>> GetAsync(UserSearchObject search)
+        public async Task<List<UserResponse>> GetAsync(UserSearchObject search)
         {
             var query = _context.Users.AsQueryable();
-            
+
             if (!string.IsNullOrEmpty(search.Email))
             {
                 query = query.Where(u => u.Email.Contains(search.Email));
             }
-            
+
             if (!string.IsNullOrEmpty(search.FTS))
             {
-                query = query.Where(u => 
-                    u.FirstName.Contains(search.FTS) || 
-                    u.LastName.Contains(search.FTS) || 
-                    u.Email.Contains(search.FTS));
+                query = query.Where(u =>
+                    u.FirstName.Contains(search.FTS)
+                    || u.LastName.Contains(search.FTS)
+                    || u.Email.Contains(search.FTS)
+                );
             }
-            
+
             var users = await query.ToListAsync();
             return users.Select(_mapper.Map<UserResponse>).ToList();
         }
@@ -68,7 +84,7 @@ public async Task<List<UserResponse>> GetAsync(UserSearchObject search)
             {
                 throw new InvalidOperationException("A user with this email already exists.");
             }
-        
+
             var user = _mapper.Map<User>(request);
             // Handle password if provided
             if (!string.IsNullOrEmpty(request.Password))
@@ -80,7 +96,6 @@ public async Task<List<UserResponse>> GetAsync(UserSearchObject search)
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return _mapper.Map<UserResponse>(user);
-        
         }
 
         public override async Task<UserResponse?> UpdateAsync(int id, UserUpdateRequest request)
@@ -94,7 +109,6 @@ public async Task<List<UserResponse>> GetAsync(UserSearchObject search)
             {
                 throw new InvalidOperationException("A user with this email already exists.");
             }
-        
 
             user = _mapper.Map(request, user);
 
@@ -105,33 +119,29 @@ public async Task<List<UserResponse>> GetAsync(UserSearchObject search)
                 user.PasswordHash = HashPassword(request.Password, out salt);
                 user.PasswordSalt = Convert.ToBase64String(salt);
             }
-                
+
             await _context.SaveChangesAsync();
             return _mapper.Map<UserResponse>(user);
         }
 
-
-
-      
         public async Task<UserResponse?> AuthenticateAsync(UserLoginRequest request)
         {
-            var user = await _context.Users
-                .Include(ur => ur.Role)
+            var user = await _context
+                .Users.Include(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
-            
+
             if (user == null)
                 return null;
 
             if (!VerifyPassword(request.Password!, user.PasswordHash, user.PasswordSalt))
                 return null;
-       var token = _tokenService.GetToken(user);
-      
-            var response =  _mapper.Map<UserResponse>(user);
+            var token = _tokenService.GetToken(user);
+
+            var response = _mapper.Map<UserResponse>(user);
             response.Token = token;
             return response;
-            
-            
-        } 
+        }
+
         private bool VerifyPassword(string password, string passwordHash, string passwordSalt)
         {
             var salt = Convert.FromBase64String(passwordSalt);

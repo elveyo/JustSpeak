@@ -8,10 +8,13 @@ using Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
-    public class UserController : BaseCRUDController<UserResponse, UserSearchObject, UserInsertRequest, UserUpdateRequest>
+    public class UserController
+        : BaseCRUDController<UserResponse, UserSearchObject, UserInsertRequest, UserUpdateRequest>
     {
         private readonly IUserService _userService;
-        public UserController(IUserService service) : base(service)
+
+        public UserController(IUserService service)
+            : base(service)
         {
             _userService = service;
         }
@@ -19,7 +22,7 @@ namespace WebAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
         {
-            try 
+            try
             {
                 var user = await _userService.AuthenticateAsync(request);
                 if (user == null)
@@ -45,7 +48,5 @@ namespace WebAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-        
     }
 }

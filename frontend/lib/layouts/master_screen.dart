@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/session_screen.dart';
+import 'package:frontend/screens/tutor_calendar_screen.dart';
 
 class MasterScreen extends StatelessWidget {
   const MasterScreen({super.key, required this.child, required this.title});
@@ -39,7 +40,10 @@ class MasterScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Padding(padding: const EdgeInsets.all(12.0), child: child),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+        child: child,
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _getSelectedIndex(title),
         onDestinationSelected: (index) {
@@ -61,7 +65,7 @@ class MasterScreen extends StatelessWidget {
               if (title != 'Calendar') {
                 Navigator.pushReplacement(
                   context,
-                  _fadeTo(const SessionsScreen()),
+                  _fadeTo(const TutorCalendarScreen()),
                 );
               }
               break;
