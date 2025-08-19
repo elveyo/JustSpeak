@@ -205,21 +205,22 @@ namespace Services.Services
             return bookedSessions;
         }
 
-        public string GenerateAgoraToken(string channelName, int userId)
+        public async Task<StudentSessionResponse[]> GetStudentSessionsAsync()
         {
-            var token = new RtcTokenBuilder();
-            // Set expireTime to one day (24 hours) from now as an absolute Unix timestamp
-            uint oneDayExpireTime = (uint)(
-                DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 24 * 60 * 60
-            );
-            return token.BuildToken(
-                _agoraAppId,
-                _agoraAppCertificate,
-                channelName,
-                (uint)userId,
-                AgoraNET.RtcUserRole.Publisher,
-                oneDayExpireTime
-            );
+            var bookedSessions = await _context
+                .StudentTutorSessions.Where(sts => sts.StudentId == UserId.Value)
+                .Select(s => new StudentSessionResponse
+                {
+                    Language = s.Language.Name,
+                    Level = s.Level.Name,
+                    UserName = s.Student.FullName,
+                    Date = s.StartTime.Date,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                })
+                .ToArrayAsync();
+
+            return bookedSessions;
         }
 
         public async Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query)
@@ -245,13 +246,26 @@ namespace Services.Services
             return new PagedResult<TagResponse> { Items = tags, TotalCount = totalCount };
         }
 
-        public Task<StudentSessionResponse[]> GetStudentSessionsAsync()
+        public string GenerateAgoraToken(string channelName, int userId)
         {
-            throw new NotImplementedException();
+            var token = new RtcTokenBuilder();
+            // Set expireTime to one day (24 hours) from now as an absolute Unix timestamp
+            uint oneDayExpireTime = (uint)(
+                DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 24 * 60 * 60
+            );
+            return token.BuildToken(
+                _agoraAppId,
+                _agoraAppCertificate,
+                channelName,
+                (uint)userId,
+                AgoraNET.RtcUserRole.Publisher,
+                oneDayExpireTime
+            );
         }
     }
 
     // Agora Token Builder Implementation
+
     public class AgoraTokenBuilder
     {
         public const int PrivilegeJoinChannel = 1;

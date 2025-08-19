@@ -16,7 +16,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
     _endpoint = endpoint;
     _baseUrl = const String.fromEnvironment(
       "baseUrl",
-      defaultValue: "http://10.0.2.2:5280/",
+      defaultValue: "http://10.0.2.2:5280/api/",
     );
     AuthService().loadToken();
     _jwtToken = AuthService().token;
@@ -102,7 +102,6 @@ abstract class BaseProvider<T> with ChangeNotifier {
   Map<String, String> createHeaders() {
     AuthService().loadToken();
     _jwtToken = AuthService().token;
-    print(_jwtToken);
     final headers = {"Content-Type": "application/json"};
     if (_jwtToken != null && _jwtToken!.isNotEmpty) {
       headers["Authorization"] = "Bearer ${_jwtToken!}";

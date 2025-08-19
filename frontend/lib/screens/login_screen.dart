@@ -35,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text,
         _passwordController.text,
       );
+
       if (token != null) {
         AuthService().saveToken(token);
         Navigator.pushReplacement(
@@ -48,6 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // Dummy loginApi for demonstration
   Future<String?> loginApi(String email, String password) async {
     final body = jsonEncode({'email': email, 'password': password});
+    print(Uri.parse("$baseUrl/User/login"));
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/User/login"),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:frontend/models/booked_session.dart';
 import 'package:frontend/models/post.dart';
 import 'package:frontend/models/search_result.dart';
 import 'package:frontend/models/session.dart';
@@ -14,6 +15,39 @@ class SessionProvider extends BaseProvider<Session> {
   @override
   Session fromJson(dynamic json) {
     return Session.fromJson(json);
+  }
+
+  Future<List<BookedSession>> getTutorSessions() async {
+    Uri uri = buildUri("/tutor");
+
+    print(uri);
+    var headers = createHeaders();
+    final response = await http.get(uri, headers: headers);
+
+    if (!isValidResponse(response)) {
+      throw Exception("Failed to fetch tutor sessions");
+    }
+
+    final List<dynamic> jsonList = jsonDecode(response.body);
+    final List<BookedSession> data =
+        jsonList.map((item) => BookedSession.fromJson(item)).toList();
+
+    return data;
+  }
+
+  Future<List<BookedSession>> getStudentSessions() async {
+    Uri uri = buildUri("/student");
+    var headers = createHeaders();
+    final response = await http.get(uri, headers: headers);
+
+    if (!isValidResponse(response)) {
+      throw Exception("Failed to fetch student sessions");
+    }
+
+    final List<dynamic> jsonList = jsonDecode(response.body);
+    final List<BookedSession> data =
+        jsonList.map((item) => BookedSession.fromJson(item)).toList();
+    return data;
   }
 
   Future<String> getToken(String channelName) async {
