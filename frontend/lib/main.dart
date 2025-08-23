@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
+import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/providers/session_provider.dart';
+import 'package:frontend/screens/add_schedule_screen.dart';
 import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/session_screen.dart';
 import 'package:frontend/providers/post_provider.dart';
@@ -32,6 +34,9 @@ void main() async {
         ),
         ChangeNotifierProvider<LanguageLevelProvider>(
           create: (context) => LanguageLevelProvider(),
+        ),
+        ChangeNotifierProvider<ScheduleProvider>(
+          create: (context) => ScheduleProvider(),
         ),
       ],
       child: MyApp(isUserLogged: authService.isLoggedIn),

@@ -53,7 +53,7 @@ namespace Services
 
             // Period za koji generišemo slotove (npr. narednih 7 dana)
             var startDate = DateTime.UtcNow.Date;
-            var endDate = startDate.AddDays(7);
+            var endDate = startDate.AddDays(30);
 
             // Povuci sve booked sesije u tom periodu
             var bookedSessions = await _context
@@ -105,6 +105,56 @@ namespace Services
             response.Slots = slots;
 
             return response;
+        }
+
+        public async Task<ScheduleResponse> CreateTutorSchedule(ScheduleUpsertRequest request)
+        {
+            // provjeri postoji li već schedule za ovog tutora
+            var schedule = await _context
+                .Schedules.Include(s => s.AvailableDays)
+                .FirstOrDefaultAsync(s => s.TutorId == request.TutorId);
+
+            if (schedule == null)
+            {
+                schedule = new TutorSchedule
+                {
+                    TutorId = request.TutorId,
+                    Duration = request.Duration,
+                    Price = request.Price,
+                    AvailableDays = request
+                        .AvailableDays.Select(d => new AvailableDay
+                        {
+                            DayOfWeek = d.DayOfWeek,
+                            StartTime = d.StartTime,
+                            EndTime = d.EndTime,
+                        })
+                        .ToList(),
+                };
+
+                _context.Schedules.Add(schedule);
+            }
+            else
+            {
+                // update postojećeg
+                schedule.Duration = request.Duration;
+                schedule.Price = request.Price;
+
+                // pobriši stare dane i dodaj nove
+                _context.AvailableDays.RemoveRange(schedule.AvailableDays);
+
+                schedule.AvailableDays = request
+                    .AvailableDays.Select(d => new AvailableDay
+                    {
+                        DayOfWeek = d.DayOfWeek,
+                        StartTime = d.StartTime,
+                        EndTime = d.EndTime,
+                    })
+                    .ToList();
+            }
+
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<ScheduleResponse>(schedule);
         }
     }
 }

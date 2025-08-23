@@ -187,10 +187,13 @@ namespace Services.Services
             return session;
         }
 
-        public async Task<TutorSessionResponse[]> GetTutorSessionsAsync()
+        public async Task<TutorSessionResponse[]?> GetTutorSessionsAsync()
         {
+            var schedule = await _context.Schedules.FirstOrDefaultAsync(s => s.TutorId == 1);
+            if (schedule == null)
+                return null;
             var bookedSessions = await _context
-                .StudentTutorSessions.Where(sts => sts.TutorId == UserId.Value)
+                .StudentTutorSessions.Where(sts => sts.TutorId == 1)
                 .Select(s => new TutorSessionResponse
                 {
                     Language = s.Language.Name,

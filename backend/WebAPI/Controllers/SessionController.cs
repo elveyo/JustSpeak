@@ -9,7 +9,6 @@ using Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
-    [Authorize]
     public class SessionController
         : BaseCRUDController<
             SessionResponse,
@@ -56,9 +55,11 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet("tutor")]
-        public async Task<TutorSessionResponse[]> GetTutorSessions()
+        public async Task<TutorSessionResponse[]?> GetTutorSessions()
         {
-            return await _sessionService.GetTutorSessionsAsync();
+            var sessions = await _sessionService.GetTutorSessionsAsync();
+
+            return sessions;
         }
 
         [HttpGet("student")]

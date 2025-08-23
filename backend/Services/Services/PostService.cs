@@ -88,5 +88,57 @@ namespace Services.Services
             await _context.Likes.AddAsync(newLike);
             await _context.SaveChangesAsync();
         }
+
+        public async Task AddCommentToPost(int postId, CommentUpsertRequest request)
+        {
+            //int? currentUserId = _userContextService.GetUserId();
+
+            var post = await _context.Posts.FindAsync(postId);
+            if (post == null)
+                throw new Exception("Post not found.");
+
+            var comment = new Comment
+            {
+                Content = request.Content,
+                CreatedAt = DateTime.UtcNow,
+                AuthorId = 1,
+                PostId = postId,
+            };
+
+            await _context.Comments.AddAsync(comment);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<PagedResult<CommentResponse>> GetCommentsForPost(
+            int postId,
+            BaseSearchObject search
+        )
+        {
+            var query = _context
+                .Comments.Where(c => c.PostId == postId)
+                .OrderByDescending(c => c.CreatedAt)
+                .AsQueryable();
+
+            int page = search.Page ?? 0;
+            int pageSize = search.PageSize ?? 10;
+            int skip = page * pageSize;
+
+            var totalCount = await query.CountAsync();
+
+            var comments = await query
+                .Skip(skip)
+                .Take(pageSize)
+                .Select(c => new CommentResponse
+                {
+                    Id = c.Id,
+                    Content = c.Content,
+                    CreatedAt = c.CreatedAt,
+                    AuthorId = c.AuthorId,
+                    AuthorName = c.Author.FullName,
+                })
+                .ToListAsync();
+
+            return new PagedResult<CommentResponse> { Items = comments, TotalCount = totalCount };
+        }
     }
 }

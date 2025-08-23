@@ -51,7 +51,7 @@ class SessionProvider extends BaseProvider<Session> {
   }
 
   Future<String> getToken(String channelName) async {
-    final userId = AuthService().userId;
+    final userId = AuthService().user!.id;
     Uri uri = buildUri("/generate-token");
     print(uri);
     var headers = createHeaders();

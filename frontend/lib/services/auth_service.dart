@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:frontend/models/user.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
@@ -33,10 +34,39 @@ class AuthService {
   }
 
   // Get current user id
-  int? get userId => int.tryParse(
-    _decoded?['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ??
-        '',
-  );
+  User? get user {
+    if (_decoded == null) return null;
+    try {
+      final id = int.tryParse(
+        _decoded?['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ??
+            '',
+      );
+      final firstName =
+          _decoded?['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] ??
+          '';
+      final lastName =
+          _decoded?['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] ??
+          '';
+      final role =
+          _decoded?['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
+          '';
+      final imageUrl = _decoded?['imageUrl'] ?? '';
+
+      if (id == null || firstName.isEmpty || lastName.isEmpty || role.isEmpty) {
+        return null;
+      }
+
+      return User(
+        id: id,
+        firstName: firstName,
+        lastName: lastName,
+        role: role,
+        imageUrl: imageUrl,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
 
   // Get raw JWT
   String? get token => _jwt;

@@ -19,10 +19,8 @@ namespace Services.Database
         public int TutorScheduleId { get; set; }
         public TutorSchedule TutorSchedule { get; set; } = null!;
 
-        // Koji dan u sedmici (0=Sunday, 1=Monday, ... 6=Saturday)
         public DayOfWeek DayOfWeek { get; set; }
 
-        // Vrijeme od - do
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
 
@@ -32,8 +30,6 @@ namespace Services.Database
     public class AvailableSlot
     {
         public int Id { get; set; }
-        public int AvailableDayId { get; set; }
-        public AvailableDay AvailableDay { get; set; } = null!;
 
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }

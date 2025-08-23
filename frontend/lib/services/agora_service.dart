@@ -24,12 +24,10 @@ class AgoraService {
   }
 
   Future<void> joinChannel(String channelName, String token) async {
-    print("TOKEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEN");
-    print(AuthService().userId);
     await _engine!.joinChannel(
       token: token,
       channelId: AgoraConfig.defaultChannelName,
-      uid: AuthService().userId!,
+      uid: AuthService().user!.id,
       options: const ChannelMediaOptions(),
     );
   }

@@ -3,6 +3,8 @@ import 'package:frontend/models/booked_session.dart';
 import 'package:frontend/models/calendar_slot.dart';
 import 'package:frontend/models/tutor_schedule.dart';
 import 'package:frontend/providers/session_provider.dart';
+import 'package:frontend/screens/add_schedule_screen.dart';
+import 'package:frontend/widgets/calendar.dart';
 import 'package:frontend/widgets/session_card.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -19,6 +21,7 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay = DateTime.now();
   List<BookedSession>? _bookedSessions;
+  Schedule? tutorSchedule;
 
   @override
   void initState() {
@@ -34,9 +37,7 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
 
     try {
       final bookedSessions = await sessionProvider.getTutorSessions();
-      for (var session in bookedSessions) {
-        print(session.date);
-      }
+
       setState(() {
         _bookedSessions = bookedSessions;
       });
@@ -48,11 +49,47 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
     return MasterScreen(
       title: 'Calendar',
       child: FutureBuilder<void>(
-        future: _bookedSessions == null ? _getTutorSessions() : null,
+        future: _bookedSessions == [] ? _getTutorSessions() : null,
         builder: (context, snapshot) {
-          // Show loading indicator while fetching sessions
           if (_bookedSessions == null) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "You need to set your schedule first.",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: 180,
+                    height: 44,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ManageScheduleScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Set Schedule",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           // Helper: group sessions by date (yyyy-MM-dd)
@@ -71,77 +108,22 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
           return SingleChildScrollView(
             child: Column(
               children: [
-                TableCalendar<BookedSession>(
+                Calendar<BookedSession>(
                   firstDay: DateTime.now(),
                   lastDay: DateTime.now().add(const Duration(days: 30)),
-                  focusedDay: _focusedDay,
-                  rowHeight: 35,
-                  headerStyle: HeaderStyle(
-                    formatButtonVisible: false,
-                    titleCentered: true,
-                  ),
-                  selectedDayPredicate:
-                      (day) =>
-                          _selectedDay != null && isSameDay(_selectedDay, day),
+                  initialFocusedDay: _focusedDay,
+                  events: _bookedSessions!, // lista svih booked sesija
+                  getEventsForDay: _getSessionsForDay,
                   onDaySelected: (selectedDay, focusedDay) {
                     setState(() {
                       _selectedDay = selectedDay;
                       _focusedDay = focusedDay;
                     });
                   },
-                  eventLoader: (day) => _getSessionsForDay(day),
-                  calendarBuilders: CalendarBuilders(
-                    defaultBuilder: (context, day, focusedDay) {
-                      final hasEvent = _getSessionsForDay(day).isNotEmpty;
-                      return Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color:
-                              isSameDay(day, _selectedDay)
-                                  ? Theme.of(context).colorScheme.secondary
-                                  : hasEvent
-                                  ? Theme.of(
-                                    context,
-                                  ).primaryColor.withOpacity(1)
-                                  : Colors.grey.withOpacity(0.3),
-                          shape: BoxShape.circle,
-                          border:
-                              hasEvent
-                                  ? Border.all(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    width: 1,
-                                  )
-                                  : null,
-                        ),
-                        child: Text(
-                          day.day.toString(),
-                          style: TextStyle(
-                            color: hasEvent ? Colors.white : Colors.white70,
-                            fontWeight:
-                                hasEvent ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                      );
-                    },
-                    markerBuilder: (context, day, events) {
-                      if (events.isNotEmpty) {
-                        return Positioned(
-                          bottom: 3,
-                          child: Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.secondary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        );
-                      }
-                      return null;
-                    },
-                  ),
+                  selectedColor: Theme.of(context).colorScheme.secondary,
+                  eventColor: Theme.of(context).primaryColor,
                 ),
+
                 const SizedBox(height: 20),
                 if (_selectedDay == null)
                   const Center(child: Text('Select a day'))
