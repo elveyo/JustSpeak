@@ -4,10 +4,10 @@ namespace Services.Database
     {
         public int Id { get; set; }
         public string Name { get; set; } = String.Empty;
-        public String ImageUrl { get; set; } = String.Empty;
+        public string ImageUrl { get; set; } = String.Empty;
         public int TutorId { get; set; }
         public Tutor Tutor { get; set; } = null!;
+        public int LanguageId { get; set; }
+        public Language Language { get; set; } = null!;
     }
 }
-
-

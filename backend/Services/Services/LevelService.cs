@@ -11,28 +11,28 @@ using Services.Services;
 
 namespace Services.Services
 {
-    public class LanguageLevelService
+    public class LevelService
         : BaseCRUDService<
-            LanguageLevelResponse,
+            LevelResponse,
             BaseSearchObject,
-            LanguageLevel,
-            LanguageLevelUpsertRequest,
-            LanguageLevelUpsertRequest
+            Level,
+            LevelUpsertRequest,
+            LevelUpsertRequest
         >,
-            ILanguageLevelService
+            ILevelService
     {
         private readonly ApplicationDbContext _context;
 
-        public LanguageLevelService(ApplicationDbContext context, IMapper mapper)
+        public LevelService(ApplicationDbContext context, IMapper mapper)
             : base(context, mapper)
         {
             _context = context;
         }
 
-        public async Task<List<LanguageLevelResponse>> GetAllLanguageLevelsAsync()
+        public async Task<List<LevelResponse>> GetAllLanguageLevelsAsync()
         {
-            var languageLevels = await _context
-                .LanguageLevels.Select(ll => new LanguageLevelResponse
+            var levels = await _context
+                .Levels.Select(ll => new LevelResponse
                 {
                     Id = ll.Id,
                     Name = ll.Name,
@@ -41,7 +41,7 @@ namespace Services.Services
                 })
                 .ToListAsync();
 
-            return languageLevels;
+            return levels;
         }
     }
 }

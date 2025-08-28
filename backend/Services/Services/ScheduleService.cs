@@ -21,12 +21,19 @@ namespace Services
         >,
             IScheduleService
     {
+        private IUserContextService _userContextService;
+
         public ScheduleService(
             ApplicationDbContext context,
             IUserContextService userContextService,
             IMapper mapper
         )
-            : base(context, mapper) { }
+            : base(context, mapper)
+        {
+            _userContextService = userContextService;
+        }
+
+        private int? userId => _userContextService.GetUserId();
 
         protected override async Task BeforeUpdate(
             TutorSchedule entity,
@@ -42,11 +49,10 @@ namespace Services
 
         public async Task<ScheduleResponse?> GetAsync(BaseSearchObject search)
         {
-            int tutorId = 1;
             // Učitamo schedule tutora sa dostupnim danima
             var schedule = await _context
                 .Schedules.Include(s => s.AvailableDays)
-                .FirstOrDefaultAsync(s => s.TutorId == tutorId);
+                .FirstOrDefaultAsync(s => s.TutorId == 8);
 
             if (schedule == null)
                 return null;
@@ -112,13 +118,13 @@ namespace Services
             // provjeri postoji li već schedule za ovog tutora
             var schedule = await _context
                 .Schedules.Include(s => s.AvailableDays)
-                .FirstOrDefaultAsync(s => s.TutorId == request.TutorId);
+                .FirstOrDefaultAsync(s => s.TutorId == userId.Value);
 
             if (schedule == null)
             {
                 schedule = new TutorSchedule
                 {
-                    TutorId = request.TutorId,
+                    TutorId = userId.Value,
                     Duration = request.Duration,
                     Price = request.Price,
                     AvailableDays = request

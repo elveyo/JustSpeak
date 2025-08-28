@@ -30,36 +30,5 @@ namespace WebAPI.Controllers
         {
             return _scheduleService.GetAsync(search);
         }
-
-        /*
-                [HttpPost("tutor-schedule")]
-                public async Task<IActionResult> UpsertTutorSchedule([FromBody] Models.Requests.Services.DTO.TutorScheduleUpsertRequest request, [FromServices] ITutorScheduleService tutorScheduleService)
-                {
-                    try
-                    {
-                        var result = await tutorScheduleService.UpsertTutorScheduleAsync(request);
-                        return Ok(result);
-                    }
-                    catch (Exception ex)
-                    {
-                        return BadRequest(ex.Message);
-                    }
-                }
-        
-                [HttpGet("tutor-schedule")]
-                public async Task<IActionResult> GetTutorSchedule([FromQuery] int tutorId, [FromServices] ITutorScheduleService tutorScheduleService)
-                {
-                    try
-                    {
-                        var result = await tutorScheduleService.GetTutorScheduleByTutorIdAsync(tutorId);
-                        if (result == null)
-                            return NotFound();
-                        return Ok(result);
-                    }
-                    catch (Exception ex)
-                    {
-                        return BadRequest(ex.Message);
-                    }
-                } */
     }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/session_screen.dart';
 import 'package:frontend/screens/tutor_calendar_screen.dart';
+import 'package:frontend/screens/tutor_profile_screen.dart';
 
 class MasterScreen extends StatelessWidget {
   const MasterScreen({super.key, required this.child, required this.title});
@@ -71,7 +72,10 @@ class MasterScreen extends StatelessWidget {
               break;
             case 3:
               if (title != 'Profile') {
-                Navigator.pushReplacement(context, _fadeTo(const FeedScreen()));
+                Navigator.pushReplacement(
+                  context,
+                  _fadeTo(const TutorProfileScreen(id: 1)),
+                );
               }
               break;
           }

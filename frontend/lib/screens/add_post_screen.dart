@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:frontend/providers/post_provider.dart';
 import 'package:frontend/screens/feed_screen.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -41,7 +42,7 @@ class _UploadPostDialogState extends State<CreatePostScreen> {
         "title": "Probajemo",
         "content": values['content'],
         "imageUrl": base64Image ?? '',
-        "authorId": 4,
+        "authorId": AuthService().user?.id,
       };
       try {
         final postProvider = Provider.of<PostProvider>(context, listen: false);

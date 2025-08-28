@@ -4,11 +4,13 @@ part 'calendar_slot.g.dart';
 
 @JsonSerializable()
 class CalendarSlot {
+  final DateTime date;
   final DateTime start;
   final DateTime end;
   final bool isBooked;
 
   CalendarSlot({
+    required this.date,
     required this.start,
     required this.end,
     required this.isBooked,

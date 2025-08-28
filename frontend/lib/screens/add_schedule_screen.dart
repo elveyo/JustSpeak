@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:frontend/providers/schedule_provider.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -49,7 +50,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
 
     try {
       final request = {
-        "tutorId": 1,
+        "tutorId": AuthService().user?.id,
         "availableDays":
             selectedDays.map((day) {
               final dayMap = {

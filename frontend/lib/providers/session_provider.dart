@@ -20,7 +20,6 @@ class SessionProvider extends BaseProvider<Session> {
   Future<List<BookedSession>> getTutorSessions() async {
     Uri uri = buildUri("/tutor");
 
-    print(uri);
     var headers = createHeaders();
     final response = await http.get(uri, headers: headers);
 
@@ -48,6 +47,21 @@ class SessionProvider extends BaseProvider<Session> {
     final List<BookedSession> data =
         jsonList.map((item) => BookedSession.fromJson(item)).toList();
     return data;
+  }
+
+  Future<void> bookSession(dynamic request) async {
+    Uri uri = buildUri("/book-session");
+    var headers = createHeaders();
+    var jsonRequest = jsonEncode(request);
+    print(jsonRequest);
+    var response = await http.post(uri, headers: headers, body: jsonRequest);
+    print(response.body);
+    if (isValidResponse(response)) {
+      var data = jsonDecode(response.body);
+      print(data);
+    } else {
+      throw new Exception("Unknown error");
+    }
   }
 
   Future<String> getToken(String channelName) async {

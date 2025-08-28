@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Services.Database;
 
@@ -11,9 +12,11 @@ using Services.Database;
 namespace Services.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250827153153_ImageAdded")]
+    partial class ImageAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -637,10 +640,6 @@ namespace Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Bio")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -705,8 +704,7 @@ namespace Services.Migrations
                         new
                         {
                             Id = 1,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2128),
+                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(4938),
                             Email = "admin@justspeak.com",
                             FirstName = "Admin",
                             ImageUrl = "",
@@ -729,8 +727,7 @@ namespace Services.Migrations
                         new
                         {
                             Id = 4,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2190),
+                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(5014),
                             Email = "hans@justspeak.com",
                             FirstName = "Hans",
                             ImageUrl = "",
@@ -744,8 +741,7 @@ namespace Services.Migrations
                         new
                         {
                             Id = 5,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2193),
+                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(5018),
                             Email = "yuki@justspeak.com",
                             FirstName = "Yuki",
                             ImageUrl = "",
@@ -762,14 +758,17 @@ namespace Services.Migrations
                 {
                     b.HasBaseType("Services.Database.User");
 
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasDiscriminator().HasValue("Tutor");
 
                     b.HasData(
                         new
                         {
                             Id = 2,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2161),
+                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(4975),
                             Email = "maria@justspeak.com",
                             FirstName = "Maria",
                             ImageUrl = "",
@@ -778,13 +777,13 @@ namespace Services.Migrations
                             LastName = "Garcia",
                             PasswordHash = "hashed_password",
                             PasswordSalt = "salt",
-                            RoleId = 2
+                            RoleId = 2,
+                            Bio = ""
                         },
                         new
                         {
                             Id = 3,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2164),
+                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(4979),
                             Email = "jean@justspeak.com",
                             FirstName = "Jean",
                             ImageUrl = "",
@@ -793,7 +792,8 @@ namespace Services.Migrations
                             LastName = "Dubois",
                             PasswordHash = "hashed_password",
                             PasswordSalt = "salt",
-                            RoleId = 2
+                            RoleId = 2,
+                            Bio = ""
                         });
                 });
 

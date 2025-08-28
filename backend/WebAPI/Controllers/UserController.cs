@@ -22,31 +22,43 @@ namespace WebAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
         {
-            try
-            {
-                var user = await _userService.AuthenticateAsync(request);
-                if (user == null)
-                    return Unauthorized();
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var user = await _userService.AuthenticateAsync(request);
+
+            return Ok(user);
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserInsertRequest request)
+        [HttpPost("register-tutor")]
+        public async Task<IActionResult> RegisterTutor([FromBody] TutorUpsertRequest request)
         {
-            try
-            {
-                var user = await _userService.CreateAsync(request);
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var tutor = await _userService.InsertTutorDataAsync(request);
+            return Ok(tutor);
+        }
+
+        [HttpPost("register-student")]
+        public async Task<IActionResult> RegisterStudent([FromBody] StudentUpsertRequest request)
+        {
+            var student = await _userService.InsertStudentDataAsync(request);
+            return Ok(student);
+        }
+
+        [HttpGet("tutor-profile/{id}")]
+        public async Task<IActionResult> GetTutorProfile(int id)
+        {
+            var tutorProfile = await _userService.GetTutorDataAsync(id);
+            if (tutorProfile == null)
+                return NotFound();
+
+            return Ok(tutorProfile);
+        }
+
+        [HttpGet("student-profile/{id}")]
+        public async Task<IActionResult> GetStudentProfile(int id)
+        {
+            var studentProfile = await _userService.GetStudentDataAsync(id);
+            if (studentProfile == null)
+                return NotFound();
+
+            return Ok(studentProfile);
         }
     }
 }

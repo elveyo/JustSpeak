@@ -23,16 +23,5 @@ namespace Services.Database
 
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
-
-        public List<AvailableSlot> Slots { get; set; } = new List<AvailableSlot>();
-    }
-
-    public class AvailableSlot
-    {
-        public int Id { get; set; }
-
-        public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
-        public bool IsBooked { get; set; } = false;
     }
 }

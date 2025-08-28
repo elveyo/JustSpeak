@@ -8,7 +8,8 @@ namespace Services.Database
 {
     public class Tutor : User
     {
+        public string Bio { get; set; } = string.Empty;
         public ICollection<TutorLanguage> TutorLanguages { get; set; } = new List<TutorLanguage>();
-        public ICollection<Certificate> Certificates  { get; set; } = new List<Certificate>();
+        public ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
     }
 }

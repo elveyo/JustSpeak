@@ -59,9 +59,9 @@ namespace Services.Database
 
             // Seed LanguageLevels
             modelBuilder
-                .Entity<LanguageLevel>()
+                .Entity<Level>()
                 .HasData(
-                    new LanguageLevel
+                    new Level
                     {
                         Id = 1,
                         Name = "Wanderer",
@@ -69,7 +69,7 @@ namespace Services.Database
                             "Embarking on the language journey, learning greetings and essential words.",
                         MaxPoints = 100,
                     },
-                    new LanguageLevel
+                    new Level
                     {
                         Id = 2,
                         Name = "Explorer",
@@ -77,7 +77,7 @@ namespace Services.Database
                             "Navigating simple conversations and discovering basic grammar structures.",
                         MaxPoints = 200,
                     },
-                    new LanguageLevel
+                    new Level
                     {
                         Id = 3,
                         Name = "Storyteller",
@@ -85,14 +85,14 @@ namespace Services.Database
                             "Confidently sharing stories and engaging in daily discussions.",
                         MaxPoints = 400,
                     },
-                    new LanguageLevel
+                    new Level
                     {
                         Id = 4,
                         Name = "Sage",
                         Description = "Mastering complex topics, idioms, and nuanced expressions.",
                         MaxPoints = 600,
                     },
-                    new LanguageLevel
+                    new Level
                     {
                         Id = 5,
                         Name = "Polyglot",
@@ -269,7 +269,7 @@ namespace Services.Database
         public DbSet<AvailableDay> AvailableDays { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Language> Languages { get; set; }
-        public DbSet<LanguageLevel> LanguageLevels { get; set; }
+        public DbSet<Level> Levels { get; set; }
         public DbSet<Session> Sessions { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<StudentLanguage> StudentLanguages { get; set; }

@@ -35,7 +35,7 @@ builder.Services.AddTransient<IPostService, PostService>();
 builder.Services.AddTransient<IScheduleService, ScheduleService>();
 builder.Services.AddTransient<ISessionService, SessionService>();
 builder.Services.AddTransient<ILanguageService, LanguageService>();
-builder.Services.AddTransient<ILanguageLevelService, LanguageLevelService>();
+builder.Services.AddTransient<ILevelService, LevelService>();
 
 // Add SignalR
 builder.Services.AddSignalR();
