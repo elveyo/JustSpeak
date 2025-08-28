@@ -7,5 +7,6 @@ namespace Models.Responses
         public DateTime CreatedAt { get; set; }
         public int AuthorId { get; set; }
         public string? AuthorName { get; set; }
+        public string AuthorImage { get; set; }
     }
 }

@@ -83,7 +83,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 .toList(),
       };
 
-      print(postData);
       try {
         final sessionProvider = Provider.of<SessionProvider>(
           context,

@@ -1,31 +1,44 @@
-using Microsoft.EntityFrameworkCore;
-using Services.Database;
-using Services.Interfaces;
-using Models.Requests;
-using Models.Responses;
-using Model.SearchObjects;
-using MapsterMapper;
+using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Http;
-using Model.Responses;
 using AgoraNET;
+using MapsterMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Model.Responses;
+using Model.SearchObjects;
+using Models.Requests;
+using Models.Responses;
 using Models.SearchObjects;
-
+using Services.Database;
+using Services.Interfaces;
 
 namespace Services.Services
 {
-    public class SessionService : BaseCRUDService<SessionResponse, BaseSearchObject, Session, SessionUpsertRequest, SessionUpsertRequest>, ISessionService
+    public class SessionService
+        : BaseCRUDService<
+            SessionResponse,
+            BaseSearchObject,
+            Session,
+            SessionUpsertRequest,
+            SessionUpsertRequest
+        >,
+            ISessionService
     {
         private readonly IConfiguration _configuration;
         private readonly IUserContextService _userContextService;
         private readonly string _agoraAppId;
         private readonly string _agoraAppCertificate;
 
-        public SessionService(ApplicationDbContext context, IMapper mapper, IConfiguration configuration, IUserContextService userContextService) : base(context, mapper)
+        public SessionService(
+            ApplicationDbContext context,
+            IMapper mapper,
+            IConfiguration configuration,
+            IUserContextService userContextService
+        )
+            : base(context, mapper)
         {
             _configuration = configuration;
             _agoraAppId = _configuration["Agora:AppId"] ?? "";
@@ -33,6 +46,7 @@ namespace Services.Services
             _userContextService = userContextService;
         }
 
+        private int? UserId => _userContextService.GetUserId();
 
         public override async Task<SessionResponse> CreateAsync(SessionUpsertRequest request)
         {
@@ -44,17 +58,15 @@ namespace Services.Services
                 LevelId = request.LevelId,
                 Duration = request.Duration,
                 ChannelName = request.ChannelName,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
             };
 
             _context.Sessions.Add(session);
-            var tags = await _context.Tags
-                .Where(t => request.Tags.Contains(t.Id))
-                .ToListAsync();
+            var tags = await _context.Tags.Where(t => request.Tags.Contains(t.Id)).ToListAsync();
             session.Tags = tags;
             await _context.SaveChangesAsync();
-           await _context.Entry(session).Reference(s => s.Language).LoadAsync();
-           await _context.Entry(session).Reference(s => s.Level).LoadAsync();
+            await _context.Entry(session).Reference(s => s.Language).LoadAsync();
+            await _context.Entry(session).Reference(s => s.Level).LoadAsync();
             return new SessionResponse
             {
                 Id = session.Id,
@@ -65,12 +77,14 @@ namespace Services.Services
                 CreatedAt = session.CreatedAt,
                 ChannelName = session.ChannelName,
                 Token = "agoraToken",
-                Tags = session.Tags.Select(tag => new TagResponse
-                {
-                    Id = tag.Id,
-                    Name = tag.Name,
-                    Color = tag.Color
-                }).ToList()
+                Tags = session
+                    .Tags.Select(tag => new TagResponse
+                    {
+                        Id = tag.Id,
+                        Name = tag.Name,
+                        Color = tag.Color,
+                    })
+                    .ToList(),
             };
         }
 
@@ -103,41 +117,120 @@ namespace Services.Services
                     Duration = s.Duration,
                     CreatedAt = s.CreatedAt,
                     ChannelName = s.ChannelName,
-                           Tags = s.Tags.Select(tag => new TagResponse
-                {
-                    Id = tag.Id,
-                    Name = tag.Name,
-                    Color = tag.Color
-                }).ToList()
-                }).ToListAsync();
+                    Tags = s
+                        .Tags.Select(tag => new TagResponse
+                        {
+                            Id = tag.Id,
+                            Name = tag.Name,
+                            Color = tag.Color,
+                        })
+                        .ToList(),
+                })
+                .ToListAsync();
 
-            return new PagedResult<SessionResponse>
-            {
-                Items = sessions,
-                TotalCount = totalCount
-            };
+            return new PagedResult<SessionResponse> { Items = sessions, TotalCount = totalCount };
         }
 
-    
-        
-
-
-
-public string GenerateAgoraToken(string channelName, int userId)
-{
-
-
-    var token = new RtcTokenBuilder();
-    // Set expireTime to one day (24 hours) from now as an absolute Unix timestamp
-    uint oneDayExpireTime = (uint)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 24 * 60 * 60);
-    return token.BuildToken(_agoraAppId, _agoraAppCertificate, channelName, (uint)userId, AgoraNET.RtcUserRole.Publisher, oneDayExpireTime);
-}
-
-
-
-public async Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query)
+        public async Task<StudentTutorSession> BookSessionAsync(BookSessionRequest dto)
         {
- var tagsQuery = _context.Tags.AsQueryable();
+            //!!!IMPROTANT
+            //ADd valdiation that user cant make session e.g at 14:10, if available session is at 14:00 (attacker);
+
+            // 1. Dohvati tutorov schedule
+            var schedule = await _context
+                .Schedules.Include(s => s.AvailableDays)
+                .FirstOrDefaultAsync(s => s.TutorId == dto.TutorId);
+
+            if (schedule == null)
+                throw new Exception("Tutor schedule not found.");
+
+            // 2. Provjeri da li datum i vrijeme odgovara tutorovoj dostupnosti
+            var dayRule = schedule.AvailableDays.FirstOrDefault(d =>
+                d.DayOfWeek == dto.StartTime.DayOfWeek
+            );
+            if (dayRule == null)
+                throw new Exception("Tutor is not available on this day.");
+
+            var duration = TimeSpan.FromMinutes(schedule.Duration);
+            var endTime = dto.StartTime + duration;
+
+            var slotStartTime = dayRule.StartTime;
+            var slotEndTime = dayRule.EndTime;
+
+            if (dto.StartTime.TimeOfDay < slotStartTime || endTime.TimeOfDay > slotEndTime)
+                throw new Exception("Selected time is outside tutor's available hours.");
+
+            // 3. Provjeri da li je slot već booked
+            var isTaken = await _context.StudentTutorSessions.AnyAsync(s =>
+                s.TutorId == dto.TutorId && s.StartTime == dto.StartTime && s.IsActive
+            );
+
+            if (isTaken)
+                throw new Exception("Selected slot is already booked.");
+
+            // 4. Kreiraj novu sesiju
+            var session = new StudentTutorSession
+            {
+                TutorId = dto.TutorId,
+                StudentId = dto.StudentId,
+                LanguageId = dto.LanguageId,
+                LevelId = dto.LevelId,
+                StartTime = dto.StartTime,
+                EndTime = endTime,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            _context.StudentTutorSessions.Add(session);
+            await _context.SaveChangesAsync();
+
+            return session;
+        }
+
+        public async Task<TutorSessionResponse[]?> GetTutorSessionsAsync()
+        {
+            var schedule = await _context.Schedules.FirstOrDefaultAsync(s =>
+                s.TutorId == UserId.Value
+            );
+            if (schedule == null)
+                return null;
+            var bookedSessions = await _context
+                .StudentTutorSessions.Where(sts => sts.TutorId == UserId.Value)
+                .Select(s => new TutorSessionResponse
+                {
+                    Language = s.Language.Name,
+                    Level = s.Level.Name,
+                    UserName = s.Student.FullName,
+                    Date = s.StartTime.Date,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                })
+                .ToArrayAsync();
+
+            return bookedSessions;
+        }
+
+        public async Task<StudentSessionResponse[]> GetStudentSessionsAsync()
+        {
+            var bookedSessions = await _context
+                .StudentTutorSessions.Where(sts => sts.StudentId == UserId.Value)
+                .Select(s => new StudentSessionResponse
+                {
+                    Language = s.Language.Name,
+                    Level = s.Level.Name,
+                    UserName = s.Student.FullName,
+                    Date = s.StartTime.Date,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                })
+                .ToArrayAsync();
+
+            return bookedSessions;
+        }
+
+        public async Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query)
+        {
+            var tagsQuery = _context.Tags.AsQueryable();
 
             int page = query.Page ?? 0;
             int pageSize = query.PageSize ?? 10;
@@ -151,19 +244,33 @@ public async Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query)
                 {
                     Id = tag.Id,
                     Name = tag.Name,
-                    Color = tag.Color
+                    Color = tag.Color,
                 })
                 .ToListAsync();
 
-            return new PagedResult<TagResponse>
-            {
-                Items = tags,
-                TotalCount = totalCount
-            };       
-             }
+            return new PagedResult<TagResponse> { Items = tags, TotalCount = totalCount };
+        }
+
+        public string GenerateAgoraToken(string channelName, int userId)
+        {
+            var token = new RtcTokenBuilder();
+            // Set expireTime to one day (24 hours) from now as an absolute Unix timestamp
+            uint oneDayExpireTime = (uint)(
+                DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 24 * 60 * 60
+            );
+            return token.BuildToken(
+                _agoraAppId,
+                _agoraAppCertificate,
+                channelName,
+                (uint)userId,
+                AgoraNET.RtcUserRole.Publisher,
+                oneDayExpireTime
+            );
+        }
     }
 
     // Agora Token Builder Implementation
+
     public class AgoraTokenBuilder
     {
         public const int PrivilegeJoinChannel = 1;
@@ -199,7 +306,7 @@ public async Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query)
                 appid = _appId,
                 channel = _channelName,
                 uid = _uid,
-                privileges = _privileges
+                privileges = _privileges,
             };
 
             var messageJson = System.Text.Json.JsonSerializer.Serialize(message);
@@ -220,6 +327,4 @@ public async Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query)
             return hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
         }
     }
-
-   
-} 
+}

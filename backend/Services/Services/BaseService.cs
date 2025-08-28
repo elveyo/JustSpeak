@@ -1,17 +1,20 @@
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using System.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using MapsterMapper;
-using Services.Database;
-using Model.SearchObjects;
+using Microsoft.EntityFrameworkCore;
 using Model.Responses;
+using Model.SearchObjects;
+using Services.Database;
+using Services.Interfaces;
 
 namespace Services.Services
 {
-    public abstract class BaseService<T, TSearch, TEntity> : IService<T, TSearch> where T : class where TSearch : BaseSearchObject where TEntity : class
+    public abstract class BaseService<T, TSearch, TEntity> : IService<T, TSearch>
+        where T : class
+        where TSearch : BaseSearchObject
+        where TEntity : class
     {
         private readonly ApplicationDbContext _context;
         protected readonly IMapper _mapper;
@@ -22,32 +25,32 @@ namespace Services.Services
             _mapper = mapper;
         }
 
-        public virtual async Task<PagedResult<T>> GetAsync(TSearch search)
+        public virtual async Task<PagedResult<T>> GetAsync(TSearch? search)
         {
             var query = _context.Set<TEntity>().AsQueryable();
             query = ApplyFilter(query, search);
 
-           query = ApplyPagination(query, search);
+            query = ApplyPagination(query, search);
 
             var list = await query.ToListAsync();
             return new PagedResult<T>
             {
                 Items = list.Select(MapToResponse).ToList(),
-                TotalCount = await query.CountAsync()
+                TotalCount = await query.CountAsync(),
             };
         }
 
-        protected  IQueryable<TEntity> ApplyPagination(IQueryable<TEntity> query, TSearch search){
-            
-                if (search.Page.HasValue)
-                {
-                    query = query.Skip(search.Page.Value * search.PageSize.Value);
-                }
-                if (search.PageSize.HasValue)
-                {
-                    query = query.Take(search.PageSize.Value);
-                }
-            
+        protected IQueryable<TEntity> ApplyPagination(IQueryable<TEntity> query, TSearch search)
+        {
+            if (search.Page.HasValue)
+            {
+                query = query.Skip(search.Page.Value * search.PageSize.Value);
+            }
+            if (search.PageSize.HasValue)
+            {
+                query = query.Take(search.PageSize.Value);
+            }
+
             return query;
         }
 
@@ -69,6 +72,5 @@ namespace Services.Services
         {
             return _mapper.Map<T>(entity);
         }
-
     }
 }

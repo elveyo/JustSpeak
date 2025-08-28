@@ -6,21 +6,23 @@ using Services;
 
 namespace WebAPI.Controllers
 {
-      
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     //[Authorize]
     //[Authorize]
-    public class BaseController<T, TSearch> : ControllerBase where T : class where TSearch : BaseSearchObject, new()
+    public class BaseController<T, TSearch> : ControllerBase
+        where T : class
+        where TSearch : BaseSearchObject, new()
     {
         protected readonly IService<T, TSearch> _service;
-        
-        public BaseController(IService<T, TSearch> service) {
+
+        public BaseController(IService<T, TSearch> service)
+        {
             _service = service;
         }
 
         [HttpGet("")]
-        public virtual async Task<PagedResult<T>> Get([FromQuery]TSearch? search = null)
+        public virtual async Task<PagedResult<T>> Get([FromQuery] TSearch? search = null)
         {
             return await _service.GetAsync(search ?? new TSearch());
         }
@@ -31,4 +33,4 @@ namespace WebAPI.Controllers
             return await _service.GetByIdAsync(id);
         }
     }
-    }
+}
