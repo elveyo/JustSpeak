@@ -4,8 +4,14 @@ using Models.Responses;
 
 namespace Services.Interfaces
 {
-    public interface IScheduleService : ICRUDService<ScheduleResponse, BaseSearchObject, ScheduleUpsertRequest, ScheduleUpsertRequest>
+    public interface IScheduleService
+        : ICRUDService<
+            ScheduleResponse,
+            BaseSearchObject,
+            ScheduleUpsertRequest,
+            ScheduleUpsertRequest
+        >
     {
-         
+        new Task<ScheduleResponse> GetAsync(BaseSearchObject query);
     }
 }

@@ -8,7 +8,7 @@ class User {
   final int id;
   final String firstName;
   final String lastName;
-  final Role role;
+  final String role;
   final String imageUrl;
   String get fullName => '$firstName $lastName';
 

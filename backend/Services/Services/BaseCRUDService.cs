@@ -1,26 +1,31 @@
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using System.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using MapsterMapper;
-using Services.Database;
+using Microsoft.EntityFrameworkCore;
 using Model.SearchObjects;
+using Services.Database;
+using Services.Interfaces;
 
 namespace Services.Services
 {
     public abstract class BaseCRUDService<T, TSearch, TEntity, TInsert, TUpdate>
-    : BaseService<T, TSearch, TEntity>, ICRUDService<T, TSearch, TInsert, TUpdate>
-    where T : class where TSearch : BaseSearchObject where TEntity : class, new() where TInsert : class where TUpdate : class
+        : BaseService<T, TSearch, TEntity>,
+            ICRUDService<T, TSearch, TInsert, TUpdate>
+        where T : class
+        where TSearch : BaseSearchObject
+        where TEntity : class, new()
+        where TInsert : class
+        where TUpdate : class
     {
         protected readonly ApplicationDbContext _context;
 
-        public BaseCRUDService(ApplicationDbContext context, IMapper mapper) : base(context, mapper)
+        public BaseCRUDService(ApplicationDbContext context, IMapper mapper)
+            : base(context, mapper)
         {
             _context = context;
         }
-
 
         public virtual async Task<T> CreateAsync(TInsert request)
         {
@@ -34,11 +39,7 @@ namespace Services.Services
             return MapToResponse(entity);
         }
 
-        protected virtual async Task BeforeInsert(TEntity entity, TInsert request)
-        {
-
-        }
-
+        protected virtual async Task BeforeInsert(TEntity entity, TInsert request) { }
 
         protected virtual TEntity MapInsertToEntity(TEntity entity, TInsert request)
         {
@@ -59,10 +60,7 @@ namespace Services.Services
             return MapToResponse(entity);
         }
 
-        protected virtual async Task BeforeUpdate(TEntity entity, TUpdate request)
-        {
-
-        }
+        protected virtual async Task BeforeUpdate(TEntity entity, TUpdate request) { }
 
         protected virtual void MapUpdateToEntity(TEntity entity, TUpdate request)
         {
@@ -82,10 +80,7 @@ namespace Services.Services
             return true;
         }
 
-        protected virtual async Task BeforeDelete(TEntity entity)
-        {
-
-        }
+        protected virtual async Task BeforeDelete(TEntity entity) { }
 
         // private ProductTypeResponse MapToResponse(ProductType productType)
         // {

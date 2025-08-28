@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
+import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/providers/session_provider.dart';
-import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/session_screen.dart';
 import 'package:frontend/providers/post_provider.dart';
 import 'package:frontend/screens/add_post_screen.dart';
 import 'package:frontend/screens/tutor_onboading_screen.dart';
 import 'package:frontend/screens/video_call_screen.dart';
+
 import 'package:frontend/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
-import 'screens/registration_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final authService = AuthService();
   await authService.loadToken();
-  print(authService.decoded);
   runApp(
     MultiProvider(
       providers: [
@@ -33,6 +32,9 @@ void main() async {
         ),
         ChangeNotifierProvider<LanguageLevelProvider>(
           create: (context) => LanguageLevelProvider(),
+        ),
+        ChangeNotifierProvider<ScheduleProvider>(
+          create: (context) => ScheduleProvider(),
         ),
       ],
       child: MyApp(isUserLogged: authService.isLoggedIn),

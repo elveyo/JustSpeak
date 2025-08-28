@@ -9,20 +9,27 @@ using Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
-    public class LanguageLevelController : BaseCRUDController<LanguageLevelResponse, BaseSearchObject, LanguageLevelUpsertRequest, LanguageLevelUpsertRequest>
+    public class LevelController
+        : BaseCRUDController<
+            LevelResponse,
+            BaseSearchObject,
+            LevelUpsertRequest,
+            LevelUpsertRequest
+        >
     {
-        private readonly ILanguageLevelService _languageLevelService;
-        
-        public LanguageLevelController(ILanguageLevelService service) : base(service)
+        private readonly ILevelService _levelService;
+
+        public LevelController(ILevelService service)
+            : base(service)
         {
-            _languageLevelService = service;
+            _levelService = service;
         }
 
         [HttpGet("all")]
         public async Task<ActionResult<List<LanguageLevelResponse>>> GetAllLanguageLevels()
         {
-            var languageLevels = await _languageLevelService.GetAllLanguageLevelsAsync();
+            var languageLevels = await _levelService.GetAllLanguageLevelsAsync();
             return Ok(languageLevels);
         }
     }
-} 
+}

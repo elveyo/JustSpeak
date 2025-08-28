@@ -8,7 +8,7 @@ namespace Services.Database
         public int LanguageId { get; set; }
         public Language Language { get; set; } = null!;
         public int LevelId { get; set; }
-        public LanguageLevel Level { get; set; } = null!;
+        public Level Level { get; set; } = null!;
         public int Experience { get; set; }
         public int PricePerHour { get; set; }
     }

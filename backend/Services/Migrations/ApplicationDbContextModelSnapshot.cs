@@ -61,6 +61,9 @@ namespace Services.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -69,6 +72,8 @@ namespace Services.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
 
                     b.HasIndex("TutorId");
 
@@ -153,7 +158,7 @@ namespace Services.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Services.Database.LanguageLevel", b =>
+            modelBuilder.Entity("Services.Database.Level", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -174,7 +179,7 @@ namespace Services.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LanguageLevels");
+                    b.ToTable("Levels");
 
                     b.HasData(
                         new
@@ -632,6 +637,10 @@ namespace Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -648,6 +657,10 @@ namespace Services.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -692,9 +705,11 @@ namespace Services.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6337),
+                            Bio = "",
+                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2128),
                             Email = "admin@justspeak.com",
                             FirstName = "Admin",
+                            ImageUrl = "",
                             IsActive = true,
                             IsEmailVerified = true,
                             LastName = "User",
@@ -714,9 +729,11 @@ namespace Services.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6426),
+                            Bio = "",
+                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2190),
                             Email = "hans@justspeak.com",
                             FirstName = "Hans",
+                            ImageUrl = "",
                             IsActive = true,
                             IsEmailVerified = true,
                             LastName = "Muller",
@@ -727,9 +744,11 @@ namespace Services.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6430),
+                            Bio = "",
+                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2193),
                             Email = "yuki@justspeak.com",
                             FirstName = "Yuki",
+                            ImageUrl = "",
                             IsActive = true,
                             IsEmailVerified = true,
                             LastName = "Tanaka",
@@ -749,9 +768,11 @@ namespace Services.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6384),
+                            Bio = "",
+                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2161),
                             Email = "maria@justspeak.com",
                             FirstName = "Maria",
+                            ImageUrl = "",
                             IsActive = true,
                             IsEmailVerified = true,
                             LastName = "Garcia",
@@ -762,9 +783,11 @@ namespace Services.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 8, 10, 17, 2, 44, 93, DateTimeKind.Utc).AddTicks(6388),
+                            Bio = "",
+                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2164),
                             Email = "jean@justspeak.com",
                             FirstName = "Jean",
+                            ImageUrl = "",
                             IsActive = true,
                             IsEmailVerified = true,
                             LastName = "Dubois",
@@ -787,11 +810,19 @@ namespace Services.Migrations
 
             modelBuilder.Entity("Services.Database.Certificate", b =>
                 {
+                    b.HasOne("Services.Database.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Services.Database.Tutor", "Tutor")
                         .WithMany("Certificates")
                         .HasForeignKey("TutorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Language");
 
                     b.Navigation("Tutor");
                 });
@@ -891,7 +922,7 @@ namespace Services.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Services.Database.LanguageLevel", "Level")
+                    b.HasOne("Services.Database.Level", "Level")
                         .WithMany()
                         .HasForeignKey("LevelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -910,7 +941,7 @@ namespace Services.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Services.Database.LanguageLevel", "Level")
+                    b.HasOne("Services.Database.Level", "Level")
                         .WithMany()
                         .HasForeignKey("LevelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -937,7 +968,7 @@ namespace Services.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Services.Database.LanguageLevel", "Level")
+                    b.HasOne("Services.Database.Level", "Level")
                         .WithMany()
                         .HasForeignKey("LevelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -979,7 +1010,7 @@ namespace Services.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Services.Database.LanguageLevel", "Level")
+                    b.HasOne("Services.Database.Level", "Level")
                         .WithMany()
                         .HasForeignKey("LevelId")
                         .OnDelete(DeleteBehavior.Cascade)
