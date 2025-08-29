@@ -8,6 +8,9 @@ class User {
   final int id;
   final String firstName;
   final String lastName;
+  String password;
+  String email;
+  String bio;
   final String role;
   final String imageUrl;
   String get fullName => '$firstName $lastName';
@@ -18,6 +21,9 @@ class User {
     required this.lastName,
     required this.role,
     this.imageUrl = '',
+    this.password = '',
+    this.email = '',
+    this.bio = '',
   });
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

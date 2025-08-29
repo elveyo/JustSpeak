@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/models/user.dart';
+import 'package:frontend/screens/tutor_onboading_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -11,12 +13,27 @@ class RegistrationScreen extends StatefulWidget {
   State<RegistrationScreen> createState() => _RegistrationScreenState();
 }
 
+enum UserRole { tutor, student }
+
+// Helper to get roleId from enum
+int getRoleId(UserRole role) {
+  switch (role) {
+    case UserRole.tutor:
+      return 2;
+    case UserRole.student:
+      return 1;
+  }
+}
+
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  UserRole _selectedRole = UserRole.tutor;
+
+  // Enum for user roles
 
   @override
   void dispose() {
@@ -36,36 +53,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }) async {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => FeedScreen()),
+      MaterialPageRoute(
+        builder:
+            (_) => UserOnboardingScreen(
+              user: User(
+                id: 0,
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password,
+                role: roleId == 2 ? 'tutor' : 'student',
+              ),
+            ),
+      ),
     );
-    final String apiUrl = 'http://10.0.2.2:5280/User/register';
-
-    final body = jsonEncode({
-      'firstName': firstName,
-      'lastName': lastName,
-      'email': email,
-      'password': password,
-      'roleId': roleId,
-    });
-
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: body,
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Registracija uspješna!');
-        final data = jsonDecode(response.body);
-        print('Response: $data');
-        // dalje možeš raditi npr. login odmah ili prikazati poruku korisniku
-      } else {
-        print('Greška prilikom registracije: ${response.body}');
-      }
-    } catch (e) {
-      print('Exception: $e');
-    }
   }
 
   @override
@@ -82,8 +83,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 20),
-
                     // Language Animation
                     const SizedBox(height: 20),
                     // Welcome Text
@@ -102,10 +101,129 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
 
-                    const SizedBox(height: 24),
-
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        'Select your role',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.purple[700],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedRole = UserRole.tutor;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color:
+                                    _selectedRole == UserRole.tutor
+                                        ? Colors.purple.withOpacity(0.15)
+                                        : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color:
+                                      _selectedRole == UserRole.tutor
+                                          ? Colors.purple
+                                          : Colors.grey.shade300,
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  if (_selectedRole == UserRole.tutor)
+                                    BoxShadow(
+                                      color: Colors.purple.withOpacity(0.08),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.school_rounded,
+                                    color: Colors.purple,
+                                    size: 36,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Tutor',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.purple[800],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedRole = UserRole.student;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color:
+                                    _selectedRole == UserRole.student
+                                        ? Colors.purple.withOpacity(0.15)
+                                        : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color:
+                                      _selectedRole == UserRole.student
+                                          ? Colors.purple
+                                          : Colors.grey.shade300,
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  if (_selectedRole == UserRole.student)
+                                    BoxShadow(
+                                      color: Colors.purple.withOpacity(0.08),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.person_rounded,
+                                    color: Colors.purple,
+                                    size: 36,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Student',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.purple[800],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 24),
 
                     // Name Field
@@ -295,7 +413,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               lastName: _nameController.text,
                               email: _emailController.text,
                               password: _passwordController.text,
-                              roleId: 1,
+                              roleId: getRoleId(_selectedRole),
                             );
                           },
                           child: const Text(

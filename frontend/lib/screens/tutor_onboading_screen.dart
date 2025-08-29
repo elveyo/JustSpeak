@@ -3,29 +3,33 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/models/language.dart';
 import 'package:frontend/models/languale_level.dart';
+import 'package:frontend/models/user.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-class TutorOnboardingScreen extends StatefulWidget {
-  const TutorOnboardingScreen({super.key});
+class UserOnboardingScreen extends StatefulWidget {
+  final User user;
+  const UserOnboardingScreen({super.key, required this.user});
 
   @override
-  State<TutorOnboardingScreen> createState() => _TutorOnboardingScreenState();
+  State<UserOnboardingScreen> createState() => _UserOnboardingScreenState();
 }
 
-class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
+class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
   int _currentStep = 0;
 
   List<Language>? languages;
   List<LanguageLevel>? languageLevels;
 
-  List<Map<String, String>> selectedLanguages = [];
-  Map<String, List<String>> certificates = {};
+  List<Map<String, int>> selectedLanguages = [];
 
   String? bio;
   String? profileImage;
+
+  int? tempLang;
+  int? tempLevel;
 
   @override
   void initState() {
@@ -48,6 +52,13 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
       setState(() {
         languages = langs.items;
         languageLevels = levels.items;
+        // Set default tempLang and tempLevel to first available if not set
+        if (languages != null && languages!.isNotEmpty) {
+          tempLang = languages!.first.id;
+        }
+        if (languageLevels != null && languageLevels!.isNotEmpty) {
+          tempLevel = languageLevels!.first.id;
+        }
       });
     } catch (e) {
       if (mounted) {
@@ -62,13 +73,12 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
   }
 
   void _nextStep() {
-    if (_currentStep < 3) {
+    if (_currentStep < 2) {
       setState(() => _currentStep++);
     } else {
       // Finish
       debugPrint("🎉 Onboarding complete!");
       debugPrint("Languages: $selectedLanguages");
-      debugPrint("Certificates: $certificates");
       debugPrint("Bio: $bio");
     }
   }
@@ -81,7 +91,7 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // There are now 4 steps: 0 (welcome), 1 (languages), 2 (certificates), 3 (profile)
+    // There are now 3 steps: 0 (welcome), 1 (languages), 2 (profile)
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -95,7 +105,7 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
           children: [
             // progress
             LinearProgressIndicator(
-              value: (_currentStep + 1) / 4,
+              value: (_currentStep + 1) / 3,
               color: Colors.deepPurple,
               backgroundColor: Colors.grey[300],
               minHeight: 8,
@@ -117,9 +127,9 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
               children: [
                 if (_currentStep > 0)
                   TextButton(onPressed: _backStep, child: const Text("Back")),
-                if (_currentStep > 0 && _currentStep < 3)
+                if (_currentStep > 0 && _currentStep < 2)
                   TextButton(
-                    onPressed: () => setState(() => _currentStep = 3),
+                    onPressed: () => setState(() => _currentStep = 2),
                     child: const Text("Skip"),
                   ),
                 if (_currentStep != 0)
@@ -132,7 +142,7 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Text(_currentStep == 3 ? "Finish" : "Next"),
+                    child: Text(_currentStep == 2 ? "Finish" : "Next"),
                   ),
               ],
             ),
@@ -145,94 +155,56 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
   Widget _buildStepContent() {
     switch (_currentStep) {
       case 0:
-        return _buildWelcomeStep();
+        return widget.user.role == 'tutor'
+            ? TutorWelcomeStep(onNext: _nextStep)
+            : StudentWelcomeStep(onNext: _nextStep);
       case 1:
         return _buildLanguagesStep();
       case 2:
-        return _buildCertificatesStep();
-      case 3:
         return _buildProfileStep();
       default:
         return const SizedBox();
     }
   }
 
-  // NEW: Welcome Step
-  Widget _buildWelcomeStep() {
-    return Center(
-      key: const ValueKey('welcome'),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.school, size: 64, color: Colors.deepPurple),
-            const SizedBox(height: 24),
-            const Text(
-              "Welcome to Tutor Onboarding!",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "We're excited to have you join our community of passionate tutors. "
-              "Share your skills, inspire students, and make a difference in the world of learning. "
-              "Let's get started on your journey!",
-              style: TextStyle(fontSize: 16, color: Colors.black87),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _nextStep,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                "Start",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // STEP 1: Jezici + Leveli (može dodati više)
+  // STEP 1: Languages + Levels (can add multiple)
   Widget _buildLanguagesStep() {
-    int? tempLang;
-    int? tempLevel;
-
     return StatefulBuilder(
       key: const ValueKey(1),
       builder: (context, setInner) {
+        // Ensure tempLang and tempLevel are valid
+        if (languages != null && languages!.isNotEmpty) {
+          if (tempLang == null || !languages!.any((l) => l.id == tempLang)) {
+            tempLang = languages!.first.id;
+          }
+        }
+        if (languageLevels != null && languageLevels!.isNotEmpty) {
+          if (tempLevel == null ||
+              !languageLevels!.any((l) => l.id == tempLevel)) {
+            tempLevel = languageLevels!.first.id;
+          }
+        }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "🌍  Teaching Languages",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              widget.user.role == 'tutor'
+                  ? "🌍  Teaching Languages"
+                  : "🌍  Learning Languages",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 4),
-            const Text(
-              "Add the languages you can teach and your proficiency level.",
-              style: TextStyle(fontSize: 14, color: Colors.black54),
+            Text(
+              widget.user.role == 'tutor'
+                  ? "Add the languages you can teach and your proficiency level."
+                  : "Add the languages you want to learn and your current level.",
+              style: const TextStyle(fontSize: 14, color: Colors.black54),
             ),
             const SizedBox(height: 20),
 
             DropdownButtonFormField<int>(
+              value: tempLang,
               decoration: const InputDecoration(
                 labelText: "Language",
                 border: OutlineInputBorder(),
@@ -246,7 +218,9 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
                         ),
                       )
                       .toList(),
-              onChanged: (val) => setInner(() => tempLang = val),
+              onChanged: (val) {
+                setInner(() => tempLang = val);
+              },
             ),
             const SizedBox(height: 12),
 
@@ -255,6 +229,7 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
                 labelText: "Level",
                 border: OutlineInputBorder(),
               ),
+              value: tempLevel,
               items:
                   languageLevels
                       ?.map(
@@ -264,7 +239,9 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
                         ),
                       )
                       .toList(),
-              onChanged: (val) => setInner(() => tempLevel = val),
+              onChanged: (val) {
+                setInner(() => tempLevel = val);
+              },
             ),
             const SizedBox(height: 12),
 
@@ -273,18 +250,29 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () {
-                    print(tempLevel);
-                    print(tempLang);
-                    if (tempLang != null && tempLevel != null) {
-                      setState(() {
-                        print("feafefefefe");
-
-                        selectedLanguages.add({
-                          "language": languages![tempLang!].name,
-                          "level": languageLevels![tempLevel!].name,
+                    if (tempLang != null &&
+                        tempLevel != null &&
+                        languages != null &&
+                        languageLevels != null) {
+                      // Prevent duplicate language entries
+                      if (!selectedLanguages.any(
+                        (entry) => entry['languageId'] == tempLang,
+                      )) {
+                        setState(() {
+                          selectedLanguages.add({
+                            "languageId": tempLang!,
+                            "levelId": tempLevel!,
+                          });
                         });
-                        certificates[languages![tempLang!].name] = [];
-                      });
+                        setInner(() {});
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('You already added this language.'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     }
                   },
                   icon: const Icon(Icons.add),
@@ -310,14 +298,19 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
                 itemCount: selectedLanguages.length,
                 itemBuilder: (ctx, i) {
                   final entry = selectedLanguages[i];
+                  final lang = languages?.firstWhere(
+                    (l) => l.id == entry['languageId'],
+                  );
+                  final level = languageLevels?.firstWhere(
+                    (l) => l.id == entry['levelId'],
+                  );
                   return Card(
                     child: ListTile(
-                      title: Text("${entry['language']} - ${entry['level']}"),
+                      title: Text("${lang?.name ?? ''} - ${level?.name ?? ''}"),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () {
                           setState(() {
-                            certificates.remove(entry['language']);
                             selectedLanguages.removeAt(i);
                           });
                         },
@@ -333,82 +326,10 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
     );
   }
 
-  // STEP 2: Certifikati po jeziku
-  Widget _buildCertificatesStep() {
-    return Column(
-      key: const ValueKey(2),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "📜 Upload Certificates",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 4),
-        const Text(
-          "Showcase your expertise! Upload certificates that prove your knowledge.",
-          style: TextStyle(fontSize: 14, color: Colors.black54),
-        ),
-        const SizedBox(height: 16),
-
-        Expanded(
-          child: ListView(
-            children:
-                selectedLanguages.map((langEntry) {
-                  final lang = langEntry['language']!;
-                  final certs = certificates[lang] ?? [];
-
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ExpansionTile(
-                      title: Text(
-                        lang,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            // ovdje ide image picker
-                            setState(() {
-                              certs.add("certificate_${certs.length + 1}.png");
-                              certificates[lang] = certs;
-                            });
-                          },
-                          icon: const Icon(Icons.upload),
-                          label: const Text("Add Certificate"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                        ...certs.map(
-                          (c) => ListTile(
-                            leading: const Icon(Icons.image),
-                            title: Text(c),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                setState(() {
-                                  certs.remove(c);
-                                  certificates[lang] = certs;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // STEP 3: Moderan Profile (slika + bio)
+  // STEP 2: Modern Profile (image + bio)
   Widget _buildProfileStep() {
     return Center(
-      key: const ValueKey(3),
+      key: const ValueKey(2),
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -424,10 +345,12 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            const Text(
-              "Tell us something about yourself. Share your look, interests, or fun facts!",
+            Text(
+              widget.user.role == 'tutor'
+                  ? "Tell us something about yourself. Share your look, interests, or fun facts!"
+                  : "Tell us about your learning goals, interests, or fun facts!",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: Colors.black54),
+              style: const TextStyle(fontSize: 15, color: Colors.black54),
             ),
             const SizedBox(height: 24),
 
@@ -494,6 +417,123 @@ class _TutorOnboardingScreenState extends State<TutorOnboardingScreen> {
                   ),
                   onChanged: (val) => setState(() => bio = val),
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Welcome widget for tutors
+class TutorWelcomeStep extends StatelessWidget {
+  final VoidCallback onNext;
+  const TutorWelcomeStep({Key? key, required this.onNext}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      key: const ValueKey('welcome-tutor'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.school, size: 64, color: Colors.deepPurple),
+            const SizedBox(height: 24),
+            const Text(
+              "Welcome to Tutor Onboarding!",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "We're excited to have you join our community of passionate tutors. "
+              "Share your skills, inspire students, and make a difference in the world of learning. "
+              "Let's get started on your journey!",
+              style: TextStyle(fontSize: 16, color: Colors.black87),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: onNext,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                "Start",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Welcome widget for students
+class StudentWelcomeStep extends StatelessWidget {
+  final VoidCallback onNext;
+  const StudentWelcomeStep({Key? key, required this.onNext}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      key: const ValueKey('welcome-student'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.emoji_people, size: 64, color: Colors.deepPurple),
+            const SizedBox(height: 24),
+            const Text(
+              "Welcome to Student Onboarding!",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "We're excited to help you on your language learning journey. "
+              "Connect with amazing tutors, set your goals, and start learning today!",
+              style: TextStyle(fontSize: 16, color: Colors.black87),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: onNext,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                "Start",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
           ],

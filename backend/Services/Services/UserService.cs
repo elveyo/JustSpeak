@@ -96,10 +96,37 @@ namespace Services.Services
             if (role.Name == "Tutor")
             {
                 user = new Tutor();
+                // Add languages for the tutor if provided
+
+                var tutor = user as Tutor;
+                tutor.TutorLanguages = new List<TutorLanguage>();
+                foreach (var langReq in request.Languages)
+                {
+                    var tutorLanguage = new TutorLanguage
+                    {
+                        LanguageId = langReq.LanguageId,
+                        LevelId = langReq.LevelId,
+                    };
+                    tutor.TutorLanguages.Add(tutorLanguage);
+                }
             }
             else if (role.Name == "Student")
             {
                 user = new Student();
+
+                // Add languages for the student if provided
+
+                var student = user as Student;
+                student.StudentLanguages = new List<StudentLanguage>();
+                foreach (var langReq in request.Languages)
+                {
+                    var studentLanguage = new StudentLanguage
+                    {
+                        LanguageId = langReq.LanguageId,
+                        LevelId = langReq.LevelId,
+                    };
+                    student.StudentLanguages.Add(studentLanguage);
+                }
             }
             else
             {
@@ -121,6 +148,7 @@ namespace Services.Services
             }
 
             _context.Users.Add(user);
+
             await _context.SaveChangesAsync();
             return _mapper.Map<UserResponse>(user);
         }
@@ -201,65 +229,6 @@ namespace Services.Services
                 .FirstOrDefaultAsync();
 
             return tutor;
-        }
-
-        public async Task<bool> InsertTutorDataAsync(TutorUpsertRequest request)
-        {
-            var userResponse = await CreateAsync(request.User);
-            var tutor = await _context.Tutors.FirstOrDefaultAsync(t => t.Id == userResponse.Id);
-
-            if (request.Certificates != null)
-            {
-                foreach (var certReq in request.Certificates)
-                {
-                    var certificate = new Certificate
-                    {
-                        Name = certReq.Name,
-                        ImageUrl = certReq.ImageUrl,
-                        LanguageId = certReq.LanguageId,
-                        TutorId = tutor.Id,
-                    };
-                    tutor.Certificates.Add(certificate);
-                }
-            }
-
-            // 5. Add languages if provided
-            if (request.Languages != null)
-            {
-                foreach (var langReq in request.Languages)
-                {
-                    var tutorLanguage = new TutorLanguage
-                    {
-                        TutorId = tutor.Id,
-                        LanguageId = langReq.LanguageId,
-                        LevelId = langReq.LevelId,
-                    };
-                    tutor.TutorLanguages.Add(tutorLanguage);
-                }
-            }
-
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> InsertStudentDataAsync(StudentUpsertRequest request)
-        {
-            var userResponse = await CreateAsync(request.User);
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == userResponse.Id);
-
-            foreach (var langReq in request.Languages)
-            {
-                var studentLanguage = new StudentLanguage
-                {
-                    StudentId = student.Id,
-                    LanguageId = langReq.LanguageId,
-                    LevelId = langReq.LevelId,
-                };
-                student.StudentLanguages.Add(studentLanguage);
-            }
-
-            await _context.SaveChangesAsync();
-            return true;
         }
 
         public async Task<StudentResponse?> GetStudentDataAsync(int id)

@@ -27,18 +27,11 @@ namespace WebAPI.Controllers
             return Ok(user);
         }
 
-        [HttpPost("register-tutor")]
-        public async Task<IActionResult> RegisterTutor([FromBody] TutorUpsertRequest request)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] UserInsertRequest request)
         {
-            var tutor = await _userService.InsertTutorDataAsync(request);
-            return Ok(tutor);
-        }
-
-        [HttpPost("register-student")]
-        public async Task<IActionResult> RegisterStudent([FromBody] StudentUpsertRequest request)
-        {
-            var student = await _userService.InsertStudentDataAsync(request);
-            return Ok(student);
+            var user = await _userService.CreateAsync(request);
+            return Ok(user);
         }
 
         [HttpGet("tutor-profile/{id}")]

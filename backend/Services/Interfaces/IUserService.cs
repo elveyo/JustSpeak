@@ -10,9 +10,6 @@ namespace Services.Interfaces
     {
         Task<UserResponse?> AuthenticateAsync(UserLoginRequest request);
 
-        Task<bool> InsertTutorDataAsync(TutorUpsertRequest request);
-        Task<bool> InsertStudentDataAsync(StudentUpsertRequest request);
-
         Task<TutorResponse?> GetTutorDataAsync(int id);
         Task<StudentResponse?> GetStudentDataAsync(int id);
     }
