@@ -19,7 +19,6 @@ class SessionProvider extends BaseProvider<Session> {
 
   Future<List<BookedSession>> getTutorSessions() async {
     Uri uri = buildUri("/tutor");
-
     var headers = createHeaders();
     final response = await http.get(uri, headers: headers);
 

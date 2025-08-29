@@ -5,10 +5,15 @@ using Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
-    public class CommentController : BaseCRUDController<CommentResponse, BaseSearchObject, CommentUpsertRequest, CommentUpsertRequest>
+    public class CommentController
+        : BaseCRUDController<
+            CommentResponse,
+            BaseSearchObject,
+            CommentUpsertRequest,
+            CommentUpsertRequest
+        >
     {
-        public CommentController(ICommentService service) : base(service)
-        {
-        }
+        public CommentController(ICommentService service)
+            : base(service) { }
     }
 }

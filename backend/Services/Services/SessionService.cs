@@ -133,9 +133,6 @@ namespace Services.Services
 
         public async Task<StudentTutorSession> BookSessionAsync(BookSessionRequest dto)
         {
-            //!!!IMPROTANT
-            //ADd valdiation that user cant make session e.g at 14:10, if available session is at 14:00 (attacker);
-
             // 1. Dohvati tutorov schedule
             var schedule = await _context
                 .Schedules.Include(s => s.AvailableDays)

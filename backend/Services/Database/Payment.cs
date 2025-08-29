@@ -10,9 +10,7 @@ namespace Services.Database
         public int SessionId { get; set; }
         public StudentTutorSession Session { get; set; } = null!;
         public decimal Amount { get; set; }
-        //ovdje mozda cuvat PaymentStatus enum
         public string PaymentStatus { get; set; } = null!;
-        public string PaymentReference { get; set; } = null!;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
