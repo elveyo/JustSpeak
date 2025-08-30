@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:frontend/models/language.dart';
-import 'package:frontend/models/languale_level.dart';
+import 'package:frontend/models/level.dart';
 import 'package:frontend/models/user.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
@@ -21,7 +21,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
   int _currentStep = 0;
 
   List<Language>? languages;
-  List<LanguageLevel>? languageLevels;
+  List<Level>? languageLevels;
 
   List<Map<String, int>> selectedLanguages = [];
 
@@ -302,7 +302,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                     (l) => l.id == entry['languageId'],
                   );
                   final level = languageLevels?.firstWhere(
-                    (l) => l.id == entry['levelId'],
+                    (l) => l!.id == entry['levelId'],
                   );
                   return Card(
                     child: ListTile(

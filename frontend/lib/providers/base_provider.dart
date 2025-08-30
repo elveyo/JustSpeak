@@ -95,7 +95,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
     } else if (response.statusCode == 401) {
       throw new Exception("Unauthorized");
     } else {
-      throw new Exception("Something bad happened please try again");
+      throw new Exception(response.body);
     }
   }
 

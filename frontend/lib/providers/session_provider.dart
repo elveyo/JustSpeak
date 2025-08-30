@@ -7,7 +7,9 @@ import 'package:frontend/models/session.dart';
 import 'package:frontend/models/tag.dart';
 import 'package:frontend/providers/base_provider.dart';
 import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/providers/payment_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:table_calendar/table_calendar.dart';
 
 class SessionProvider extends BaseProvider<Session> {
   SessionProvider() : super("Session");
@@ -45,28 +47,25 @@ class SessionProvider extends BaseProvider<Session> {
     final List<dynamic> jsonList = jsonDecode(response.body);
     final List<BookedSession> data =
         jsonList.map((item) => BookedSession.fromJson(item)).toList();
+
     return data;
   }
 
-  Future<void> bookSession(dynamic request) async {
+  Future<int> bookSession(dynamic request) async {
     Uri uri = buildUri("/book-session");
     var headers = createHeaders();
     var jsonRequest = jsonEncode(request);
-    print(jsonRequest);
     var response = await http.post(uri, headers: headers, body: jsonRequest);
-    print(response.body);
     if (isValidResponse(response)) {
-      var data = jsonDecode(response.body);
-      print(data);
+      return int.parse(response.body);
     } else {
-      throw new Exception("Unknown error");
+      throw Exception("Problem happened while booking session!");
     }
   }
 
   Future<String> getToken(String channelName) async {
     final userId = AuthService().user!.id;
     Uri uri = buildUri("/generate-token");
-    print(uri);
     var headers = createHeaders();
     var request = {"channelName": channelName, "userId": userId};
     var jsonRequest = jsonEncode(request);

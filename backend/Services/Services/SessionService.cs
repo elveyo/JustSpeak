@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using AgoraNET;
+using Azure.Core;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using Models.Responses;
 using Models.SearchObjects;
 using Services.Database;
 using Services.Interfaces;
+using Stripe;
 
 namespace Services.Services
 {
@@ -31,12 +33,14 @@ namespace Services.Services
         private readonly IUserContextService _userContextService;
         private readonly string _agoraAppId;
         private readonly string _agoraAppCertificate;
+        private readonly IPaymentService _paymentService;
 
         public SessionService(
             ApplicationDbContext context,
             IMapper mapper,
             IConfiguration configuration,
-            IUserContextService userContextService
+            IUserContextService userContextService,
+            IPaymentService paymentService
         )
             : base(context, mapper)
         {
@@ -44,13 +48,13 @@ namespace Services.Services
             _agoraAppId = _configuration["Agora:AppId"] ?? "";
             _agoraAppCertificate = _configuration["Agora:AppCertificate"] ?? "";
             _userContextService = userContextService;
+            _paymentService = paymentService;
         }
 
         private int? UserId => _userContextService.GetUserId();
 
         public override async Task<SessionResponse> CreateAsync(SessionUpsertRequest request)
         {
-            //int? currentUserId = _userContextService.GetUserId();
             var session = new Session
             {
                 NumOfUsers = request.NumOfUsers,
@@ -131,48 +135,47 @@ namespace Services.Services
             return new PagedResult<SessionResponse> { Items = sessions, TotalCount = totalCount };
         }
 
-        public async Task<StudentTutorSession> BookSessionAsync(BookSessionRequest dto)
+        public async Task<int> BookSessionAsync(BookSessionRequest request)
         {
             // 1. Dohvati tutorov schedule
             var schedule = await _context
                 .Schedules.Include(s => s.AvailableDays)
-                .FirstOrDefaultAsync(s => s.TutorId == dto.TutorId);
+                .FirstOrDefaultAsync(s => s.TutorId == request.TutorId);
 
             if (schedule == null)
                 throw new Exception("Tutor schedule not found.");
 
             // 2. Provjeri da li datum i vrijeme odgovara tutorovoj dostupnosti
             var dayRule = schedule.AvailableDays.FirstOrDefault(d =>
-                d.DayOfWeek == dto.StartTime.DayOfWeek
+                d.DayOfWeek == request.StartTime.DayOfWeek
             );
             if (dayRule == null)
                 throw new Exception("Tutor is not available on this day.");
 
             var duration = TimeSpan.FromMinutes(schedule.Duration);
-            var endTime = dto.StartTime + duration;
+            var endTime = request.StartTime + duration;
 
             var slotStartTime = dayRule.StartTime;
             var slotEndTime = dayRule.EndTime;
 
-            if (dto.StartTime.TimeOfDay < slotStartTime || endTime.TimeOfDay > slotEndTime)
+            if (request.StartTime.TimeOfDay < slotStartTime || endTime.TimeOfDay > slotEndTime)
                 throw new Exception("Selected time is outside tutor's available hours.");
 
             // 3. Provjeri da li je slot već booked
             var isTaken = await _context.StudentTutorSessions.AnyAsync(s =>
-                s.TutorId == dto.TutorId && s.StartTime == dto.StartTime && s.IsActive
+                s.TutorId == request.TutorId && s.StartTime == request.StartTime && s.IsActive
             );
 
             if (isTaken)
                 throw new Exception("Selected slot is already booked.");
 
-            // 4. Kreiraj novu sesiju
             var session = new StudentTutorSession
             {
-                TutorId = dto.TutorId,
-                StudentId = dto.StudentId,
-                LanguageId = dto.LanguageId,
-                LevelId = dto.LevelId,
-                StartTime = dto.StartTime,
+                TutorId = request.TutorId,
+                StudentId = request.StudentId,
+                LanguageId = request.LanguageId,
+                LevelId = request.LevelId,
+                StartTime = request.StartTime,
                 EndTime = endTime,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
@@ -180,11 +183,10 @@ namespace Services.Services
 
             _context.StudentTutorSessions.Add(session);
             await _context.SaveChangesAsync();
-
-            return session;
+            return session.Id;
         }
 
-        public async Task<TutorSessionResponse[]?> GetTutorSessionsAsync()
+        public async Task<BookedSessionResponse[]?> GetTutorSessionsAsync()
         {
             var schedule = await _context.Schedules.FirstOrDefaultAsync(s =>
                 s.TutorId == UserId.Value
@@ -193,11 +195,12 @@ namespace Services.Services
                 return null;
             var bookedSessions = await _context
                 .StudentTutorSessions.Where(sts => sts.TutorId == UserId.Value)
-                .Select(s => new TutorSessionResponse
+                .Select(s => new BookedSessionResponse
                 {
                     Language = s.Language.Name,
                     Level = s.Level.Name,
                     UserName = s.Student.FullName,
+                    UserImageUrl = s.Student.ImageUrl,
                     Date = s.StartTime.Date,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
@@ -207,15 +210,16 @@ namespace Services.Services
             return bookedSessions;
         }
 
-        public async Task<StudentSessionResponse[]> GetStudentSessionsAsync()
+        public async Task<BookedSessionResponse[]> GetStudentSessionsAsync()
         {
             var bookedSessions = await _context
                 .StudentTutorSessions.Where(sts => sts.StudentId == UserId.Value)
-                .Select(s => new StudentSessionResponse
+                .Select(s => new BookedSessionResponse
                 {
                     Language = s.Language.Name,
                     Level = s.Level.Name,
-                    UserName = s.Student.FullName,
+                    UserName = s.Tutor.FullName,
+                    UserImageUrl = s.Tutor.ImageUrl,
                     Date = s.StartTime.Date,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,

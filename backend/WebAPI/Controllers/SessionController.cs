@@ -55,7 +55,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet("tutor")]
-        public async Task<TutorSessionResponse[]?> GetTutorSessions()
+        public async Task<BookedSessionResponse[]?> GetTutorSessions()
         {
             var sessions = await _sessionService.GetTutorSessionsAsync();
 
@@ -63,7 +63,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet("student")]
-        public async Task<StudentSessionResponse[]> GetStudentSessions()
+        public async Task<BookedSessionResponse[]> GetStudentSessions()
         {
             return await _sessionService.GetStudentSessionsAsync();
         }

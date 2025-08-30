@@ -141,7 +141,6 @@ namespace Services
             }
             else
             {
-                // update postojećeg
                 schedule.Duration = request.Duration;
                 schedule.Price = request.Price;
 

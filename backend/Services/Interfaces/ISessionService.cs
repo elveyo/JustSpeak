@@ -19,8 +19,8 @@ namespace Services.Interfaces
     {
         string GenerateAgoraToken(string channelName, int userId);
         Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query);
-        Task<StudentTutorSession> BookSessionAsync(BookSessionRequest request);
-        Task<TutorSessionResponse[]?> GetTutorSessionsAsync();
-        Task<StudentSessionResponse[]> GetStudentSessionsAsync();
+        Task<int> BookSessionAsync(BookSessionRequest request);
+        Task<BookedSessionResponse[]?> GetTutorSessionsAsync();
+        Task<BookedSessionResponse[]> GetStudentSessionsAsync();
     }
 }

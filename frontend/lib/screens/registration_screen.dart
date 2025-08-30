@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/user.dart';
+import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/tutor_onboading_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
 import 'package:frontend/screens/feed_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -27,46 +27,129 @@ int getRoleId(UserRole role) {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   UserRole _selectedRole = UserRole.tutor;
-
-  // Enum for user roles
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> register({
-    required String firstName,
-    required String lastName,
-    required String email,
-    required String password,
-    required int roleId,
-  }) async {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder:
-            (_) => UserOnboardingScreen(
-              user: User(
-                id: 0,
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
-                password: password,
-                role: roleId == 2 ? 'tutor' : 'student',
-              ),
-            ),
-      ),
+  // Email validation function
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email is required';
+    }
+
+    // Basic email regex pattern
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
     );
+    if (!emailRegex.hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+
+    // Check if it's a Gmail address
+    if (value.toLowerCase().endsWith('@gmail.com')) {
+      return null; // Valid Gmail
+    }
+
+    return 'Please use a Gmail address';
+  }
+
+  // Password validation function
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+
+    if (value.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+
+    if (!value.contains(RegExp(r'[A-Z]'))) {
+      return 'Password must contain at least one uppercase letter';
+    }
+
+    if (!value.contains(RegExp(r'[a-z]'))) {
+      return 'Password must contain at least one lowercase letter';
+    }
+
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return 'Password must contain at least one number';
+    }
+
+    return null;
+  }
+
+  // Name validation function
+  String? _validateName(String? value, String fieldName) {
+    if (value == null || value.isEmpty) {
+      return '$fieldName is required';
+    }
+
+    if (value.length < 2) {
+      return '$fieldName must be at least 2 characters long';
+    }
+
+    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+      return '$fieldName can only contain letters and spaces';
+    }
+
+    return null;
+  }
+
+  Future<void> register() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Here you would typically make an API call to register the user
+      // For now, we'll just navigate to the onboarding screen
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => UserOnboardingScreen(
+                user: User(
+                  id: 0,
+                  firstName: _firstNameController.text.trim(),
+                  lastName: _lastNameController.text.trim(),
+                  email: _emailController.text.trim(),
+                  password: _passwordController.text,
+                  role: getRoleId(_selectedRole) == 2 ? 'tutor' : 'student',
+                ),
+              ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Registration failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -226,7 +309,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Name Field
+                    // First Name Field
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.9),
@@ -240,10 +323,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ],
                       ),
                       child: TextFormField(
-                        controller: _nameController,
+                        controller: _firstNameController,
                         decoration: InputDecoration(
-                          labelText: 'Full Name',
-                          hintText: 'Enter your full name',
+                          labelText: 'First Name',
+                          hintText: 'Enter your first name',
                           prefixIcon: const Icon(Icons.person_outline),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -253,12 +336,40 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             borderSide: BorderSide(color: Colors.grey[300]!),
                           ),
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your name';
-                          }
-                          return null;
-                        },
+                        validator:
+                            (value) => _validateName(value, 'First name'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Last Name Field
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.purple.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextFormField(
+                        controller: _lastNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Last Name',
+                          hintText: 'Enter your last name',
+                          prefixIcon: const Icon(Icons.person_outline),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                        ),
+                        validator: (value) => _validateName(value, 'Last name'),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -291,12 +402,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          return null;
-                        },
+                        validator: _validateEmail,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -329,12 +435,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          return null;
-                        },
+                        validator: _validatePassword,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -407,23 +508,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         child: TextButton(
-                          onPressed: () {
-                            register(
-                              firstName: _nameController.text,
-                              lastName: _nameController.text,
-                              email: _emailController.text,
-                              password: _passwordController.text,
-                              roleId: getRoleId(_selectedRole),
-                            );
-                          },
-                          child: const Text(
-                            'Register',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          onPressed: _isLoading ? null : register,
+                          child:
+                              _isLoading
+                                  ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text(
+                                    'Register',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                         ),
                       ),
                     ),
@@ -436,7 +539,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         const Text('Already have an account?'),
                         TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/login');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LoginScreen(),
+                              ),
+                            );
                           },
                           child: const Text(
                             'Login',

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:frontend/models/language.dart';
-import 'package:frontend/models/languale_level.dart';
+import 'package:frontend/models/level.dart';
 import 'package:frontend/models/search_result.dart';
 import 'package:frontend/models/session.dart';
 import 'package:frontend/models/tag.dart';
@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 
 class CreateSessionScreen extends StatefulWidget {
   List<Language>? languages;
-  List<LanguageLevel>? levels;
+  List<Level>? levels;
 
   CreateSessionScreen({
     super.key,

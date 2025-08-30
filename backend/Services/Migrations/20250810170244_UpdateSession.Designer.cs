@@ -268,9 +268,7 @@ namespace Services.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PaymentReference")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                   
 
                     b.Property<string>("PaymentStatus")
                         .IsRequired()

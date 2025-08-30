@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
+import 'package:frontend/providers/payment_provider.dart';
 import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/providers/session_provider.dart';
-import 'package:frontend/screens/add_schedule_screen.dart';
+import 'package:frontend/providers/user_provider.dart';
 import 'package:frontend/screens/feed_screen.dart';
-import 'package:frontend/screens/session_screen.dart';
 import 'package:frontend/providers/post_provider.dart';
-import 'package:frontend/screens/add_post_screen.dart';
-import 'package:frontend/screens/tutor_onboading_screen.dart';
-import 'package:frontend/screens/video_call_screen.dart';
 
 import 'package:frontend/services/auth_service.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +18,17 @@ void main() async {
 
   final authService = AuthService();
   await authService.loadToken();
+
+  try {
+    Stripe.publishableKey =
+        "pk_test_51RL0ZVAHXQropxlzi4AeoE2awEiSSLusn5TM44Gd0zWsAtkWTTof5ZGB82X5OtQWwFdJgXqz08as63s1b2FLqdta00h2dLDcBL";
+
+    await Stripe.instance.applySettings();
+    print("Stripe initialized successfully");
+  } catch (e) {
+    print("Stripe initialization failed: $e");
+    // Continue with app initialization even if Stripe fails
+  }
   runApp(
     MultiProvider(
       providers: [
@@ -37,6 +46,12 @@ void main() async {
         ),
         ChangeNotifierProvider<ScheduleProvider>(
           create: (context) => ScheduleProvider(),
+        ),
+        ChangeNotifierProvider<PaymentProvider>(
+          create: (context) => PaymentProvider(),
+        ),
+        ChangeNotifierProvider<UserProvider>(
+          create: (context) => UserProvider(),
         ),
       ],
       child: MyApp(isUserLogged: authService.isLoggedIn),

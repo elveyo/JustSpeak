@@ -270,30 +270,20 @@ namespace Services.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PaymentReference")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("SessionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TutorId")
-                        .HasColumnType("int");
+                    b.Property<string>("StripeTransactionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SessionId");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("TutorId");
 
                     b.ToTable("Payments");
                 });
@@ -706,7 +696,7 @@ namespace Services.Migrations
                         {
                             Id = 1,
                             Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2128),
+                            CreatedAt = new DateTime(2025, 8, 30, 13, 2, 55, 261, DateTimeKind.Utc).AddTicks(4002),
                             Email = "admin@justspeak.com",
                             FirstName = "Admin",
                             ImageUrl = "",
@@ -730,7 +720,7 @@ namespace Services.Migrations
                         {
                             Id = 4,
                             Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2190),
+                            CreatedAt = new DateTime(2025, 8, 30, 13, 2, 55, 261, DateTimeKind.Utc).AddTicks(4057),
                             Email = "hans@justspeak.com",
                             FirstName = "Hans",
                             ImageUrl = "",
@@ -745,7 +735,7 @@ namespace Services.Migrations
                         {
                             Id = 5,
                             Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2193),
+                            CreatedAt = new DateTime(2025, 8, 30, 13, 2, 55, 261, DateTimeKind.Utc).AddTicks(4060),
                             Email = "yuki@justspeak.com",
                             FirstName = "Yuki",
                             ImageUrl = "",
@@ -769,7 +759,7 @@ namespace Services.Migrations
                         {
                             Id = 2,
                             Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2161),
+                            CreatedAt = new DateTime(2025, 8, 30, 13, 2, 55, 261, DateTimeKind.Utc).AddTicks(4031),
                             Email = "maria@justspeak.com",
                             FirstName = "Maria",
                             ImageUrl = "",
@@ -784,7 +774,7 @@ namespace Services.Migrations
                         {
                             Id = 3,
                             Bio = "",
-                            CreatedAt = new DateTime(2025, 8, 28, 16, 42, 17, 853, DateTimeKind.Utc).AddTicks(2164),
+                            CreatedAt = new DateTime(2025, 8, 30, 13, 2, 55, 261, DateTimeKind.Utc).AddTicks(4033),
                             Email = "jean@justspeak.com",
                             FirstName = "Jean",
                             ImageUrl = "",
@@ -884,23 +874,7 @@ namespace Services.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Services.Database.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Services.Database.Tutor", "Tutor")
-                        .WithMany()
-                        .HasForeignKey("TutorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Session");
-
-                    b.Navigation("Student");
-
-                    b.Navigation("Tutor");
                 });
 
             modelBuilder.Entity("Services.Database.Post", b =>

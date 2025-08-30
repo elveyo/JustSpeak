@@ -8,6 +8,7 @@ using Services;
 using Services.Database;
 using Services.Interfaces;
 using Services.Services;
+using Stripe;
 using WebAPI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +29,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<IUserContextService, UserContextService>();
 
-builder.Services.AddTransient<ITokenService, TokenService>();
+builder.Services.AddTransient<ITokenService, Services.Services.TokenService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<ICommentService, CommentService>();
 builder.Services.AddTransient<IPostService, PostService>();
@@ -36,6 +37,24 @@ builder.Services.AddTransient<IScheduleService, ScheduleService>();
 builder.Services.AddTransient<ISessionService, SessionService>();
 builder.Services.AddTransient<ILanguageService, LanguageService>();
 builder.Services.AddTransient<ILevelService, LevelService>();
+builder.Services.AddTransient<IPaymentService, PaymentService>();
+
+//Payment machine state
+builder.Services.AddTransient<Services.StateMachine.BasePaymentState>();
+builder.Services.AddTransient<Services.StateMachine.InitialPaymentState>();
+builder.Services.AddTransient<Services.StateMachine.CanceledPaymentState>();
+builder.Services.AddTransient<Services.StateMachine.SucceededPaymentState>();
+builder.Services.AddTransient<Services.StateMachine.FailedPaymentState>();
+
+//Stripe configuration
+var stripeKey = builder.Configuration.GetValue<string>("Stripe:_stripe");
+if (string.IsNullOrEmpty(stripeKey))
+{
+    throw new InvalidOperationException(
+        "Stripe API key is not configured. Please check your appsettings.json or environment variables."
+    );
+}
+StripeConfiguration.ApiKey = stripeKey;
 
 // Add SignalR
 builder.Services.AddSignalR();

@@ -1,32 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/session_screen.dart';
+import 'package:frontend/screens/student_sessions.dart';
 import 'package:frontend/screens/tutor_calendar_screen.dart';
 import 'package:frontend/screens/tutor_profile_screen.dart';
+import 'package:frontend/services/auth_service.dart';
 
 class MasterScreen extends StatelessWidget {
-  const MasterScreen({super.key, required this.child, required this.title});
+  MasterScreen({super.key, required this.child, required this.title});
 
   final Widget child;
   final String title;
 
-  int _getSelectedIndex(String title) {
-    switch (title) {
-      case 'Home':
-        return 0;
-      case 'Sessions':
-        return 1;
-      case 'Calendar':
-        return 2;
-      case 'Profile':
-        return 3;
-      default:
-        return 0;
-    }
-  }
+  final user = AuthService().user;
 
   @override
   Widget build(BuildContext context) {
+    final String? role = user?.role;
+
+    // Define label and screen for third destination based on role
+    final thirdDestination =
+        role == 'Tutor'
+            ? {
+              'label': 'Calendar',
+              'screen': const TutorCalendarScreen(),
+              'icon': Icons.calendar_today_outlined,
+              'selectedIcon': Icons.calendar_month_rounded,
+            }
+            : {
+              'label': 'Lessons',
+              'screen': const StudentSessionsScreen(),
+              'icon': Icons.menu_book_outlined,
+              'selectedIcon': Icons.menu_book_rounded,
+            };
+
+    // Build destinations list
+    final destinations = [
+      NavigationDestination(
+        icon: const Icon(Icons.home_outlined),
+        selectedIcon: const Icon(Icons.home_rounded),
+        label: 'Home',
+      ),
+      NavigationDestination(
+        icon: const Icon(Icons.forum_outlined),
+        selectedIcon: const Icon(Icons.forum_rounded),
+        label: 'Sessions',
+      ),
+      NavigationDestination(
+        icon: Icon(thirdDestination['icon'] as IconData),
+        selectedIcon: Icon(thirdDestination['selectedIcon'] as IconData),
+        label: thirdDestination['label'] as String,
+      ),
+      NavigationDestination(
+        icon: const Icon(Icons.person_outline),
+        selectedIcon: const Icon(Icons.person_rounded),
+        label: 'Profile',
+      ),
+    ];
+
+    // Helper to get selected index
+    int selectedIndex = destinations.indexWhere((d) => d.label == title);
+    if (selectedIndex == -1) selectedIndex = 0;
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -42,74 +77,42 @@ class MasterScreen extends StatelessWidget {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+        padding: const EdgeInsets.symmetric(horizontal: 10.0),
         child: child,
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _getSelectedIndex(title),
+        selectedIndex: selectedIndex,
         onDestinationSelected: (index) {
+          if (index == selectedIndex) return;
+
+          Widget? targetPage;
           switch (index) {
             case 0:
-              if (title != 'Home') {
-                Navigator.pushReplacement(context, _fadeTo(const FeedScreen()));
-              }
+              targetPage = const FeedScreen();
               break;
             case 1:
-              if (title != 'Sessions') {
-                Navigator.pushReplacement(
-                  context,
-                  _fadeTo(const SessionsScreen()),
-                );
-              }
+              targetPage = const SessionsScreen();
               break;
             case 2:
-              if (title != 'Calendar') {
-                Navigator.pushReplacement(
-                  context,
-                  _fadeTo(const TutorCalendarScreen()),
-                );
-              }
+              targetPage = thirdDestination['screen'] as Widget;
               break;
             case 3:
-              if (title != 'Profile') {
-                Navigator.pushReplacement(
-                  context,
-                  _fadeTo(const TutorProfileScreen(id: 1)),
-                );
-              }
+              targetPage = TutorProfileScreen(id: user!.id);
               break;
           }
+
+          if (targetPage != null) {
+            Navigator.pushReplacement(context, _fadeTo(targetPage));
+          }
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.forum_outlined),
-            selectedIcon: Icon(Icons.forum_rounded),
-            label: 'Sessions',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_month_rounded),
-            label: 'Calendar',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profile',
-          ),
-        ],
+        destinations: destinations,
         elevation: 8,
         indicatorColor: Colors.purple.withOpacity(0.1),
         surfaceTintColor: Colors.white,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        animationDuration: Duration(milliseconds: 300),
+        animationDuration: const Duration(milliseconds: 300),
       ),
     );
-    // Helper function to determine selected index based on title
   }
 
   static PageRouteBuilder _fadeTo(Widget page) {

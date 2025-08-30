@@ -1,17 +1,19 @@
 using MapsterMapper;
+using Microsoft.Extensions.DependencyInjection;
 using Models.Exceptions;
+using Models.Requests;
 using Models.Responses;
 using Services.Database;
 
 namespace Services.StateMachine
 {
-    public class BaseProductState
+    public class BasePaymentState
     {
         protected readonly IServiceProvider _serviceProvider;
         protected readonly ApplicationDbContext _context;
         protected readonly IMapper _mapper;
 
-        public BaseProductState(
+        public BasePaymentState(
             IServiceProvider serviceProvider,
             ApplicationDbContext context,
             IMapper mapper
@@ -22,37 +24,43 @@ namespace Services.StateMachine
             _mapper = mapper;
         }
 
-        public virtual async Task<PaymentResponse> CreateAsync(ProductInsertRequest request)
+        public virtual async Task<PaymentResponse> CreateAsync(PaymentInsertRequest request)
         {
-            throw new UserException("Not allowed");
+            throw new UserException("Not allowed in current state");
         }
 
-        public virtual async Task<PaymentResponse> UpdateAsync(int id, ProductUpdateRequest request)
+        public virtual async Task<PaymentResponse> MarkSucceededAsync(int id)
         {
-            throw new UserException("Not allowed");
+            throw new UserException("Not allowed in current state");
         }
 
-        public BaseProductState GetProductState(string stateName)
+        public virtual async Task<PaymentResponse> MarkFailedAsync(int id)
+        {
+            throw new UserException("Not allowed in current state");
+        }
+
+        public virtual async Task<PaymentResponse> CancelAsync(int id)
+        {
+            throw new UserException("Not allowed in current state");
+        }
+
+        public BasePaymentState GetPaymentState(string stateName)
         {
             switch (stateName)
             {
-                case "InitialProductState":
-                    return _serviceProvider.GetService<InitialProductState>();
-                case nameof(DraftProductState):
-                    return _serviceProvider.GetService<DraftProductState>();
-                case nameof(ActiveProductState):
-                    return _serviceProvider.GetService<ActiveProductState>();
-                case nameof(DeactivatedProductState):
-                    return _serviceProvider.GetService<DeactivatedProductState>();
-
+                case nameof(InitialPaymentState):
+                    return _serviceProvider.GetService<InitialPaymentState>();
+                case nameof(PendingPaymentState):
+                    return _serviceProvider.GetService<PendingPaymentState>();
+                case nameof(SucceededPaymentState):
+                    return _serviceProvider.GetService<SucceededPaymentState>();
+                case nameof(FailedPaymentState):
+                    return _serviceProvider.GetService<FailedPaymentState>();
+                case nameof(CanceledPaymentState):
+                    return _serviceProvider.GetService<CanceledPaymentState>();
                 default:
                     throw new Exception($"State {stateName} not defined");
             }
-        }
-
-        public virtual List<string> AllowedActions(int id)
-        {
-            throw new UserException("Metoda nije dozvoljena");
         }
     }
 }

@@ -10,5 +10,7 @@ namespace Models.Responses
         public string Role { get; set; } = string.Empty;
 
         public string ImageUrl { get; set; } = string.Empty;
+
+        public string? Token { get; set; }
     }
 }

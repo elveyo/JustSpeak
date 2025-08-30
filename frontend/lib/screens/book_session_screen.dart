@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/calendar_slot.dart';
 import 'package:frontend/models/language.dart';
-import 'package:frontend/models/languale_level.dart';
-import 'package:frontend/models/tutor_schedule.dart';
+import 'package:frontend/models/level.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
+import 'package:frontend/providers/payment_provider.dart';
 import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/providers/session_provider.dart';
+import 'package:frontend/screens/tutor_calendar_screen.dart';
 import 'package:frontend/widgets/calendar.dart';
 import 'package:provider/provider.dart';
 
@@ -23,7 +24,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
   String? _selectedSlot;
 
   List<Language>? _languages;
-  List<LanguageLevel>? _languageLevels;
+  List<Level>? _languageLevels;
 
   DateTime? _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
@@ -42,6 +43,10 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
       context,
       listen: false,
     );
+    final paymentProvider = Provider.of<PaymentProvider>(
+      context,
+      listen: false,
+    );
 
     try {
       final request = {
@@ -50,10 +55,38 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
         "languageId": _selectedLanguage,
         "levelId": _selectedLevel,
         "startTime": _selectedSlot,
+        "price": 20,
       };
-      await sessionProvider.bookSession(request);
+      var sessionId = await sessionProvider.bookSession(request);
+
+      var paymentResult = await paymentProvider.payWithPaymentSheet(20);
+
+      var payment = {
+        'sessionId': sessionId,
+        'amount': 20,
+        'stripeTransactionId': paymentResult.stripeTransactionId,
+      };
+
+      await paymentProvider.insert(payment);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => TutorCalendarScreen()),
+      );
     } catch (error) {
-      print(error);
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: Text(""),
+              content: Text(error.toString()),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Ok"),
+                ),
+              ],
+            ),
+      );
     }
   }
 

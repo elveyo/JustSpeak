@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/layouts/master_screen.dart';
 import 'package:frontend/models/language.dart';
-import 'package:frontend/models/languale_level.dart';
+import 'package:frontend/models/level.dart';
 import 'package:frontend/models/session.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
@@ -22,7 +22,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
   int? selectedLevel;
 
   List<Language>? languages;
-  List<LanguageLevel>? languageLevels;
+  List<Level>? languageLevels;
   List<Session>? sessions;
 
   @override

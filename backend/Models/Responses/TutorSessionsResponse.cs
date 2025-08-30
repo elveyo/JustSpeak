@@ -1,6 +1,6 @@
 namespace Models.Responses
 {
-    public class TutorSessionResponse
+    public class BookedSessionResponse
     {
         public string Language { get; set; }
         public string Level { get; set; }

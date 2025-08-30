@@ -193,6 +193,7 @@ namespace Services.Services
             var token = _tokenService.GetToken(user);
 
             var response = _mapper.Map<UserResponse>(user);
+            response.Token = token;
             return response;
         }
 
@@ -223,6 +224,13 @@ namespace Services.Services
                             Id = c.Id,
                             Name = c.Name,
                             ImageUrl = c.ImageUrl,
+                        })
+                        .ToList(),
+                    Languages = t
+                        .TutorLanguages.Select(tl => new LanguageResponse
+                        {
+                            Id = tl.Language.Id,
+                            Name = tl.Language.Name,
                         })
                         .ToList(),
                 })
