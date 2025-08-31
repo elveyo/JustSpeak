@@ -156,42 +156,57 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
                         horizontal: 10.0,
                         vertical: 8.0,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 8),
-                          Text(
-                            _tutor!.user.bio,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          const SizedBox(height: 16),
-                          const Text(
-                            "Certificates",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.purple,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            height: 250,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  for (var cert in _tutor!.certificates)
-                                    _buildCertificateWidget(cert),
-                                ],
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            Text(
+                              _tutor!.user.bio,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+
+                            const SizedBox(height: 16),
+                            const Text(
+                              "Certificates",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.purple,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            if (_tutor!.certificates.isEmpty)
+                              const Text(
+                                "This trainer hasn't posted any certificates yet.",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black54,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              )
+                            else
+                              SizedBox(
+                                height: 250,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      for (var cert in _tutor!.certificates)
+                                        _buildCertificateWidget(cert),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:frontend/models/language.dart';
@@ -6,6 +7,9 @@ import 'package:frontend/models/level.dart';
 import 'package:frontend/models/user.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
+import 'package:frontend/providers/user_provider.dart';
+import 'package:frontend/screens/feed_screen.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -26,15 +30,56 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
   List<Map<String, int>> selectedLanguages = [];
 
   String? bio;
-  String? profileImage;
+  String? profileImageBase64; // base64 string for BE and display
 
   int? tempLang;
   int? tempLevel;
+
+  bool _isRegistering = false;
 
   @override
   void initState() {
     super.initState();
     _loadLanguagesAndLevels();
+  }
+
+  Future<void> register() async {
+    // Build the request object
+    final request = {
+      "firstName": widget.user.firstName,
+      "lastName": widget.user.lastName,
+      "email": widget.user.email,
+      "password": widget.user.password,
+      "languages":
+          selectedLanguages
+              .map(
+                (lang) => {
+                  "languageId": lang["languageId"],
+                  "levelId": lang["levelId"],
+                },
+              )
+              .toList(),
+      "imageUrl": profileImageBase64, // send as base64
+      "bio": bio,
+      "roleId": widget.user.role == 'tutor' ? 2 : 3,
+    };
+
+    try {
+      setState(() {
+        _isRegistering = true;
+      });
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      String token = await userProvider.register(request);
+      AuthService().saveToken(token);
+    } catch (err) {
+      // Optionally show error
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRegistering = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadLanguagesAndLevels() async {
@@ -72,14 +117,19 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
     }
   }
 
-  void _nextStep() {
+  Future<void> _nextStep() async {
     if (_currentStep < 2) {
       setState(() => _currentStep++);
     } else {
-      // Finish
+      // Finish: Call register here
       debugPrint("🎉 Onboarding complete!");
       debugPrint("Languages: $selectedLanguages");
       debugPrint("Bio: $bio");
+      await register();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => FeedScreen()),
+      );
     }
   }
 
@@ -87,6 +137,20 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
     }
+  }
+
+  bool get _canGoNext {
+    if (_currentStep == 1) {
+      // Must have at least one language to go next
+      return selectedLanguages.isNotEmpty;
+    }
+    if (_currentStep == 2) {
+      // Must have image and bio to finish
+      return (profileImageBase64 != null && profileImageBase64!.isNotEmpty) &&
+          (bio != null && bio!.trim().isNotEmpty);
+    }
+    // For welcome step, always true (but button not shown)
+    return true;
   }
 
   @override
@@ -127,22 +191,34 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
               children: [
                 if (_currentStep > 0)
                   TextButton(onPressed: _backStep, child: const Text("Back")),
-                if (_currentStep > 0 && _currentStep < 2)
-                  TextButton(
-                    onPressed: () => setState(() => _currentStep = 2),
-                    child: const Text("Skip"),
-                  ),
+                // Removed skip button
                 if (_currentStep != 0)
                   ElevatedButton(
-                    onPressed: _nextStep,
+                    onPressed:
+                        _isRegistering || !_canGoNext
+                            ? null
+                            : () async {
+                              await _nextStep();
+                            },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
+                      backgroundColor:
+                          _canGoNext ? Colors.deepPurple : Colors.grey[400],
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Text(_currentStep == 2 ? "Finish" : "Next"),
+                    child:
+                        _isRegistering
+                            ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                            : Text(_currentStep == 2 ? "Finish" : "Next"),
                   ),
               ],
             ),
@@ -361,7 +437,11 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                   source: ImageSource.gallery,
                 );
                 if (image != null) {
-                  setState(() => profileImage = image.path);
+                  final bytes = await image.readAsBytes();
+                  // Always encode as base64 and store in profileImageBase64
+                  final base64Image =
+                      'data:image/${image.path.split('.').last};base64,${base64Encode(bytes)}';
+                  setState(() => profileImageBase64 = base64Image);
                 }
               },
               child: Container(
@@ -382,15 +462,13 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                 ),
                 child: CircleAvatar(
                   radius: 60,
-                  backgroundImage:
-                      profileImage != null
-                          ? (profileImage!.startsWith('assets/')
-                              ? AssetImage(profileImage!)
-                              : FileImage(File(profileImage!)) as ImageProvider)
-                          : null,
                   backgroundColor: Colors.white,
+                  backgroundImage:
+                      profileImageBase64 != null
+                          ? MemoryImage(_decodeBase64(profileImageBase64!))
+                          : null,
                   child:
-                      profileImage == null
+                      profileImageBase64 == null
                           ? const Icon(
                             Icons.camera_alt,
                             size: 40,
@@ -410,7 +488,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: TextField(
-                  maxLines: 5,
+                  maxLines: null, // allow any length
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     hintText: "Write something about yourself...",
@@ -423,6 +501,22 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
         ),
       ),
     );
+  }
+
+  // Helper to decode base64 string (with/without data:image/...;base64, prefix)
+  static Uint8List _decodeBase64(String base64String) {
+    try {
+      final regex = RegExp(r'data:image/[^;]+;base64,');
+      final cleaned = base64String.replaceFirst(regex, '');
+      return base64Decode(cleaned);
+    } catch (e) {
+      // fallback: try to decode as is
+      try {
+        return base64Decode(base64String);
+      } catch (_) {
+        return Uint8List(0);
+      }
+    }
   }
 }
 

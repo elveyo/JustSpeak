@@ -4,8 +4,9 @@ namespace Models.SearchObjects
 {
     public class UserSearchObject : BaseSearchObject
     {
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
         public string? Email { get; set; }
+        public int? LanguageId { get; set; }
+        public int? LevelId { get; set; }
+        public int? RoleId { get; set; }
     }
 }

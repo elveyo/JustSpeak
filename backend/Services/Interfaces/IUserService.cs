@@ -1,3 +1,4 @@
+using Model.Responses;
 using Models.Requests;
 using Models.Responses;
 using Models.SearchObjects;

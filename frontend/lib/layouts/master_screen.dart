@@ -99,6 +99,7 @@ class MasterScreen extends StatelessWidget {
               break;
             case 2:
               targetPage = thirdDestination['screen'] as Widget;
+              print(user!.toJson());
               break;
             case 3:
               targetPage =

@@ -118,13 +118,13 @@ namespace Services
             // provjeri postoji li već schedule za ovog tutora
             var schedule = await _context
                 .Schedules.Include(s => s.AvailableDays)
-                .FirstOrDefaultAsync(s => s.TutorId == userId.Value);
+                .FirstOrDefaultAsync(s => s.TutorId == userId!.Value);
 
             if (schedule == null)
             {
                 schedule = new TutorSchedule
                 {
-                    TutorId = userId.Value,
+                    TutorId = userId!.Value,
                     Duration = request.Duration,
                     Price = request.Price,
                     AvailableDays = request

@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Model.Responses;
 using Models.Requests;
 using Models.Responses;
 using Models.SearchObjects;
@@ -36,7 +37,7 @@ namespace Services.Services
             _tokenService = tokenService;
         }
 
-        public async Task<List<UserResponse>> GetAsync(UserSearchObject search)
+        public override async Task<PagedResult<UserResponse>> GetAsync(UserSearchObject search)
         {
             var query = _context.Users.AsQueryable();
 
@@ -55,7 +56,11 @@ namespace Services.Services
             }
 
             var users = await query.ToListAsync();
-            return users.Select(_mapper.Map<UserResponse>).ToList();
+            return new PagedResult<UserResponse>
+            {
+                Items = users.Select(_mapper.Map<UserResponse>).ToList(),
+                TotalCount = users.Count,
+            };
         }
 
         public override async Task<UserResponse?> GetByIdAsync(int id)
@@ -150,7 +155,9 @@ namespace Services.Services
             _context.Users.Add(user);
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<UserResponse>(user);
+            UserResponse response = _mapper.Map<UserResponse>(user);
+            response.Token = _tokenService.GetToken(user);
+            return response;
         }
 
         public override async Task<UserResponse?> UpdateAsync(int id, UserUpdateRequest request)
@@ -267,6 +274,69 @@ namespace Services.Services
                 .FirstOrDefaultAsync();
 
             return student;
-        }
+        } /*
+
+        public async Task<PagedResult<User>> GetUsersAsync(UserSearchObject request)
+        {
+            var query = _context.Users.AsQueryable();
+
+            // Filter by RoleId if provided
+            if (request.RoleId.HasValue)
+            {
+                query = query.Where(u => u.RoleId == request.RoleId.Value);
+            }
+
+            // Filter by LanguageId and LevelId based on role
+            if (request.LanguageId.HasValue)
+            {
+                if (
+                    request.RoleId.HasValue
+                    && _context.Roles.Any(r =>
+                        r.Id == request.RoleId && r.Name.ToLower() == "tutor"
+                    )
+                )
+                {
+                    // Tutor: filter by TutorLanguages
+                    query = query.Where(u =>
+                        (u as Tutor).TutorLanguages.Any(tl =>
+                            tl.LanguageId == request.LanguageId.Value
+                        )
+                    );
+                }
+                else
+                {
+                    // Student: filter by StudentLanguages
+                    query = query.Where(u =>
+                        (u as Student).StudentLanguages.Any(sl =>
+                            sl.LanguageId == request.LanguageId.Value
+                        )
+                    );
+                }
+            }
+
+            // FTS (Full Text Search) on FirstName, LastName, Email
+            if (!string.IsNullOrWhiteSpace(request.FTS))
+            {
+                query = query.Where(u =>
+                    u.FirstName.Contains(request.FTS)
+                    || u.LastName.Contains(request.FTS)
+                    || u.Email.Contains(request.FTS)
+                );
+            }
+
+            // Paging
+            var page = request.Page ?? 0;
+            var pageSize = request.PageSize ?? 10;
+            var totalCount = await query.CountAsync();
+            var items = await query.Skip(page * pageSize).Take(pageSize).ToListAsync();
+
+            return new PagedResult<User>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+            };
+        } */
     }
 }

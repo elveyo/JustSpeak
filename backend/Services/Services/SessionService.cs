@@ -189,12 +189,12 @@ namespace Services.Services
         public async Task<BookedSessionResponse[]?> GetTutorSessionsAsync()
         {
             var schedule = await _context.Schedules.FirstOrDefaultAsync(s =>
-                s.TutorId == UserId.Value
+                s.TutorId == UserId!.Value
             );
             if (schedule == null)
                 return null;
             var bookedSessions = await _context
-                .StudentTutorSessions.Where(sts => sts.TutorId == UserId.Value)
+                .StudentTutorSessions.Where(sts => sts.TutorId == UserId!.Value)
                 .Select(s => new BookedSessionResponse
                 {
                     Language = s.Language.Name,
@@ -213,7 +213,7 @@ namespace Services.Services
         public async Task<BookedSessionResponse[]> GetStudentSessionsAsync()
         {
             var bookedSessions = await _context
-                .StudentTutorSessions.Where(sts => sts.StudentId == UserId.Value)
+                .StudentTutorSessions.Where(sts => sts.StudentId == UserId!.Value)
                 .Select(s => new BookedSessionResponse
                 {
                     Language = s.Language.Name,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/user.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/tutor_onboading_screen.dart';
+import 'package:frontend/screens/user_onboarding_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:frontend/screens/feed_screen.dart';
@@ -47,7 +47,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   // Email validation function
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
+    /* if (value == null || value.isEmpty) {
       return 'Email is required';
     }
 
@@ -64,12 +64,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       return null; // Valid Gmail
     }
 
-    return 'Please use a Gmail address';
+    return 'Please use a Gmail address'; */
+    return null;
   }
 
   // Password validation function
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
+    /*     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
 
@@ -87,7 +88,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     if (!value.contains(RegExp(r'[0-9]'))) {
       return 'Password must contain at least one number';
-    }
+    } */
 
     return null;
   }
@@ -539,7 +540,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         const Text('Already have an account?'),
                         TextButton(
                           onPressed: () {
-                            Navigator.push(
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => LoginScreen(),
