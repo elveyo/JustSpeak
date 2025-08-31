@@ -7,6 +7,7 @@ import 'package:frontend/providers/language_provider.dart';
 import 'package:frontend/providers/payment_provider.dart';
 import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/providers/session_provider.dart';
+import 'package:frontend/screens/student_sessions.dart';
 import 'package:frontend/screens/tutor_calendar_screen.dart';
 import 'package:frontend/widgets/calendar.dart';
 import 'package:provider/provider.dart';
@@ -70,7 +71,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
       await paymentProvider.insert(payment);
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => TutorCalendarScreen()),
+        MaterialPageRoute(builder: (context) => StudentSessionsScreen()),
       );
     } catch (error) {
       showDialog(

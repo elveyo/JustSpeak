@@ -58,21 +58,23 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
               : SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Header sa gradientom
+                    const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 20,
+                        vertical: 40,
                       ),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.purple, Colors.pinkAccent],
+                          colors: [
+                            Theme.of(context).colorScheme.secondary,
+                            const Color.fromARGB(255, 210, 83, 125),
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(30),
-                          bottomRight: Radius.circular(30),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(20),
                         ),
                       ),
                       child: Column(
@@ -198,7 +200,7 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
     );
   }
 
-  static Widget _buildTabButton(String text, bool isActive) {
+  Widget _buildTabButton(String text, bool isActive) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -219,10 +221,11 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
   /// Shows a certificate with its image and name below.
   /// [cert] should be a map or object with 'imageUrl' and 'name' fields.
   static Widget _buildCertificateWidget(Certificate cert) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 5.0,
-      ), // Add horizontal padding between certificates
+    return Container(
+      margin: const EdgeInsets.only(
+        left: 0,
+        right: 12.0,
+      ), // Only right margin for spacing, so first one is flush left
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -230,7 +233,7 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
             borderRadius: BorderRadius.circular(10),
             child: Image.network(
               cert.imageUrl!,
-              width: 100,
+              width: 150,
               height: 200,
               fit: BoxFit.cover,
               errorBuilder:

@@ -4,6 +4,8 @@ import 'package:frontend/models/post.dart';
 import 'package:frontend/models/search_result.dart';
 import 'package:frontend/providers/post_provider.dart';
 import 'package:frontend/screens/add_post_screen.dart';
+import 'package:frontend/screens/student_profile_screen.dart';
+import 'package:frontend/screens/tutor_profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 
@@ -119,46 +121,67 @@ class _FeedScreenState extends State<FeedScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // User header
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage(
-                    'https://via.placeholder.com/50',
+            GestureDetector(
+              onTap: () {
+                if (item.userRole == 'Tutor') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => TutorProfileScreen(id: item.authorId),
+                    ),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => StudentProfileScreen(id: item.authorId),
+                    ),
+                  );
+                }
+              },
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: NetworkImage(
+                      'https://via.placeholder.com/50',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            item.authorName ?? '',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              item.authorName ?? '',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
-                          ),
-                          if (item.userRole == 'Tutor') ...[
-                            const SizedBox(width: 6),
-                            const Icon(
-                              Icons.verified,
-                              size: 18,
-                              color: Color.fromARGB(255, 53, 220, 100),
-                            ),
+                            if (item.userRole == 'Tutor') ...[
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.verified,
+                                size: 18,
+                                color: Color.fromARGB(255, 53, 220, 100),
+                              ),
+                            ],
                           ],
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Text(
-                  timeago.format(DateTime.parse(item.createdAt)),
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
-              ],
+                  Text(
+                    timeago.format(DateTime.parse(item.createdAt)),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             // Image container (base64 support)

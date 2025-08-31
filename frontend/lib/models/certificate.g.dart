@@ -16,5 +16,5 @@ Map<String, dynamic> _$CertificateToJson(Certificate instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'ImageUrl': instance.imageUrl,
+      'imageUrl': instance.imageUrl,
     };

@@ -4,6 +4,7 @@ import 'package:frontend/providers/session_provider.dart';
 import 'package:frontend/widgets/session_card.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/layouts/master_screen.dart';
+import 'package:intl/intl.dart';
 
 class StudentSessionsScreen extends StatefulWidget {
   const StudentSessionsScreen({Key? key}) : super(key: key);
@@ -34,15 +35,58 @@ class _StudentSessionsScreenState extends State<StudentSessionsScreen> {
         _bookedSessions = bookedSessions;
       });
     } catch (error) {
-      // opcionalno: prikazi error
       print("Error fetching sessions: $error");
+    }
+  }
+
+  // Helper to group sessions by date
+  Map<DateTime, List<BookedSession>> _groupSessionsByDate(
+    List<BookedSession> sessions,
+  ) {
+    Map<DateTime, List<BookedSession>> grouped = {};
+    for (var session in sessions) {
+      // Only use the date part (year, month, day)
+      final date = DateTime(
+        session.date.year,
+        session.date.month,
+        session.date.day,
+      );
+      if (!grouped.containsKey(date)) {
+        grouped[date] = [];
+      }
+      grouped[date]!.add(session);
+    }
+    // Sort by date ascending
+    final sortedKeys = grouped.keys.toList()..sort();
+    Map<DateTime, List<BookedSession>> sortedGrouped = {};
+    for (var key in sortedKeys) {
+      sortedGrouped[key] = grouped[key]!;
+    }
+    return sortedGrouped;
+  }
+
+  String _formatDateLabel(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+
+    if (date == today) {
+      return 'Today';
+    } else if (date == tomorrow) {
+      return 'Tomorrow';
+    } else if (date.year == today.year) {
+      // Show "Monday, 5 June" for this year
+      return DateFormat('EEEE, d MMMM').format(date);
+    } else {
+      // Show "Monday, 5 June 2023" for other years
+      return DateFormat('EEEE, d MMMM yyyy').format(date);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
-      title: 'My Lessons',
+      title: 'Lessons',
       child:
           _bookedSessions == null
               ? const Center(child: CircularProgressIndicator())
@@ -55,27 +99,53 @@ class _StudentSessionsScreenState extends State<StudentSessionsScreen> {
               )
               : SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (int i = 0; i < _bookedSessions!.length; i++) ...[
-                      // Print imageUrl to console
-                      (() {
-                        print(_bookedSessions![i].toJson());
-                        return const SizedBox.shrink();
-                      })(),
-                      SessionCard(
-                        imageUrl: _bookedSessions![i].userImageUrl,
-                        name: _bookedSessions![i].userName,
-                        sessionTitle:
-                            '${_bookedSessions![i].language} (${_bookedSessions![i].level})',
-                        date: _bookedSessions![i].date
-                            .toIso8601String()
-                            .substring(0, 10),
-                        time:
-                            '${_bookedSessions![i].startTime.hour.toString().padLeft(2, '0')}:${_bookedSessions![i].startTime.minute.toString().padLeft(2, '0')} - ${_bookedSessions![i].endTime.hour.toString().padLeft(2, '0')}:${_bookedSessions![i].endTime.minute.toString().padLeft(2, '0')}',
-                      ),
-                      if (i != _bookedSessions!.length - 1)
-                        const SizedBox(height: 12),
-                    ],
+                    ..._groupSessionsByDate(_bookedSessions!).entries.expand((
+                      entry,
+                    ) {
+                      final date = entry.key;
+                      final sessions = entry.value;
+                      return [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: 16.0,
+                            bottom: 8.0,
+                            left: 4.0,
+                          ),
+                          child: Text(
+                            _formatDateLabel(date),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple,
+                            ),
+                          ),
+                        ),
+                        ...List.generate(sessions.length, (i) {
+                          final session = sessions[i];
+                          // Print imageUrl to console
+                          print(session.toJson());
+                          return Column(
+                            children: [
+                              SessionCard(
+                                imageUrl: session.userImageUrl,
+                                name: session.userName,
+                                sessionTitle:
+                                    '${session.language} (${session.level})',
+                                date: DateFormat(
+                                  'yyyy-MM-dd',
+                                ).format(session.date),
+                                time:
+                                    '${session.startTime.hour.toString().padLeft(2, '0')}:${session.startTime.minute.toString().padLeft(2, '0')} - ${session.endTime.hour.toString().padLeft(2, '0')}:${session.endTime.minute.toString().padLeft(2, '0')}',
+                              ),
+                              if (i != sessions.length - 1)
+                                const SizedBox(height: 12),
+                            ],
+                          );
+                        }),
+                      ];
+                    }),
                   ],
                 ),
               ),

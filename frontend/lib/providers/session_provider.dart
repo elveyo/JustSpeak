@@ -69,13 +69,10 @@ class SessionProvider extends BaseProvider<Session> {
     var headers = createHeaders();
     var request = {"channelName": channelName, "userId": userId};
     var jsonRequest = jsonEncode(request);
-    print(jsonRequest);
     final response = await http.post(uri, headers: headers, body: jsonRequest);
-    print(response.body);
     if (!isValidResponse(response)) {
       throw Exception("Unknown error");
     }
-    print(response.body);
     return response.body;
   }
 

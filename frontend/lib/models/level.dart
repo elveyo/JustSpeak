@@ -16,7 +16,6 @@ class Level {
     required this.maxPoints,
   });
 
-  factory Level.fromJson(Map<String, dynamic> json) =>
-      _$LanguageLevelFromJson(json);
-  Map<String, dynamic> toJson() => _$LanguageLevelToJson(this);
+  factory Level.fromJson(Map<String, dynamic> json) => _$LevelFromJson(json);
+  Map<String, dynamic> toJson() => _$LevelToJson(this);
 }

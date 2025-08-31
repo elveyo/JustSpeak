@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/session_screen.dart';
+import 'package:frontend/screens/student_profile_screen.dart';
 import 'package:frontend/screens/student_sessions.dart';
 import 'package:frontend/screens/tutor_calendar_screen.dart';
 import 'package:frontend/screens/tutor_profile_screen.dart';
@@ -61,21 +62,24 @@ class MasterScreen extends StatelessWidget {
     // Helper to get selected index
     int selectedIndex = destinations.indexWhere((d) => d.label == title);
     if (selectedIndex == -1) selectedIndex = 0;
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        foregroundColor: Colors.purple,
-        title: Text(
-          title,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      appBar:
+          title == 'Profile'
+              ? null
+              : AppBar(
+                backgroundColor: Colors.white,
+                elevation: 1,
+                foregroundColor: Colors.purple,
+                automaticallyImplyLeading: false, // Removes back arrow
+                title: Text(
+                  title,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0),
         child: child,
@@ -97,7 +101,10 @@ class MasterScreen extends StatelessWidget {
               targetPage = thirdDestination['screen'] as Widget;
               break;
             case 3:
-              targetPage = TutorProfileScreen(id: user!.id);
+              targetPage =
+                  user!.role == "Tutor"
+                      ? TutorProfileScreen(id: user!.id)
+                      : StudentProfileScreen(id: user!.id);
               break;
           }
 
