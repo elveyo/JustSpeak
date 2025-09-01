@@ -1,0 +1,84 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - justspeak-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+    container_name: sqlserver
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: ${SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    networks:
+      - justspeak-net
+
+  justspeak-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: justspeak-api
+    restart: unless-stopped
+    depends_on:
+      - sqlserver
+      - rabbitmq
+    environment:
+      ASPNETCORE_URLS: http://+:5255
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings:JustSpeakDB: "Server=sqlserver,1433;Database=JustSpeakDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True"
+      EMAIL_FROM: ${EMAIL_FROM}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_ENABLESSL: ${EMAIL_ENABLESSL}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+    ports:
+      - "5255:5255"
+    networks:
+      - justspeak-net
+
+  subscriber:
+    build:
+      context: ./Subscriber
+      dockerfile: Dockerfile
+    container_name: justspeak-subscriber
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    environment:
+      EMAIL_FROM: ${EMAIL_FROM}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_ENABLESSL: ${EMAIL_ENABLESSL}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+    networks:
+      - justspeak-net
+
+networks:
+  justspeak-net:
+    driver: bridge

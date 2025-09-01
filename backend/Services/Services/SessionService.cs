@@ -34,13 +34,15 @@ namespace Services.Services
         private readonly string _agoraAppId;
         private readonly string _agoraAppCertificate;
         private readonly IPaymentService _paymentService;
+        private readonly IMessageBrokerService _messageBrokerService;
 
         public SessionService(
             ApplicationDbContext context,
             IMapper mapper,
             IConfiguration configuration,
             IUserContextService userContextService,
-            IPaymentService paymentService
+            IPaymentService paymentService,
+            IMessageBrokerService messageBrokerService
         )
             : base(context, mapper)
         {
@@ -49,6 +51,7 @@ namespace Services.Services
             _agoraAppCertificate = _configuration["Agora:AppCertificate"] ?? "";
             _userContextService = userContextService;
             _paymentService = paymentService;
+            _messageBrokerService = messageBrokerService;
         }
 
         private int? UserId => _userContextService.GetUserId();
@@ -183,6 +186,8 @@ namespace Services.Services
 
             _context.StudentTutorSessions.Add(session);
             await _context.SaveChangesAsync();
+
+            _messageBrokerService.Publish(session, "session-booked");
             return session.Id;
         }
 

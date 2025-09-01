@@ -16,7 +16,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
     _endpoint = endpoint;
     _baseUrl = const String.fromEnvironment(
       "baseUrl",
-      defaultValue: "http://10.0.2.2:5280/api/",
+      defaultValue: "http://10.0.2.2:5255/api/",
     );
     AuthService().loadToken();
     _jwtToken = AuthService().token;

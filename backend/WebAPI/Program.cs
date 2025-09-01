@@ -16,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("JustSpeakDB"))
 );
 builder.Services.AddMapster();
 
@@ -132,7 +132,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Map SignalR hub
-app.MapHub<VideoCallHub>("/hubs/videocall");
+using (var scope = app.Services.CreateScope())
+{
+    var dataContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dataContext.Database.Migrate();
+}
 
 app.Run();
