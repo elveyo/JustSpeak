@@ -28,20 +28,5 @@ namespace Services.Services
         {
             _context = context;
         }
-
-        public async Task<List<LevelResponse>> GetAllLanguageLevelsAsync()
-        {
-            var levels = await _context
-                .Levels.Select(ll => new LevelResponse
-                {
-                    Id = ll.Id,
-                    Name = ll.Name,
-                    Description = ll.Description,
-                    MaxPoints = ll.MaxPoints,
-                })
-                .ToListAsync();
-
-            return levels;
-        }
     }
 }

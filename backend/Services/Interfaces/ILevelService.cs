@@ -5,8 +5,5 @@ using Models.Responses;
 namespace Services.Interfaces
 {
     public interface ILevelService
-        : ICRUDService<LevelResponse, BaseSearchObject, LevelUpsertRequest, LevelUpsertRequest>
-    {
-        Task<List<LevelResponse>> GetAllLanguageLevelsAsync();
-    }
+        : ICRUDService<LevelResponse, BaseSearchObject, LevelUpsertRequest, LevelUpsertRequest> { }
 }

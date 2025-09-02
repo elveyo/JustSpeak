@@ -1,4 +1,5 @@
 using System.Text;
+using JustSpeak.Services.Recommender;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using Services;
 using Services.Database;
 using Services.Interfaces;
+using Services.Recommender;
 using Services.Services;
 using Stripe;
 using WebAPI.Hubs;
@@ -16,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("JustSpeakDB"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("CONNECTIONSTRING_DB"))
 );
 builder.Services.AddMapster();
 
@@ -38,6 +40,8 @@ builder.Services.AddTransient<ISessionService, SessionService>();
 builder.Services.AddTransient<ILanguageService, LanguageService>();
 builder.Services.AddTransient<ILevelService, LevelService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
+builder.Services.AddTransient<IMessageBrokerService, MessageBrokerService>();
+builder.Services.AddTransient<IRecommenderService, RecommenderService>();
 
 //Payment machine state
 builder.Services.AddTransient<Services.StateMachine.BasePaymentState>();
@@ -132,10 +136,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
+/* using (var scope = app.Services.CreateScope())
 {
     var dataContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dataContext.Database.Migrate();
-}
+} */
 
 app.Run();

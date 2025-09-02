@@ -25,11 +25,11 @@ namespace WebAPI.Controllers
             _levelService = service;
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<List<LanguageLevelResponse>>> GetAllLanguageLevels()
-        {
-            var languageLevels = await _levelService.GetAllLanguageLevelsAsync();
-            return Ok(languageLevels);
-        }
+        /*   [HttpGet("all")]
+          public async Task<ActionResult<List<LanguageLevelResponse>>> GetAllLanguageLevels()
+          {
+              var languageLevels = await _levelService.GetAllLanguageLevelsAsync();
+              return Ok(languageLevels);
+          } */
     }
 }

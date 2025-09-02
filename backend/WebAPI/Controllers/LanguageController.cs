@@ -9,11 +9,18 @@ using Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
-    public class LanguageController : BaseCRUDController<LanguageResponse, BaseSearchObject, LanguageUpsertRequest, LanguageUpsertRequest>
+    public class LanguageController
+        : BaseCRUDController<
+            LanguageResponse,
+            BaseSearchObject,
+            LanguageUpsertRequest,
+            LanguageUpsertRequest
+        >
     {
         private readonly ILanguageService _languageService;
-        
-        public LanguageController(ILanguageService service) : base(service)
+
+        public LanguageController(ILanguageService service)
+            : base(service)
         {
             _languageService = service;
         }
@@ -25,4 +32,4 @@ namespace WebAPI.Controllers
             return Ok(languages);
         }
     }
-} 
+}

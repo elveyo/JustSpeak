@@ -15,6 +15,5 @@ namespace Models.Responses
         public string UserRole { get; set; } = String.Empty;
 
         public bool LikedByCurrUser { get; set; }
-        
     }
 }

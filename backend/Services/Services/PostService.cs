@@ -7,6 +7,7 @@ using Models.Requests;
 using Models.Responses;
 using Services.Database;
 using Services.Interfaces;
+using Services.Recommender;
 using Services.Services;
 
 namespace Services.Services
@@ -23,21 +24,24 @@ namespace Services.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
+        private readonly IRecommenderService _recommender;
 
         public PostService(
             ApplicationDbContext context,
             IMapper mapper,
-            IUserContextService userContextService
+            IUserContextService userContextService,
+            IRecommenderService recommender
         )
             : base(context, mapper)
         {
             _context = context;
             _userContextService = userContextService;
+            _recommender = recommender;
         }
 
         public override async Task<PagedResult<PostResponse>> GetAsync(BaseSearchObject search)
         {
-            int? currentUserId = _userContextService.GetUserId();
+            int? userId = _userContextService.GetUserId();
             var query = _context
                 .Posts.Include(p => p.Author)
                 .ThenInclude(a => a.Role)
@@ -46,10 +50,14 @@ namespace Services.Services
                 .AsQueryable();
 
             query = ApplyPagination(query, search);
-
             var posts = await query.ToListAsync();
 
-            var postResponses = posts
+            var recommendedPosts = await _recommender.GetTopPostsForUserAsync(userId!.Value, 10);
+            var recommendedIds = recommendedPosts.Select(p => p.Id).ToHashSet();
+            posts = posts.Where(p => !recommendedIds.Contains(p.Id)).ToList();
+            var finalFeed = recommendedPosts;
+
+            var postResponses = finalFeed
                 .Select(post => new PostResponse
                 {
                     Id = post.Id,
@@ -60,8 +68,7 @@ namespace Services.Services
                     ImageUrl = post.ImageUrl,
                     NumOfLikes = post.Likes.Count,
                     NumOfComments = post.Comments.Count,
-                    LikedByCurrUser =
-                        currentUserId != null && post.Likes.Any(l => l.UserId == currentUserId),
+                    LikedByCurrUser = userId != null && post.Likes.Any(l => l.UserId == userId),
                 })
                 .ToList();
 

@@ -68,6 +68,7 @@ namespace Services.Database
                         Description =
                             "Embarking on the language journey, learning greetings and essential words.",
                         MaxPoints = 100,
+                        Order = 1,
                     },
                     new Level
                     {
@@ -76,6 +77,7 @@ namespace Services.Database
                         Description =
                             "Navigating simple conversations and discovering basic grammar structures.",
                         MaxPoints = 200,
+                        Order = 2,
                     },
                     new Level
                     {
@@ -84,6 +86,7 @@ namespace Services.Database
                         Description =
                             "Confidently sharing stories and engaging in daily discussions.",
                         MaxPoints = 400,
+                        Order = 3,
                     },
                     new Level
                     {
@@ -91,6 +94,7 @@ namespace Services.Database
                         Name = "Sage",
                         Description = "Mastering complex topics, idioms, and nuanced expressions.",
                         MaxPoints = 600,
+                        Order = 4,
                     },
                     new Level
                     {
@@ -99,6 +103,7 @@ namespace Services.Database
                         Description =
                             "Achieving legendary fluency and cultural mastery, speaking like a native.",
                         MaxPoints = 1000,
+                        Order = 5,
                     }
                 );
 
