@@ -3,6 +3,7 @@ using Model.Responses;
 using Model.SearchObjects;
 using Models.Requests;
 using Models.Responses;
+using Models.SearchObjects;
 using Services;
 using Services.Database;
 using Services.Interfaces;
@@ -12,7 +13,7 @@ namespace WebAPI.Controllers
     public class ScheduleController
         : BaseCRUDController<
             ScheduleResponse,
-            BaseSearchObject,
+            ScheduleSearchObject,
             ScheduleUpsertRequest,
             ScheduleUpsertRequest
         >
@@ -25,8 +26,8 @@ namespace WebAPI.Controllers
             _scheduleService = service;
         }
 
-        [HttpGet("all")]
-        public new Task<ScheduleResponse> Get([FromQuery] BaseSearchObject? search = null)
+        [HttpGet("/all")]
+        public Task<ScheduleResponse> Get([FromQuery] ScheduleSearchObject? search = null)
         {
             return _scheduleService.GetAsync(search);
         }

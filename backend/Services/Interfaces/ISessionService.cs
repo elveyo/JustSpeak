@@ -17,10 +17,10 @@ namespace Services.Interfaces
             SessionUpsertRequest
         >
     {
-        string GenerateAgoraToken(string channelName, int userId);
         Task<PagedResult<TagResponse>> GetTagsAsync(BaseSearchObject query);
         Task<int> BookSessionAsync(BookSessionRequest request);
         Task<BookedSessionResponse[]?> GetTutorSessionsAsync();
         Task<BookedSessionResponse[]> GetStudentSessionsAsync();
+        string Get(string channelName, string userAccount);
     }
 }

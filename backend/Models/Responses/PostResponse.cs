@@ -4,7 +4,7 @@ namespace Models.Responses
     {
         public int Id { get; set; }
         public string Content { get; set; } = String.Empty;
-        public DateTime CreatedAt { get; set; } = DateTime.Now.AddDays(-new Random().Next(0, 3650));
+        public DateTime CreatedAt { get; set; }
         public int AuthorId { get; set; }
         public string AuthorName { get; set; } = String.Empty;
 

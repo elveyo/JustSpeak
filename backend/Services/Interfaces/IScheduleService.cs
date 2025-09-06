@@ -1,17 +1,18 @@
 using Model.SearchObjects;
 using Models.Requests;
 using Models.Responses;
+using Models.SearchObjects;
 
 namespace Services.Interfaces
 {
     public interface IScheduleService
         : ICRUDService<
             ScheduleResponse,
-            BaseSearchObject,
+            ScheduleSearchObject,
             ScheduleUpsertRequest,
             ScheduleUpsertRequest
         >
     {
-        new Task<ScheduleResponse> GetAsync(BaseSearchObject query);
+        new Task<ScheduleResponse> GetAsync(ScheduleSearchObject query);
     }
 }

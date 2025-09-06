@@ -29,6 +29,8 @@ namespace Services.Services
         {
             var query = _context.Set<TEntity>().AsQueryable();
             query = ApplyFilter(query, search);
+            var totalCount = await query.CountAsync();
+
 
             query = ApplyPagination(query, search);
 
@@ -36,7 +38,7 @@ namespace Services.Services
             return new PagedResult<T>
             {
                 Items = list.Select(MapToResponse).ToList(),
-                TotalCount = await query.CountAsync(),
+                TotalCount = totalCount,
             };
         }
 

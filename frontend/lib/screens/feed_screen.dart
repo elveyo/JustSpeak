@@ -8,7 +8,6 @@ import 'package:frontend/screens/student_profile_screen.dart';
 import 'package:frontend/screens/tutor_profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
-
 import 'package:timeago/timeago.dart' as timeago;
 
 class FeedScreen extends StatefulWidget {
@@ -20,24 +19,76 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen> {
   SearchResult<Post>? posts;
+  final ScrollController _scrollController = ScrollController();
+  int _currentPage = 0;
+  final int _pageSize = 10;
+  bool _isLoading = false;
+  bool _hasMore = true;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadPosts());
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPosts(initial: true);
+    });
   }
 
-  Future<void> _loadPosts() async {
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
-    try {
-      final items = await postProvider.get();
-      posts = items;
-    } catch (e) {
-      posts = null; // Optionally show a snackbar or error UI
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoading &&
+        _hasMore) {
+      _loadPosts();
     }
+  }
+
+  Future<void> _loadPosts({bool initial = false}) async {
+    if (_isLoading) return;
+
+    setState(() => _isLoading = true);
+
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+
+    try {
+      final pageToFetch = initial ? 0 : _currentPage;
+      final items = await postProvider.get(
+        filter: {"page": pageToFetch, "pageSize": _pageSize},
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        if (initial || posts == null) {
+          posts = items;
+        } else {
+          posts!.items!.addAll(items.items!);
+        }
+        print(posts!.totalCount);
+        _currentPage++;
+        _hasMore = (posts!.items!.length < (posts!.totalCount ?? 0));
+      });
+    } catch (e) {
+      if (mounted) posts = null;
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _refreshPosts() async {
     setState(() {
-      posts = posts;
+      _currentPage = 0;
+      _hasMore = true;
+      posts = null;
     });
+    await _loadPosts(initial: true);
   }
 
   Future<void> _likePost(int postId) async {
@@ -57,17 +108,20 @@ class _FeedScreenState extends State<FeedScreen> {
                   Container(
                     color: Colors.grey[50],
                     child: RefreshIndicator(
-                      onRefresh: () async {
-                        await Future.delayed(const Duration(seconds: 1));
-                        setState(() {
-                          // Osvježi feed
-                        });
-                      },
+                      onRefresh: _refreshPosts,
                       child: ListView.builder(
-                        itemCount: posts!.totalCount,
+                        controller: _scrollController,
+                        itemCount: posts!.items!.length,
                         itemBuilder: (context, index) {
-                          final item = posts!.items![index];
-                          return _buildFeedCard(item);
+                          if (index < posts!.items!.length) {
+                            final item = posts!.items![index];
+                            return _buildFeedCard(item);
+                          } else {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
                         },
                       ),
                     ),
@@ -75,25 +129,17 @@ class _FeedScreenState extends State<FeedScreen> {
                   Positioned(
                     bottom: 16,
                     right: 16,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Video call button
-                        const SizedBox(height: 8),
-                        // Add post button
-                        FloatingActionButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CreatePostScreen(),
-                              ),
-                            );
-                          },
-                          backgroundColor: Colors.purple,
-                          child: const Icon(Icons.add, color: Colors.white),
-                        ),
-                      ],
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreatePostScreen(),
+                          ),
+                        );
+                      },
+                      backgroundColor: Colors.purple,
+                      child: const Icon(Icons.add, color: Colors.white),
                     ),
                   ),
                 ],
@@ -120,7 +166,6 @@ class _FeedScreenState extends State<FeedScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User header
             GestureDetector(
               onTap: () {
                 if (item.userRole == 'Tutor') {
@@ -184,7 +229,6 @@ class _FeedScreenState extends State<FeedScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            // Image container (base64 support)
             if (item.imageUrl.isNotEmpty)
               Container(
                 width: double.infinity,
@@ -196,13 +240,11 @@ class _FeedScreenState extends State<FeedScreen> {
                 ),
                 child: _buildImageFromBase64OrNull(item.imageUrl),
               ),
-            // Content
             Text(
               item.content,
               style: const TextStyle(fontSize: 14, height: 1.4),
             ),
             const SizedBox(height: 16),
-            // Action buttons
             Row(
               children: [
                 _buildActionButton(
@@ -220,7 +262,6 @@ class _FeedScreenState extends State<FeedScreen> {
                         item.likedByCurrUser = true;
                         item.numOfLikes++;
                       }
-
                       _likePost(item.id);
                     });
                   },
@@ -229,9 +270,7 @@ class _FeedScreenState extends State<FeedScreen> {
                 _buildActionButton(
                   icon: Icons.chat_bubble_outline,
                   label: '${item.numOfComments}',
-                  onTap: () {
-                    // Show comments
-                  },
+                  onTap: () {},
                 ),
               ],
             ),
@@ -248,11 +287,9 @@ class _FeedScreenState extends State<FeedScreen> {
       );
     }
 
-    // Check if it's a base64 string (not a URL)
     final isBase64 = !imageUrl.startsWith('http');
     if (isBase64) {
       try {
-        // Remove data:image/...;base64, if present
         final base64RegExp = RegExp(r'data:image/[^;]+;base64,');
         String pureBase64 = imageUrl.replaceAll(base64RegExp, '');
         final bytes = base64Decode(pureBase64);
@@ -275,7 +312,6 @@ class _FeedScreenState extends State<FeedScreen> {
         );
       }
     } else {
-      // Fallback to network image
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Image.network(

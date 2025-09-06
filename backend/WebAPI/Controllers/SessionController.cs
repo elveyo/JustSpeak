@@ -30,14 +30,13 @@ namespace WebAPI.Controllers
         public class ChannelNameRequest
         {
             public string ChannelName { get; set; } = string.Empty;
-            public int UserId { get; set; }
+            public string userAccount { get; set; } = string.Empty;
         }
 
         [HttpPost("generate-token")]
         public string GenerateToken([FromBody] ChannelNameRequest request)
         {
-            Console.WriteLine(request.UserId);
-            return _sessionService.GenerateAgoraToken(request.ChannelName, request.UserId);
+            return _sessionService.Get(request.ChannelName, request.userAccount);
         }
 
         [HttpPost("book-session")]

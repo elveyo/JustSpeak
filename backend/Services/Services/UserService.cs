@@ -101,7 +101,6 @@ namespace Services.Services
             if (role.Name == "Tutor")
             {
                 user = new Tutor();
-                // Add languages for the tutor if provided
 
                 var tutor = user as Tutor;
                 tutor.TutorLanguages = new List<TutorLanguage>();
@@ -111,6 +110,8 @@ namespace Services.Services
                     {
                         LanguageId = langReq.LanguageId,
                         LevelId = langReq.LevelId,
+                        PricePerHour = 0,
+                        Experience = 0,
                     };
                     tutor.TutorLanguages.Add(tutorLanguage);
                 }

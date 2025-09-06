@@ -21,7 +21,7 @@ int getRoleId(UserRole role) {
     case UserRole.tutor:
       return 2;
     case UserRole.student:
-      return 1;
+      return 3;
   }
 }
 
@@ -120,9 +120,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      // Here you would typically make an API call to register the user
-      // For now, we'll just navigate to the onboarding screen
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

@@ -22,6 +22,7 @@ class UserProvider extends BaseProvider<User> {
     final uri = buildUri("/register");
     final headers = createHeaders();
     final body = jsonEncode(request);
+    print(body);
 
     final response = await http.post(uri, headers: headers, body: body);
 

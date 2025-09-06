@@ -48,6 +48,7 @@ class SessionProvider extends BaseProvider<Session> {
     final List<BookedSession> data =
         jsonList.map((item) => BookedSession.fromJson(item)).toList();
 
+    print(data);
     return data;
   }
 
@@ -67,12 +68,17 @@ class SessionProvider extends BaseProvider<Session> {
     final userId = AuthService().user!.id;
     Uri uri = buildUri("/generate-token");
     var headers = createHeaders();
-    var request = {"channelName": channelName, "userId": userId};
+    var request = {
+      "channelName": channelName,
+      "userAccount": AuthService().user!.fullName,
+    };
+    print(request);
     var jsonRequest = jsonEncode(request);
     final response = await http.post(uri, headers: headers, body: jsonRequest);
     if (!isValidResponse(response)) {
       throw Exception("Unknown error");
     }
+    print(response.body);
     return response.body;
   }
 

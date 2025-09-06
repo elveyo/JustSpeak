@@ -8,6 +8,8 @@ import 'package:frontend/providers/language_provider.dart';
 import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/providers/user_provider.dart';
 import 'package:frontend/screens/book_session_screen.dart';
+import 'package:frontend/screens/login_screen.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/widgets/calendar.dart';
 import 'package:frontend/layouts/master_screen.dart';
 import 'package:provider/provider.dart';
@@ -59,97 +61,130 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 40,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.secondary,
-                            const Color.fromARGB(255, 210, 83, 125),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(20),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          const CircleAvatar(
-                            radius: 45,
-                            backgroundImage: NetworkImage(
-                              "https://i.pravatar.cc/150?img=11",
+                    Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 40,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.secondary,
+                                const Color.fromARGB(255, 210, 83, 125),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(20),
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _tutor!.user.firstName,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            "${_tutor!.languages.map((lang) => lang.name).join(' & ')} Tutor",
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Dugmad za tabove i Schedule
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: Column(
                             children: [
-                              _buildTabButton("ABOUT", true),
-                              const SizedBox(width: 10),
-                              _buildTabButton("POSTS", false),
-                              const SizedBox(width: 10),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.purple,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 2,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
+                              const SizedBox(height: 20),
+                              const CircleAvatar(
+                                radius: 45,
+                                backgroundImage: NetworkImage(
+                                  "https://i.pravatar.cc/150?img=11",
                                 ),
-                                icon: const Icon(
-                                  Icons.schedule,
-                                  color: Colors.purple,
-                                ),
-                                label: const Text(
-                                  "Schedule",
-                                  style: TextStyle(
-                                    color: Colors.purple,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => TutorBookingScreen(),
-                                    ),
-                                  );
-                                },
                               ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _tutor!.user.firstName,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                "${_tutor!.languages.map((lang) => lang.name).join(' & ')} Tutor",
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _buildTabButton("ABOUT", true),
+                                  const SizedBox(width: 10),
+                                  _buildTabButton("POSTS", false),
+                                  const SizedBox(width: 10),
+                                  ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: Colors.purple,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 2,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                    icon: const Icon(
+                                      Icons.schedule,
+                                      color: Colors.purple,
+                                    ),
+                                    label: const Text(
+                                      "Schedule",
+                                      style: TextStyle(
+                                        color: Colors.purple,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder:
+                                              (_) => TutorBookingScreen(
+                                                tutorId: widget.id,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+
+                              // Add logout icon button
+                              // Move the logout button to the top right using a Stack and Positioned widget
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+
+                        // Sign out button in the top right if viewing own profile
+                        if (widget.id == AuthService().user!.id)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.logout,
+                                color: Colors.white,
+                              ),
+                              tooltip: 'Logout',
+                              onPressed: () async {
+                                // Clear token and navigate to login
+                                await AuthService().logout();
+                                if (mounted) {
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                      builder: (_) => const LoginScreen(),
+                                    ),
+                                    (route) => false,
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                      ],
                     ),
 
                     const SizedBox(height: 15),
-
                     // About sekcija
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -170,7 +205,6 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-
                             const SizedBox(height: 16),
                             const Text(
                               "Certificates",

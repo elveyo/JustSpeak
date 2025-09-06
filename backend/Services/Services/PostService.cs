@@ -47,27 +47,38 @@ namespace Services.Services
                 .ThenInclude(a => a.Role)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
+                .Where(p => p.AuthorId != userId.Value)
                 .AsQueryable();
+
+            var totalCount = await query.CountAsync();
 
             query = ApplyPagination(query, search);
             var posts = await query.ToListAsync();
-
-            var recommendedPosts = await _recommender.GetTopPostsForUserAsync(userId!.Value, 10);
-            var recommendedIds = recommendedPosts.Select(p => p.Id).ToHashSet();
-            posts = posts.Where(p => !recommendedIds.Contains(p.Id)).ToList();
-            var finalFeed = recommendedPosts;
+            var finalFeed = posts;
+            if (search.Page == 0 && userId.HasValue)
+            {
+                var recommendedPosts = await _recommender.GetTopPostsForUserAsync(userId.Value, 10);
+                var recommendedIds = recommendedPosts.Select(p => p.Id).ToHashSet();
+                int remaining = search.PageSize.Value - recommendedPosts.Count;
+                posts = posts
+                    .Where(p => !recommendedIds.Contains(p.Id))
+                    .Take(remaining)
+                    .ToList();
+                finalFeed = recommendedPosts.Concat(posts).ToList();
+            }
 
             var postResponses = finalFeed
                 .Select(post => new PostResponse
                 {
                     Id = post.Id,
                     Content = post.Content,
-                    AuthorId = post.Author.Id,
-                    AuthorName = post.Author.FullName,
-                    UserRole = post.Author.Role.Name,
+                    AuthorId = post.AuthorId,
+                    AuthorName = post.Author?.FullName ?? "",
+                    UserRole = post.Author?.Role.Name ?? "",
                     ImageUrl = post.ImageUrl,
                     NumOfLikes = post.Likes.Count,
                     NumOfComments = post.Comments.Count,
+                    CreatedAt = post.CreatedAt,
                     LikedByCurrUser = userId != null && post.Likes.Any(l => l.UserId == userId),
                 })
                 .ToList();
@@ -75,7 +86,7 @@ namespace Services.Services
             return new PagedResult<PostResponse>
             {
                 Items = postResponses,
-                TotalCount = postResponses.Count,
+                TotalCount = totalCount,
             };
         }
 

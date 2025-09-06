@@ -5,6 +5,7 @@ using Model.Responses;
 using Model.SearchObjects;
 using Models.Requests;
 using Models.Responses;
+using Models.SearchObjects;
 using Services.Database;
 using Services.Interfaces;
 using Services.Services;
@@ -14,7 +15,7 @@ namespace Services
     public class ScheduleService
         : BaseCRUDService<
             ScheduleResponse,
-            BaseSearchObject,
+            ScheduleSearchObject,
             TutorSchedule,
             ScheduleUpsertRequest,
             ScheduleUpsertRequest
@@ -47,12 +48,21 @@ namespace Services
             _context.AvailableDays.RemoveRange(daysToRemove);
         }
 
-        public async Task<ScheduleResponse?> GetAsync(BaseSearchObject search)
+        public async Task<ScheduleResponse?> GetAsync(ScheduleSearchObject search)
         {
+            var tutor = _context.Tutors.FirstOrDefaultAsync(t => t.Id == search.UserId);
+            if (tutor == null)
+            {
+                throw new Exception("Tutor not found");
+            }
+            // Get the tutorId from the search object
+            if (search == null || search.UserId == 0)
+                return null;
+            var tutorId = search.UserId;
             // Učitamo schedule tutora sa dostupnim danima
             var schedule = await _context
                 .Schedules.Include(s => s.AvailableDays)
-                .FirstOrDefaultAsync(s => s.TutorId == 8);
+                .FirstOrDefaultAsync(s => s.TutorId == tutor.Id);
 
             if (schedule == null)
                 return null;

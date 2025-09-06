@@ -6,14 +6,14 @@ part 'level.g.dart';
 class Level {
   final int id;
   final String name;
-  final String description;
-  final int maxPoints;
+  String description;
+  int maxPoints;
 
   Level({
     required this.id,
     required this.name,
-    required this.description,
-    required this.maxPoints,
+    this.description = "",
+    this.maxPoints = 0,
   });
 
   factory Level.fromJson(Map<String, dynamic> json) => _$LevelFromJson(json);

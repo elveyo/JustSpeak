@@ -35,11 +35,10 @@ abstract class BaseProvider<T> with ChangeNotifier {
     }
 
     var uri = Uri.parse(url);
+
     var headers = createHeaders();
     print(uri);
     var response = await http.get(uri, headers: headers);
-    print(response.body);
-
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
       var result = SearchResult<T>();
@@ -47,6 +46,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
       result.totalCount = data['totalCount'];
       result.items = List<T>.from(data["items"].map((e) => fromJson(e)));
 
+      print(result.items);
       return result;
     } else {
       return throw new Exception("Unknown error");

@@ -30,6 +30,7 @@ namespace WebAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserInsertRequest request)
         {
+            Console.WriteLine(request.RoleId);
             var user = await _userService.CreateAsync(request);
             return Ok(user);
         }

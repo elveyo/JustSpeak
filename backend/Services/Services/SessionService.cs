@@ -187,7 +187,7 @@ namespace Services.Services
             _context.StudentTutorSessions.Add(session);
             await _context.SaveChangesAsync();
 
-            _messageBrokerService.Publish(session, "session-booked");
+            //_messageBrokerService.Publish(session, "session-booked");
             return session.Id;
         }
 
@@ -257,80 +257,26 @@ namespace Services.Services
             return new PagedResult<TagResponse> { Items = tags, TotalCount = totalCount };
         }
 
-        public string GenerateAgoraToken(string channelName, int userId)
+        public string Get(string channelName, string userAccount)
         {
-            var token = new RtcTokenBuilder();
-            // Set expireTime to one day (24 hours) from now as an absolute Unix timestamp
-            uint oneDayExpireTime = (uint)(
-                DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 24 * 60 * 60
-            );
-            return token.BuildToken(
+            Console.WriteLine(_agoraAppId);
+            Console.WriteLine(_agoraAppCertificate);
+
+            var role = AgoraNET.RtcUserRole.Publisher;
+            var expireSeconds = 3600;
+            var currentTimestamp = (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            var privilegeExpiredTs = (uint)(currentTimestamp + expireSeconds);
+
+            var token = new RtcTokenBuilder().BuildToken(
                 _agoraAppId,
                 _agoraAppCertificate,
                 channelName,
-                (uint)userId,
-                AgoraNET.RtcUserRole.Publisher,
-                oneDayExpireTime
+                userAccount,
+                role,
+                privilegeExpiredTs
             );
-        }
-    }
 
-    // Agora Token Builder Implementation
-
-    public class AgoraTokenBuilder
-    {
-        public const int PrivilegeJoinChannel = 1;
-        public const int PrivilegePublishAudioStream = 2;
-        public const int PrivilegePublishVideoStream = 3;
-        public const int PrivilegePublishDataStream = 4;
-        public const int PrivilegeManageChannel = 5;
-
-        private readonly string _appId;
-        private readonly string _appCertificate;
-        private readonly string _channelName;
-        private readonly uint _uid;
-        private readonly Dictionary<int, uint> _privileges;
-
-        public AgoraTokenBuilder(string appId, string appCertificate, string channelName, uint uid)
-        {
-            _appId = appId;
-            _appCertificate = appCertificate;
-            _channelName = channelName;
-            _uid = uid;
-            _privileges = new Dictionary<int, uint>();
-        }
-
-        public void AddPrivilege(int privilege, uint expireTimestamp)
-        {
-            _privileges[privilege] = expireTimestamp;
-        }
-
-        public string Build()
-        {
-            var message = new
-            {
-                appid = _appId,
-                channel = _channelName,
-                uid = _uid,
-                privileges = _privileges,
-            };
-
-            var messageJson = System.Text.Json.JsonSerializer.Serialize(message);
-            var messageBytes = Encoding.UTF8.GetBytes(messageJson);
-            var messageBase64 = Convert.ToBase64String(messageBytes);
-
-            // Create signature
-            var signature = CreateSignature(messageBase64);
-            var signatureBase64 = Convert.ToBase64String(signature);
-
-            // Build token
-            return $"{messageBase64}.{signatureBase64}";
-        }
-
-        private byte[] CreateSignature(string message)
-        {
-            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_appCertificate));
-            return hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
+            return token;
         }
     }
 }

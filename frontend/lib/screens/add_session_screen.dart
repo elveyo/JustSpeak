@@ -413,7 +413,20 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                                   if (selectedTags.contains(tag)) {
                                     selectedTags.remove(tag);
                                   } else {
-                                    selectedTags.add(tag);
+                                    if (selectedTags.length < 3) {
+                                      selectedTags.add(tag);
+                                    } else {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'You can select up to 3 tags only.',
+                                          ),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
                                   }
                                   // Update the form field value
                                   _formKey.currentState?.fields['tags']

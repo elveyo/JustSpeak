@@ -5,6 +5,7 @@ using Model.Responses;
 using Model.SearchObjects;
 using Models.Requests;
 using Models.Responses;
+using Models.SearchObjects;
 using Services.Database;
 using Services.Interfaces;
 using Services.Services;
@@ -14,7 +15,7 @@ namespace Services.Services
     public class LevelService
         : BaseCRUDService<
             LevelResponse,
-            BaseSearchObject,
+            LevelSearchObject,
             Level,
             LevelUpsertRequest,
             LevelUpsertRequest
@@ -27,6 +28,50 @@ namespace Services.Services
             : base(context, mapper)
         {
             _context = context;
+        }
+
+        public override async Task<PagedResult<LevelResponse>> GetAsync(LevelSearchObject? search)
+        {
+            if (search == null || !search.UserId.HasValue)
+            {
+                return await base.GetAsync(search);
+            }
+            var user = await _context.Users.Include(user => user.Role)
+                .FirstOrDefaultAsync(u => u.Id == search.UserId.Value);
+            var levels = new List<LevelResponse>();
+            if (user.Role?.Name == "Student")
+            {
+                var studentLanguages = await _context.StudentLanguages
+                 .Include(sl => sl.Level)
+                 .Where(sl => sl.StudentId == user.Id)
+                 .ToListAsync();
+
+                levels = studentLanguages
+                    .SelectMany(sl => _context.Levels
+                        .Where(l => l.Order <= sl.Level.Order)
+                        .Select(l => new LevelResponse { Id = l.Id, Name = l.Name }))
+                    .ToList();
+            }
+            else
+            {
+                var tutorLanguages = await _context.TutorLanguages
+                        .Include(tl => tl.Level)
+                        .Where(tl => tl.TutorId == user.Id)
+                        .ToListAsync();
+
+                levels = tutorLanguages
+                    .SelectMany(tl => _context.Levels
+                        .Where(l => l.Order <= tl.Level.Order)
+                        .Select(l => new LevelResponse { Id = l.Id, Name = l.Name }))
+                    .ToList();
+
+            }
+
+            return new PagedResult<LevelResponse>
+            {
+                Items = levels,
+                TotalCount = levels.Count,
+            };
         }
     }
 }

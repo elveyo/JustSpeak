@@ -5,6 +5,7 @@ using Model.Responses;
 using Model.SearchObjects;
 using Models.Requests;
 using Models.Responses;
+using Models.SearchObjects;
 using Services.Interfaces;
 
 namespace WebAPI.Controllers
@@ -12,7 +13,7 @@ namespace WebAPI.Controllers
     public class LevelController
         : BaseCRUDController<
             LevelResponse,
-            BaseSearchObject,
+            LevelSearchObject,
             LevelUpsertRequest,
             LevelUpsertRequest
         >

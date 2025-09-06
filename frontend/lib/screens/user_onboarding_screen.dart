@@ -46,6 +46,8 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
   Future<void> register() async {
     // Build the request object
     final request = {
+      "bio": bio,
+      "roleId": widget.user.role == 'tutor' ? 2 : 3,
       "firstName": widget.user.firstName,
       "lastName": widget.user.lastName,
       "email": widget.user.email,
@@ -60,8 +62,6 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
               )
               .toList(),
       "imageUrl": profileImageBase64, // send as base64
-      "bio": bio,
-      "roleId": widget.user.role == 'tutor' ? 2 : 3,
     };
 
     try {
@@ -72,7 +72,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
       String token = await userProvider.register(request);
       AuthService().saveToken(token);
     } catch (err) {
-      // Optionally show error
+      rethrow;
     } finally {
       if (mounted) {
         setState(() {
@@ -126,10 +126,14 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
       debugPrint("Languages: $selectedLanguages");
       debugPrint("Bio: $bio");
       await register();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => FeedScreen()),
-      );
+      // After registration, navigate to the FeedScreen
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const FeedScreen()),
+          (route) => false,
+        );
+      }
     }
   }
 
