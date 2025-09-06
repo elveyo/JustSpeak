@@ -9,8 +9,8 @@ part of 'level.dart';
 Level _$LevelFromJson(Map<String, dynamic> json) => Level(
   id: (json['id'] as num).toInt(),
   name: json['name'] as String,
-  description: json['description'] as String,
-  maxPoints: (json['maxPoints'] as num).toInt(),
+  description: json['description'] as String? ?? "",
+  maxPoints: (json['maxPoints'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$LevelToJson(Level instance) => <String, dynamic>{

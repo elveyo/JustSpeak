@@ -43,7 +43,7 @@ namespace Services.Services
             {
                 var studentLanguages = await _context.StudentLanguages
                  .Include(sl => sl.Level)
-                 .Where(sl => sl.StudentId == user.Id)
+                 .Where(sl => sl.StudentId == user.Id && sl.LanguageId == search.LanguageId)
                  .ToListAsync();
 
                 levels = studentLanguages
@@ -56,7 +56,7 @@ namespace Services.Services
             {
                 var tutorLanguages = await _context.TutorLanguages
                         .Include(tl => tl.Level)
-                        .Where(tl => tl.TutorId == user.Id)
+                        .Where(tl => tl.TutorId == user.Id && tl.LanguageId == search.LanguageId)
                         .ToListAsync();
 
                 levels = tutorLanguages

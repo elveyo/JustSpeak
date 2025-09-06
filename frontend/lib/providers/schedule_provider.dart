@@ -12,4 +12,19 @@ class ScheduleProvider extends BaseProvider<Schedule> {
   Schedule fromJson(dynamic json) {
     return Schedule.fromJson(json);
   }
+
+  Future<Schedule?> getSchedule(int userId) async {
+    Uri uri = buildUri("/tutor?userId=$userId");
+
+    print(uri);
+    final headers = createHeaders();
+    final response = await http.get(uri, headers: headers);
+    print(response.body);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return Schedule.fromJson(data);
+    } else {
+      throw Exception('Failed to load schedule');
+    }
+  }
 }

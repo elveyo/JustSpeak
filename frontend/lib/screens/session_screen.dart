@@ -64,26 +64,55 @@ class _SessionsScreenState extends State<SessionsScreen> {
       final langs = await languageProvider.get(
         filter: {"userId": AuthService().user!.id},
       );
+      if (langs.items != null && langs.items!.isNotEmpty) {
+        selectedLanguage = langs.items!.first.id;
+      } else {
+        selectedLanguage = null;
+      }
       final levels = await languageLevelProvider.get(
-        filter: {"userId": AuthService().user!.id},
+        filter: {
+          "userId": AuthService().user!.id,
+          "languageId": selectedLanguage,
+        },
       );
 
       setState(() {
         languages = langs.items;
         languageLevels = levels.items;
-        // Set selectedLanguage and selectedLevel to first available if not already set
-        selectedLanguage =
-            (languages != null && languages!.isNotEmpty)
-                ? languages!.first.id
-                : null;
-        selectedLevel =
-            (languageLevels != null && languageLevels!.isNotEmpty)
-                ? languageLevels!.first.id
-                : null;
+        if (levels.items != null && levels.items!.isNotEmpty) {
+          selectedLevel = levels.items!.first.id;
+        } else {
+          selectedLevel = null;
+        }
       });
 
       // After setting, load sessions for the new selection
       _loadSessions();
+    } catch (e) {
+      // Optionally handle error, e.g. show a snackbar or log
+    }
+  }
+
+  Future<void> _fetchLevelsByLanguage(int languageId) async {
+    try {
+      final languageLevelProvider = Provider.of<LanguageLevelProvider>(
+        context,
+        listen: false,
+      );
+      final levels = await languageLevelProvider.get(
+        filter: {
+          "userId": AuthService().user!.id,
+          "languageId": selectedLanguage,
+        },
+      );
+      setState(() {
+        languageLevels = levels.items;
+        if (levels.items != null && levels.items!.isNotEmpty) {
+          selectedLevel = levels.items!.first.id;
+        } else {
+          selectedLevel = null;
+        }
+      });
     } catch (e) {
       // Optionally handle error, e.g. show a snackbar or log
     }
@@ -138,7 +167,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                           setState(() {
                             selectedLanguage = val;
                           });
-                          _loadSessions();
+                          _fetchLevelsByLanguage(selectedLanguage!);
                         },
                         decoration: InputDecoration(
                           contentPadding: const EdgeInsets.symmetric(

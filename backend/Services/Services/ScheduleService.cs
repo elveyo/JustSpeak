@@ -50,7 +50,7 @@ namespace Services
 
         public async Task<ScheduleResponse?> GetAsync(ScheduleSearchObject search)
         {
-            var tutor = _context.Tutors.FirstOrDefaultAsync(t => t.Id == search.UserId);
+            var tutor = await _context.Tutors.FirstOrDefaultAsync(t => t.Id == search.UserId);
             if (tutor == null)
             {
                 throw new Exception("Tutor not found");

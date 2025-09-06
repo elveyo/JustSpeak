@@ -102,19 +102,19 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
     );
 
     try {
-      final schedule = await scheduleProvider.get(
-        filter: {"userId": widget.tutorId},
-      );
+      final schedule = await scheduleProvider.getSchedule(widget.tutorId);
+
+      if (schedule != null) {
+        for (var slot in schedule.slots!) {
+          if (slot.isBooked) continue;
+          final dateKey = slot.date.toIso8601String().substring(0, 10);
+          slotsByDate.putIfAbsent(dateKey, () => []).add(slot);
+        }
+      }
 
       setState(() {
-        _schedule = schedule.items![0];
+        _schedule = schedule;
       });
-
-      for (var slot in _schedule!.slots) {
-        if (slot.isBooked) continue;
-        final dateKey = slot.date.toIso8601String().substring(0, 10);
-        slotsByDate.putIfAbsent(dateKey, () => []).add(slot);
-      }
     } catch (error) {
       print(error);
     }
@@ -137,22 +137,49 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
         listen: false,
       );
       final langs = await languageProvider.get(
-        filter: {"userId": widget.tutorId},
+        filter: {"userId": AuthService().user!.id},
       );
+      if (langs.items != null && langs.items!.isNotEmpty) {
+        _selectedLanguage = langs.items!.first.id;
+      } else {
+        _selectedLanguage = null;
+      }
       final levels = await languageLevelProvider.get(
-        filter: {"userId": widget.tutorId},
+        filter: {"userId": widget.tutorId, "languageId": _selectedLanguage},
       );
+
       setState(() {
         _languages = langs.items;
         _languageLevels = levels.items;
-        _selectedLanguage =
-            (_languages != null && _languages!.isNotEmpty)
-                ? _languages!.first.id
-                : null;
-        _selectedLevel =
-            (_languageLevels != null && _languageLevels!.isNotEmpty)
-                ? _languageLevels!.first.id
-                : null;
+        if (levels.items != null && levels.items!.isNotEmpty) {
+          _selectedLevel = levels.items!.first.id;
+        } else {
+          _selectedLevel = null;
+        }
+      });
+
+      // After setting, load sessions for the new selection
+    } catch (e) {
+      // Optionally handle error, e.g. show a snackbar or log
+    }
+  }
+
+  Future<void> _fetchLevelsByLanguage(int languageId) async {
+    try {
+      final languageLevelProvider = Provider.of<LanguageLevelProvider>(
+        context,
+        listen: false,
+      );
+      final levels = await languageLevelProvider.get(
+        filter: {"userId": widget.tutorId, "languageId": _selectedLanguage},
+      );
+      setState(() {
+        _languageLevels = levels.items;
+        if (levels.items != null && levels.items!.isNotEmpty) {
+          _selectedLevel = levels.items!.first.id;
+        } else {
+          _selectedLevel = null;
+        }
       });
     } catch (e) {
       // Optionally handle error, e.g. show a snackbar or log
@@ -209,6 +236,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
                         setState(() {
                           _selectedLanguage = val!;
                         });
+                        _fetchLevelsByLanguage(_selectedLanguage!);
                       },
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(

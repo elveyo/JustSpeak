@@ -26,7 +26,7 @@ namespace WebAPI.Controllers
             _scheduleService = service;
         }
 
-        [HttpGet("/all")]
+        [HttpGet("tutor")]
         public Task<ScheduleResponse> Get([FromQuery] ScheduleSearchObject? search = null)
         {
             return _scheduleService.GetAsync(search);

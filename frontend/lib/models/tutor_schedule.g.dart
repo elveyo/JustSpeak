@@ -2,6 +2,10 @@
 
 part of 'tutor_schedule.dart';
 
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
 Schedule _$ScheduleFromJson(Map<String, dynamic> json) => Schedule(
   tutorId: (json['tutorId'] as num).toInt(),
   duration: (json['duration'] as num).toInt(),

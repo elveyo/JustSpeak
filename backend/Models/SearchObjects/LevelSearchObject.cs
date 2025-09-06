@@ -6,6 +6,7 @@ namespace Models.SearchObjects
     {
 
         public int? UserId { get; set; }
+        public int? LanguageId { get; set; }
 
     }
 }
