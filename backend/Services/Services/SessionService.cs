@@ -58,6 +58,8 @@ namespace Services.Services
 
         public override async Task<SessionResponse> CreateAsync(SessionUpsertRequest request)
         {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == UserId.Value);
+
             var session = new Session
             {
                 NumOfUsers = request.NumOfUsers,
@@ -74,6 +76,7 @@ namespace Services.Services
             await _context.SaveChangesAsync();
             await _context.Entry(session).Reference(s => s.Language).LoadAsync();
             await _context.Entry(session).Reference(s => s.Level).LoadAsync();
+            var token = Get(request.ChannelName, user.FullName);
             return new SessionResponse
             {
                 Id = session.Id,
@@ -83,7 +86,7 @@ namespace Services.Services
                 Duration = session.Duration,
                 CreatedAt = session.CreatedAt,
                 ChannelName = session.ChannelName,
-                Token = "agoraToken",
+                Token = token,
                 Tags = session
                     .Tags.Select(tag => new TagResponse
                     {
@@ -166,7 +169,7 @@ namespace Services.Services
 
             // 3. Provjeri da li je slot već booked
             var isTaken = await _context.StudentTutorSessions.AnyAsync(s =>
-                s.TutorId == request.TutorId && s.StartTime == request.StartTime && s.IsActive
+                s.TutorId == request.TutorId && s.StartTime == request.StartTime
             );
 
             if (isTaken)
@@ -209,6 +212,7 @@ namespace Services.Services
                     Date = s.StartTime.Date,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
+                    IsActive = s.IsActive,
                 })
                 .ToArrayAsync();
 
@@ -228,6 +232,7 @@ namespace Services.Services
                     Date = s.StartTime.Date,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
+                    IsActive = s.IsActive,
                 })
                 .ToArrayAsync();
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:frontend/services/agora_service.dart';
@@ -6,10 +7,12 @@ import 'package:permission_handler/permission_handler.dart';
 class VideoCallScreen extends StatefulWidget {
   final String channelName;
   final String token;
+  final int remainingSeconds;
   const VideoCallScreen({
     super.key,
     required this.channelName,
     required this.token,
+    required this.remainingSeconds,
   });
 
   @override
@@ -19,14 +22,39 @@ class VideoCallScreen extends StatefulWidget {
 class _VideoCallScreenState extends State<VideoCallScreen> {
   final agoraService = AgoraService();
   Map<int, String> _remoteUsers = {}; // uid → userAccount
+  Set<int> _joinedUids = {}; // Track all joined UIDs
   int? _localUid;
   bool _micMuted = false;
   bool _camMuted = false;
+  int _remainingSeconds = 0;
+
+  // Countdown timer
+  Timer? _countdownTimer;
 
   @override
   void initState() {
     super.initState();
     _requestPermissionsAndJoin();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    _remainingSeconds = widget.remainingSeconds;
+    _countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_remainingSeconds <= 0) {
+        timer.cancel();
+      } else {
+        setState(() {
+          _remainingSeconds--;
+        });
+      }
+    });
+  }
+
+  String _formatTime(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   Future<void> _requestPermissionsAndJoin() async {
@@ -54,18 +82,57 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       );
       agoraService.engine!.registerEventHandler(
         RtcEngineEventHandler(
-          onUserJoined: (connection, uid, elapsed) {},
+          onUserJoined: (connection, uid, elapsed) async {
+            print("User joined: $uid");
+            // Add to joined set
+            setState(() {
+              _joinedUids.add(uid);
+            });
+            // Try to get user info (if available)
+            try {
+              final userInfo = await agoraService.engine!.getUserInfoByUid(uid);
+              if (userInfo.userAccount != null &&
+                  userInfo.userAccount!.isNotEmpty) {
+                setState(() {
+                  _remoteUsers[uid] = userInfo.userAccount!;
+                });
+              }
+            } catch (e) {
+              // ignore if not available
+            }
+          },
           onUserOffline: (connection, uid, reason) {
-            setState(() => _remoteUsers.remove(uid));
+            print("User offline: $uid");
+            setState(() {
+              _joinedUids.remove(uid);
+              _remoteUsers.remove(uid);
+            });
           },
           onJoinChannelSuccess: (connection, elapsed) {
-            setState(() => _localUid = connection.localUid!);
+            print("Join channel success: ${connection.localUid}");
+            setState(() {
+              _localUid = connection.localUid!;
+              _joinedUids.add(_localUid!);
+            });
           },
           onUserInfoUpdated: (uid, userInfo) {
             print("User info updated: ${userInfo.userAccount}");
             setState(() {
-              _remoteUsers[uid] = userInfo.userAccount!;
+              _remoteUsers[uid] = userInfo.userAccount ?? '';
             });
+          },
+          onRejoinChannelSuccess: (connection, elapsed) {
+            print("Rejoin channel success: ${connection.localUid}");
+            setState(() {
+              if (connection.localUid != null) {
+                _localUid = connection.localUid!;
+                _joinedUids.add(_localUid!);
+              }
+            });
+          },
+          onConnectionStateChanged: (connection, state, reason) {
+            print("Connection state changed: $state, reason: $reason");
+            // Optionally handle reconnection logic here
           },
           onError: (errorCode, msg) {
             print("❌ AGORA ERROR: $errorCode - $msg");
@@ -87,6 +154,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     agoraService.engine?.stopPreview();
     agoraService.leaveChannel();
     agoraService.engine?.release();
@@ -131,24 +199,34 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           Positioned(
             left: 8,
             top: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                isLocal
-                    ? "You"
-                    : (_remoteUsers[uid] != null
-                        ? "${_remoteUsers[uid]}"
-                        : "UID: $uid"),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isLocal
+                        ? "You"
+                        : (_remoteUsers[uid] != null &&
+                                _remoteUsers[uid]!.isNotEmpty
+                            ? "${_remoteUsers[uid]}"
+                            : "UID: $uid"),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 4),
+              ],
             ),
           ),
       ],
@@ -165,7 +243,33 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Woop")),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          "Video Call",
+          style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              _formatTime(_remainingSeconds),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           LayoutBuilder(
@@ -173,30 +277,26 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               if (_localUid == null) {
                 return const Center(child: CircularProgressIndicator());
               }
-              // Use _remoteUsers for logic
-              final remoteUids = _remoteUsers.keys.toList();
+              // Use _joinedUids to track all currently joined users (including local)
+              final remoteUids =
+                  _joinedUids.where((uid) => uid != _localUid).toList();
               final allUids = [_localUid!, ...remoteUids];
               final userCount = allUids.length;
 
-              // Custom layout for 2 users: WhatsApp/Viber style
               if (userCount == 2) {
-                // Find remote and local
                 final remoteUid =
                     remoteUids.isNotEmpty ? remoteUids.first : _localUid!;
                 final localUid = _localUid!;
-                print(_remoteUsers);
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 80),
                   child: Stack(
                     children: [
-                      // Remote video fills the screen
                       Container(
                         color: Colors.black,
                         child: _buildVideo(remoteUid),
                         width: double.infinity,
                         height: double.infinity,
                       ),
-                      // Local video as a small floating preview
                       Positioned(
                         right: 16,
                         top: 16,
@@ -218,7 +318,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                   ),
                 );
               } else if (userCount == 4) {
-                // 4 users: 2x2 grid (quarters)
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 80),
                   child: Column(
@@ -266,7 +365,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                   ),
                 );
               } else {
-                // Fallback: grid for other user counts
                 return GridView.builder(
                   padding: const EdgeInsets.only(bottom: 80),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

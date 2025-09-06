@@ -9,6 +9,8 @@ namespace Models.Responses
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 
+        public bool IsActive { get; set; }
+
         public string UserName { get; set; }
         public string UserImageUrl { get; set; }
     }

@@ -11,6 +11,7 @@ class BookedSession {
   final DateTime endTime;
   final String userName;
   final String userImageUrl;
+  final bool isActive;
 
   BookedSession({
     required this.language,
@@ -19,6 +20,7 @@ class BookedSession {
     required this.startTime,
     required this.endTime,
     required this.userName,
+    required this.isActive,
     this.userImageUrl = "Cao",
   });
 

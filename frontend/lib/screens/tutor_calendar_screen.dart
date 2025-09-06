@@ -149,6 +149,7 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
                                   .substring(0, 10),
                               time:
                                   '${sessions[i].startTime.hour.toString().padLeft(2, '0')}:${sessions[i].startTime.minute.toString().padLeft(2, '0')} - ${sessions[i].endTime.hour.toString().padLeft(2, '0')}:${sessions[i].endTime.minute.toString().padLeft(2, '0')}',
+                              isActive: sessions[i].isActive,
                             ),
                             if (i != sessions.length - 1)
                               const SizedBox(height: 12),

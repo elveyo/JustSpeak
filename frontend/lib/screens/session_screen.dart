@@ -118,23 +118,45 @@ class _SessionsScreenState extends State<SessionsScreen> {
     }
   }
 
-  Future<void> _joinSession(String channelName) async {
+  Future<void> _joinSession(Session session) async {
     final sessionProvider = Provider.of<SessionProvider>(
       context,
       listen: false,
     );
     try {
-      String token = await sessionProvider.getToken(channelName);
+      String token = await sessionProvider.getToken(session.channelName!);
+      int remainingSeconds = getSessionSecondsLeft(
+        session.createdAt!,
+        session.duration!,
+      );
+      print(remainingSeconds);
       Navigator.push(
         context,
         MaterialPageRoute(
           builder:
-              (_) => VideoCallScreen(channelName: channelName, token: token),
+              (_) => VideoCallScreen(
+                channelName: session.channelName!,
+                token: token,
+                remainingSeconds: remainingSeconds,
+              ),
         ),
       );
     } catch (error) {
       print(error);
     }
+  }
+
+  int getSessionSecondsLeft(DateTime createdAt, int durationMinutes) {
+    final now = DateTime.now().toUtc();
+    final nowString = now.toIso8601String().replaceFirst('Z', '');
+    final nowFromString = DateTime.parse(nowString);
+    final sessionEnd = createdAt.add(Duration(minutes: durationMinutes));
+    final secondsLeft = sessionEnd.difference(nowFromString).inSeconds;
+    print(createdAt);
+    print(nowFromString);
+    print(sessionEnd);
+    print(secondsLeft);
+    return secondsLeft > 0 ? secondsLeft : 0;
   }
 
   @override
@@ -366,8 +388,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                                         ),
                                       ),
                                       onPressed: () {
-                                        print(session.channelName!);
-                                        _joinSession(session.channelName!);
+                                        _joinSession(session);
                                       },
                                       child: const Text(
                                         'JOIN',

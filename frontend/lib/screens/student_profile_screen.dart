@@ -5,6 +5,7 @@ import 'package:frontend/providers/user_provider.dart';
 import 'package:frontend/layouts/master_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/widgets/posts_widget.dart';
 import 'package:provider/provider.dart';
 
 class StudentProfileScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class StudentProfileScreen extends StatefulWidget {
 
 class _StudentProfileScreenState extends State<StudentProfileScreen> {
   Student? _student;
+  String _activeTab = "ABOUT";
 
   @override
   void initState() {
@@ -25,8 +27,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   }
 
   Future<void> _fetchStudentData(int id) async {
-    print(widget.id);
-    print(AuthService().user!.id);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     try {
       final student = await userProvider.getStudentData(id);
@@ -87,7 +87,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                _student!.user.firstName,
+                                _student!.user.fullName,
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -103,79 +103,107 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  _buildTabButton("ABOUT", true),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _activeTab = "ABOUT";
+                                      });
+                                    },
+                                    child: _buildTabButton(
+                                      "ABOUT",
+                                      _activeTab == "ABOUT",
+                                    ),
+                                  ),
                                   const SizedBox(width: 10),
-                                  _buildTabButton("POSTS", false),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _activeTab = "POSTS";
+                                      });
+                                    },
+                                    child: _buildTabButton(
+                                      "POSTS",
+                                      _activeTab == "POSTS",
+                                    ),
+                                  ),
                                   const SizedBox(width: 10),
                                 ],
                               ),
-
-                              // Add logout icon button
-                              // Move the logout button to the top right using a Stack and Positioned widget
                             ],
                           ),
                         ),
-
-                        // Sign out button in the top right if viewing own profile
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: IconButton(
-                            icon: const Icon(Icons.logout, color: Colors.white),
-                            tooltip: 'Logout',
-                            onPressed: () async {
-                              // Clear token and navigate to login
-                              await AuthService().logout();
-                              if (mounted) {
-                                Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                    builder: (_) => const LoginScreen(),
-                                  ),
-                                  (route) => false,
-                                );
-                              }
-                            },
+                        if (widget.id == AuthService().user!.id)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.logout,
+                                color: Colors.white,
+                              ),
+                              tooltip: 'Logout',
+                              onPressed: () async {
+                                await AuthService().logout();
+                                if (mounted) {
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                      builder: (_) => const LoginScreen(),
+                                    ),
+                                    (route) => false,
+                                  );
+                                }
+                              },
+                            ),
                           ),
-                        ),
                       ],
                     ),
-
                     const SizedBox(height: 15),
-
-                    // About sekcija
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10.0,
-                        vertical: 8.0,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 6),
-                          Text(
-                            _student!.user.bio,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
+                    if (_activeTab == "ABOUT")
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0,
+                          vertical: 8.0,
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 6),
+                              Text(
+                                _student!.user.bio,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                "Languages & Progress",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.purple,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              for (var lang in _student!.languages)
+                                _buildLanguageLevelWidget(lang),
+                            ],
                           ),
-                          const SizedBox(height: 20),
-
-                          const Text(
-                            "Languages & Progress",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.purple,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-
-                          for (var lang in _student!.languages)
-                            _buildLanguageLevelWidget(lang),
-                        ],
+                        ),
+                      )
+                    else if (_activeTab == "POSTS")
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0,
+                          vertical: 8.0,
+                        ),
+                        child: SizedBox(
+                          height: 500,
+                          child: PostsListWidget(userId: widget.id),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

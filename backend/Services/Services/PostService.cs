@@ -42,28 +42,35 @@ namespace Services.Services
         public override async Task<PagedResult<PostResponse>> GetAsync(BaseSearchObject search)
         {
             int? userId = _userContextService.GetUserId();
+            if (userId == null)
+                throw new Exception("User not found!");
             var query = _context
                 .Posts.Include(p => p.Author)
                 .ThenInclude(a => a.Role)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
-                .Where(p => p.AuthorId != userId.Value)
                 .AsQueryable();
+
+            if (search.UserId.HasValue)
+            {
+                query = query.Where(p => p.AuthorId == search.UserId.Value);
+            }
+            else
+            {
+                query = query.Where(p => p.AuthorId != userId.Value);
+            }
 
             var totalCount = await query.CountAsync();
 
             query = ApplyPagination(query, search);
             var posts = await query.ToListAsync();
             var finalFeed = posts;
-            if (search.Page == 0 && userId.HasValue)
+            if (search.Page == 0 && !search.UserId.HasValue)
             {
                 var recommendedPosts = await _recommender.GetTopPostsForUserAsync(userId.Value, 10);
                 var recommendedIds = recommendedPosts.Select(p => p.Id).ToHashSet();
                 int remaining = search.PageSize.Value - recommendedPosts.Count;
-                posts = posts
-                    .Where(p => !recommendedIds.Contains(p.Id))
-                    .Take(remaining)
-                    .ToList();
+                posts = posts.Where(p => !recommendedIds.Contains(p.Id)).Take(remaining).ToList();
                 finalFeed = recommendedPosts.Concat(posts).ToList();
             }
 
@@ -83,11 +90,7 @@ namespace Services.Services
                 })
                 .ToList();
 
-            return new PagedResult<PostResponse>
-            {
-                Items = postResponses,
-                TotalCount = totalCount,
-            };
+            return new PagedResult<PostResponse> { Items = postResponses, TotalCount = totalCount };
         }
 
         public async Task LikePost(int postId)
@@ -109,7 +112,7 @@ namespace Services.Services
 
         public async Task AddCommentToPost(int postId, CommentUpsertRequest request)
         {
-            //int? currentUserId = _userContextService.GetUserId();
+            int? currentUserId = _userContextService.GetUserId();
 
             var post = await _context.Posts.FindAsync(postId);
             if (post == null)
@@ -119,7 +122,7 @@ namespace Services.Services
             {
                 Content = request.Content,
                 CreatedAt = DateTime.UtcNow,
-                AuthorId = 1,
+                AuthorId = currentUserId.Value,
                 PostId = postId,
             };
 

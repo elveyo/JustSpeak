@@ -100,6 +100,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 (_) => VideoCallScreen(
                   channelName: session.channelName!,
                   token: session.token!,
+                  remainingSeconds: session.duration * 60,
                 ),
           ),
         );

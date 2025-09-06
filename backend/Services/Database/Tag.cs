@@ -5,6 +5,6 @@ namespace Services.Database
         public int Id { get; set; }
         public string Name { get; set; } = String.Empty;
         public string Color { get; set; } = String.Empty;
-        ICollection<Session> Sessions {get;set;} = new List<Session>();
+        public ICollection<Session> Sessions { get; set; } = new List<Session>();
     }
 }

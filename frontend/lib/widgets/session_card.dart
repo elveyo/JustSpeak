@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/auth_service.dart';
 
 class SessionCard extends StatelessWidget {
   final String imageUrl;
@@ -6,6 +7,7 @@ class SessionCard extends StatelessWidget {
   final String sessionTitle;
   final String date;
   final String time;
+  final bool isActive;
 
   const SessionCard({
     super.key,
@@ -14,6 +16,7 @@ class SessionCard extends StatelessWidget {
     required this.sessionTitle,
     required this.date,
     required this.time,
+    required this.isActive,
   });
 
   @override
@@ -76,31 +79,53 @@ class SessionCard extends StatelessWidget {
               ),
             ),
 
-            // Join button (aligned right)
-            ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Implement join
+            Builder(
+              builder: (context) {
+                final String role = AuthService().user!.role;
+
+                String buttonText;
+
+                if (role == 'tutor') {
+                  buttonText = isActive ? "Join" : "Start";
+                } else if (role == 'student') {
+                  buttonText = "Join";
+                } else {
+                  buttonText = "Join";
+                }
+
+                return ElevatedButton.icon(
+                  onPressed:
+                      isActive
+                          ? () {
+                            // TODO: Implement join/start logic
+                          }
+                          : null,
+                  icon: const Icon(
+                    Icons.video_call,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  label: Text(
+                    buttonText,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    elevation: 2,
+                  ),
+                );
               },
-              icon: const Icon(Icons.video_call, color: Colors.white, size: 18),
-              label: const Text(
-                "Join",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                elevation: 2,
-              ),
             ),
           ],
         ),

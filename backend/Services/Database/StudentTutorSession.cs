@@ -16,6 +16,7 @@ namespace Services.Database
         public bool IsActive { get; set; } = false;
         public string? Notes { get; set; }
         public int? Rating { get; set; } = null;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string channelName { get; set; } = null!;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

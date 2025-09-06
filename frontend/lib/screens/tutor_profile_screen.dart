@@ -12,6 +12,7 @@ import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/widgets/calendar.dart';
 import 'package:frontend/layouts/master_screen.dart';
+import 'package:frontend/widgets/posts_widget.dart';
 import 'package:provider/provider.dart';
 
 class TutorProfileScreen extends StatefulWidget {
@@ -24,6 +25,7 @@ class TutorProfileScreen extends StatefulWidget {
 
 class _TutorProfileScreenState extends State<TutorProfileScreen> {
   Tutor? _tutor;
+  String _activeTab = "ABOUT";
 
   @override
   void initState() {
@@ -108,9 +110,29 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  _buildTabButton("ABOUT", true),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _activeTab = "ABOUT";
+                                      });
+                                    },
+                                    child: _buildTabButton(
+                                      "ABOUT",
+                                      _activeTab == "ABOUT",
+                                    ),
+                                  ),
                                   const SizedBox(width: 10),
-                                  _buildTabButton("POSTS", false),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _activeTab = "POSTS";
+                                      });
+                                    },
+                                    child: _buildTabButton(
+                                      "POSTS",
+                                      _activeTab == "POSTS",
+                                    ),
+                                  ),
                                   const SizedBox(width: 10),
                                   ElevatedButton.icon(
                                     style: ElevatedButton.styleFrom(
@@ -149,14 +171,9 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
                                   ),
                                 ],
                               ),
-
-                              // Add logout icon button
-                              // Move the logout button to the top right using a Stack and Positioned widget
                             ],
                           ),
                         ),
-
-                        // Sign out button in the top right if viewing own profile
                         if (widget.id == AuthService().user!.id)
                           Positioned(
                             top: 8,
@@ -168,7 +185,6 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
                               ),
                               tooltip: 'Logout',
                               onPressed: () async {
-                                // Clear token and navigate to login
                                 await AuthService().logout();
                                 if (mounted) {
                                   Navigator.of(context).pushAndRemoveUntil(
@@ -183,66 +199,77 @@ class _TutorProfileScreenState extends State<TutorProfileScreen> {
                           ),
                       ],
                     ),
-
                     const SizedBox(height: 15),
-                    // About sekcija
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10.0,
-                        vertical: 8.0,
-                      ),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 8),
-                            Text(
-                              _tutor!.user.bio,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const SizedBox(height: 16),
-                            const Text(
-                              "Certificates",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.purple,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            if (_tutor!.certificates.isEmpty)
-                              const Text(
-                                "This trainer hasn't posted any certificates yet.",
-                                style: TextStyle(
+                    if (_activeTab == "ABOUT")
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0,
+                          vertical: 8.0,
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              Text(
+                                _tutor!.user.bio,
+                                style: const TextStyle(
                                   fontSize: 14,
-                                  color: Colors.black54,
-                                  fontStyle: FontStyle.italic,
+                                  color: Colors.black87,
                                 ),
-                              )
-                            else
-                              SizedBox(
-                                height: 250,
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      for (var cert in _tutor!.certificates)
-                                        _buildCertificateWidget(cert),
-                                    ],
+                              ),
+                              const SizedBox(height: 16),
+                              const SizedBox(height: 16),
+                              const Text(
+                                "Certificates",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.purple,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              if (_tutor!.certificates.isEmpty)
+                                const Text(
+                                  "This trainer hasn't posted any certificates yet.",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                )
+                              else
+                                SizedBox(
+                                  height: 250,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        for (var cert in _tutor!.certificates)
+                                          _buildCertificateWidget(cert),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
+                        ),
+                      )
+                    else if (_activeTab == "POSTS")
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0,
+                          vertical: 8.0,
+                        ),
+                        child: SizedBox(
+                          height:
+                              500, // or MediaQuery.of(context).size.height * 0.7,
+                          child: PostsListWidget(userId: widget.id),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

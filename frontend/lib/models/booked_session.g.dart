@@ -14,6 +14,7 @@ BookedSession _$BookedSessionFromJson(Map<String, dynamic> json) =>
       startTime: DateTime.parse(json['startTime'] as String),
       endTime: DateTime.parse(json['endTime'] as String),
       userName: json['userName'] as String,
+      isActive: json['isActive'] as bool,
       userImageUrl: json['userImageUrl'] as String? ?? "Cao",
     );
 
@@ -26,4 +27,5 @@ Map<String, dynamic> _$BookedSessionToJson(BookedSession instance) =>
       'endTime': instance.endTime.toIso8601String(),
       'userName': instance.userName,
       'userImageUrl': instance.userImageUrl,
+      'isActive': instance.isActive,
     };

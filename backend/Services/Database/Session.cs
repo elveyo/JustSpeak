@@ -11,8 +11,10 @@ namespace Services.Database
         public Level Level { get; set; } = null!;
         public int Duration { get; set; } //minutes
 
-        public string ChannelName { get; set; } = String.Empty;
+        public string ChannelName { get; set; } = string.Empty;
         public int NumOfUsers { get; set; }
+
+        public int CurrentNumOfUSers { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<Tag> Tags { get; set; } = new List<Tag>();

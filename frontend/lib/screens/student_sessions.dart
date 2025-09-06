@@ -124,8 +124,6 @@ class _StudentSessionsScreenState extends State<StudentSessionsScreen> {
                         ),
                         ...List.generate(sessions.length, (i) {
                           final session = sessions[i];
-                          // Print imageUrl to console
-                          print(session.toJson());
                           return Column(
                             children: [
                               SessionCard(
@@ -138,6 +136,7 @@ class _StudentSessionsScreenState extends State<StudentSessionsScreen> {
                                 ).format(session.date),
                                 time:
                                     '${session.startTime.hour.toString().padLeft(2, '0')}:${session.startTime.minute.toString().padLeft(2, '0')} - ${session.endTime.hour.toString().padLeft(2, '0')}:${session.endTime.minute.toString().padLeft(2, '0')}',
+                                isActive: session.isActive,
                               ),
                               if (i != sessions.length - 1)
                                 const SizedBox(height: 12),

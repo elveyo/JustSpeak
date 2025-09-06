@@ -137,7 +137,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
         listen: false,
       );
       final langs = await languageProvider.get(
-        filter: {"userId": AuthService().user!.id},
+        filter: {"userId": widget.tutorId},
       );
       if (langs.items != null && langs.items!.isNotEmpty) {
         _selectedLanguage = langs.items!.first.id;
@@ -442,7 +442,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  "Time: ",
+                                  "Time: ${_selectedSlot != null && _selectedSlot!.length >= 16 ? _selectedSlot!.substring(11, 16) : ''}",
                                   style: const TextStyle(fontSize: 15),
                                 ),
                               ],
