@@ -51,7 +51,7 @@ builder.Services.AddTransient<Services.StateMachine.SucceededPaymentState>();
 builder.Services.AddTransient<Services.StateMachine.FailedPaymentState>();
 
 //Stripe configuration
-var stripeKey = builder.Configuration.GetValue<string>("Stripe:_stripe");
+var stripeKey = builder.Configuration.GetValue<string>("Stripe:stripe");
 if (string.IsNullOrEmpty(stripeKey))
 {
     throw new InvalidOperationException(

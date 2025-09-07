@@ -11,6 +11,7 @@ Level _$LevelFromJson(Map<String, dynamic> json) => Level(
   name: json['name'] as String,
   description: json['description'] as String,
   maxPoints: (json['maxPoints'] as num).toInt(),
+  order: (json['order'] as num).toInt(),
 );
 
 Map<String, dynamic> _$LevelToJson(Level instance) => <String, dynamic>{
@@ -18,4 +19,5 @@ Map<String, dynamic> _$LevelToJson(Level instance) => <String, dynamic>{
   'name': instance.name,
   'description': instance.description,
   'maxPoints': instance.maxPoints,
+  'order': instance.order,
 };

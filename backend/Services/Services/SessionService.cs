@@ -222,7 +222,9 @@ namespace Services.Services
         public async Task<BookedSessionResponse[]> GetStudentSessionsAsync()
         {
             var bookedSessions = await _context
-                .StudentTutorSessions.Where(sts => sts.StudentId == UserId!.Value)
+                .StudentTutorSessions.Where(sts =>
+                    sts.StudentId == UserId!.Value && sts.StartTime > DateTime.UtcNow
+                )
                 .Select(s => new BookedSessionResponse
                 {
                     Language = s.Language.Name,

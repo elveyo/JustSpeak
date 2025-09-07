@@ -6,5 +6,6 @@ namespace Models.Responses
         public string Name { get; set; }
         public string Description { get; set; }
         public int MaxPoints { get; set; }
+        public int Order { get; set; }
     }
 }

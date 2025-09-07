@@ -12,6 +12,8 @@ Payment _$PaymentFromJson(Map<String, dynamic> json) => Payment(
   amount: (json['amount'] as num).toDouble(),
   status: json['status'] as String,
   createdAt: DateTime.parse(json['createdAt'] as String),
+  sender: json['sender'] as String? ?? '',
+  recipient: json['recipient'] as String? ?? '',
 );
 
 Map<String, dynamic> _$PaymentToJson(Payment instance) => <String, dynamic>{
@@ -19,5 +21,7 @@ Map<String, dynamic> _$PaymentToJson(Payment instance) => <String, dynamic>{
   'sessionId': instance.sessionId,
   'amount': instance.amount,
   'status': instance.status,
+  'sender': instance.sender,
+  'recipient': instance.recipient,
   'createdAt': instance.createdAt.toIso8601String(),
 };

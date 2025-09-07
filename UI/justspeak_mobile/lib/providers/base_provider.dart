@@ -45,7 +45,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
       result.totalCount = data['totalCount'];
       result.items = List<T>.from(data["items"].map((e) => fromJson(e)));
-
+  
       print(result.items);
       return result;
     } else {

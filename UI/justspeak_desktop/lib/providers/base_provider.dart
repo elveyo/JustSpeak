@@ -39,10 +39,11 @@ abstract class BaseProvider<T> with ChangeNotifier {
     print(uri);
     var response = await http.get(uri, headers: headers);
     print(response.body);
-
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
+
       var result = SearchResult<T>();
+      // Print all fields except imageUrl
 
       result.totalCount = data['totalCount'];
       result.items = List<T>.from(data["items"].map((e) => fromJson(e)));

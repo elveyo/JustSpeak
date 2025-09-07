@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DotNetEnv;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Model.Responses;
 using Model.SearchObjects;
 using Models.Requests;
 using Models.Responses;
@@ -41,6 +42,48 @@ namespace Services.Services
         {
             var state = _paymentState.GetPaymentState(nameof(InitialPaymentState));
             return await state.CreateAsync(request);
+        }
+
+        public override async Task<PagedResult<PaymentResponse>> GetAsync(BaseSearchObject? search)
+        {
+            var query = _context
+                .Set<Payment>()
+                .Include(p => p.Session)
+                .Include(p => p.Session.Student)
+                .Include(p => p.Session.Tutor)
+                .AsQueryable();
+
+            // Apply filters if needed (extend as necessary)
+            if (search != null)
+            {
+                // Example: add filter logic here if BaseSearchObject is extended
+            }
+
+            var totalCount = await query.CountAsync();
+
+            if (search?.Page.HasValue == true && search?.PageSize.HasValue == true)
+            {
+                query = query
+                    .Skip(search.Page.Value * search.PageSize.Value)
+                    .Take(search.PageSize.Value);
+            }
+
+            var payments = await query.ToListAsync();
+
+            var responses = payments
+                .Select(payment => new PaymentResponse
+                {
+                    Id = payment.Id,
+                    SessionId = payment.SessionId,
+                    Sender = payment.Session.Student.FullName,
+                    Recipient = payment.Session.Tutor.FullName,
+                    Amount = payment.Amount,
+                    Status = payment.Status,
+                    CreatedAt = payment.CreatedAt,
+                })
+                .ToList();
+
+            return new PagedResult<PaymentResponse> { Items = responses, TotalCount = totalCount };
         }
 
         public PaymentIntent CreatePaymentIntent(CreatePaymentIntent request)

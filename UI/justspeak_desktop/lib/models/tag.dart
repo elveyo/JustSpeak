@@ -1,7 +1,7 @@
 class Tag {
   final int id;
-  final String name;
-  final String color;
+  String name;
+  String color;
 
   Tag({required this.id, required this.name, required this.color});
 

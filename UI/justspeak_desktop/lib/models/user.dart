@@ -9,7 +9,7 @@ class User {
   String password;
   String email;
   String bio;
-  final String role;
+  String role;
   final String imageUrl;
   String get fullName => '$firstName $lastName';
 
@@ -17,7 +17,7 @@ class User {
     required this.id,
     required this.firstName,
     required this.lastName,
-    required this.role,
+    this.role = '',
     this.imageUrl = '',
     this.password = '',
     this.email = '',

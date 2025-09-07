@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:justspeak_desktop/screens/payment_screen.dart';
+import 'package:justspeak_desktop/screens/settings_screen.dart';
 import 'package:justspeak_desktop/screens/statistics_screen.dart';
 import 'package:justspeak_desktop/screens/users_screen.dart';
 
@@ -14,8 +16,8 @@ class _MasterScreenState extends State<MasterScreen> {
   final List<Widget> _screens = [
     Center(child: StatisticsScreen()),
     Center(child: UsersScreen()),
-    Center(child: Text('Payments Screen')),
-    Center(child: Text('Settings Screen')),
+    Center(child: PaymentsScreen()),
+    Center(child: SettingsScreen()),
   ];
 
   @override

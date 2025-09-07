@@ -14,7 +14,7 @@ namespace Services.Database
         public string ChannelName { get; set; } = string.Empty;
         public int NumOfUsers { get; set; }
 
-        public int CurrentNumOfUSers { get; set; }
+        public int CurrentNumOfUSers { get; set; } = 0;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<Tag> Tags { get; set; } = new List<Tag>();

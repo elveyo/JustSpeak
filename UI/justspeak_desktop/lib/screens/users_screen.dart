@@ -33,7 +33,7 @@ class _UsersPageState extends State<UsersScreen> {
 
   void fetchUsers() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    var usersResponse = await userProvider.get();
+    var usersResponse = await userProvider.get(filter: filter);
 
     setState(() {
       users = usersResponse.items;

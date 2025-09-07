@@ -3,6 +3,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:justspeak_desktop/layouts/master_screen.dart';
 import 'package:justspeak_desktop/providers/level_provider.dart';
 import 'package:justspeak_desktop/providers/language_provider.dart';
+import 'package:justspeak_desktop/providers/payment_provider.dart';
 import 'package:justspeak_desktop/providers/user_provider.dart';
 import 'package:justspeak_desktop/screens/login_screen.dart';
 import 'package:justspeak_desktop/screens/statistics_screen.dart';
@@ -36,6 +37,9 @@ void main() async {
         ),
         ChangeNotifierProvider<UserProvider>(
           create: (context) => UserProvider(),
+        ),
+        ChangeNotifierProvider<PaymentProvider>(
+          create: (context) => PaymentProvider(),
         ),
       ],
       child: MyApp(isUserLogged: authService.isLoggedIn),

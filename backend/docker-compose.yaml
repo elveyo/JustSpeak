@@ -43,7 +43,7 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:5255
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings:JustSpeakDB: "Server=sqlserver,1433;Database=JustSpeakDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True"
+      ConnectionStrings:CONNECTIONSTRING_DB: "Server=sqlserver,1433;Database=JustSpeakDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True"
       EMAIL_FROM: ${EMAIL_FROM}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
       EMAIL_HOST: ${EMAIL_HOST}
@@ -53,6 +53,10 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
+      Stripe:Stripe: ${STRIPE}
+      Agora:AppId: ${APP_ID}
+      Agora:AppCertificate: ${APP_CERTIFICATE}
+
     ports:
       - "5255:5255"
     networks:
@@ -60,8 +64,8 @@ services:
 
   subscriber:
     build:
-      context: ./Subscriber
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Subscriber/Dockerfile
     container_name: justspeak-subscriber
     restart: on-failure
     depends_on:

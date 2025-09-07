@@ -5,7 +5,7 @@ part 'language.g.dart';
 @JsonSerializable()
 class Language {
   final int id;
-  final String name;
+  String name;
 
   Language({required this.id, required this.name});
 

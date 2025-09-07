@@ -8,6 +8,8 @@ class Payment {
   final int sessionId;
   final double amount;
   final String status;
+  String sender;
+  String recipient;
   final DateTime createdAt;
 
   Payment({
@@ -16,6 +18,8 @@ class Payment {
     required this.amount,
     required this.status,
     required this.createdAt,
+    this.sender = '',
+    this.recipient = '',
   });
 
   factory Payment.fromJson(Map<String, dynamic> json) =>
