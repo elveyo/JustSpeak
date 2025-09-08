@@ -24,11 +24,7 @@ void main() async {
         "pk_test_51RL0ZVAHXQropxlzi4AeoE2awEiSSLusn5TM44Gd0zWsAtkWTTof5ZGB82X5OtQWwFdJgXqz08as63s1b2FLqdta00h2dLDcBL";
 
     await Stripe.instance.applySettings();
-    print("Stripe initialized successfully");
-  } catch (e) {
-    print("Stripe initialization failed: $e");
-    // Continue with app initialization even if Stripe fails
-  }
+  } catch (e) {}
   runApp(
     MultiProvider(
       providers: [
@@ -54,15 +50,15 @@ void main() async {
           create: (context) => UserProvider(),
         ),
       ],
-      child: MyApp(isUserLogged: authService.isLoggedIn),
+      child: MyApp(isUserAuthenticated: authService.isAuthenticated),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final bool isUserLogged;
+  final bool isUserAuthenticated;
 
-  const MyApp({super.key, required this.isUserLogged});
+  const MyApp({super.key, required this.isUserAuthenticated});
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +70,7 @@ class MyApp extends StatelessWidget {
           secondary: Color(0xFF6A1B9A),
         ),
       ),
-      home: isUserLogged ? FeedScreen() : LoginScreen(),
+      home: isUserAuthenticated ? FeedScreen() : LoginScreen(),
     );
   }
 }

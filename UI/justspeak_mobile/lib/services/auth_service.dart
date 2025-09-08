@@ -27,20 +27,17 @@ class AuthService {
     }
   }
 
-  // Check if token is expired
-  bool get isLoggedIn {
-    if (_jwt == null) return false;
-    return !JwtDecoder.isExpired(_jwt!);
-  }
+  //    return !JwtDecoder.isExpired(_jwt!);
 
   // Get current user id
   User? get user {
     if (_decoded == null) return null;
     try {
-      final id = int.tryParse(
-        _decoded?['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ??
-            '',
-      );
+      final id =
+          int.tryParse(
+            _decoded?['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],
+          ) ??
+          0;
       final firstName =
           _decoded?['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'] ??
           '';
@@ -51,10 +48,6 @@ class AuthService {
           _decoded?['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
           '';
       final imageUrl = _decoded?['imageUrl'] ?? '';
-
-      if (id == null || firstName.isEmpty || lastName.isEmpty || role.isEmpty) {
-        return null;
-      }
 
       return User(
         id: id,
@@ -68,9 +61,9 @@ class AuthService {
     }
   }
 
-  // Get raw JWT
-  String? get token => _jwt;
-  Map<String, dynamic>? get decoded => _decoded;
+  int? get userId => user?.id;
+
+  bool get isAuthenticated => user != null && !JwtDecoder.isExpired(_jwt!);
 
   // Logout
   Future<void> logout() async {

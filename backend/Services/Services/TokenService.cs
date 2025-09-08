@@ -29,7 +29,7 @@ namespace Services.Services
                 new Claim(ClaimTypes.Name, user.FirstName),
                 new Claim(ClaimTypes.GivenName, user.FirstName),
                 new Claim(ClaimTypes.Surname, user.LastName),
-                new Claim(ClaimTypes.Role, user.Role.Name),
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
             };
 
             var key = new SymmetricSecurityKey(

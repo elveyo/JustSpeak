@@ -92,6 +92,7 @@ namespace Services.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -344,23 +345,6 @@ namespace Services.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Admin"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Tutor"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Student"
-                        });
                 });
 
             modelBuilder.Entity("Services.Database.Session", b =>
@@ -653,28 +637,19 @@ namespace Services.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsEmailVerified")
-                        .HasColumnType("bit");
-
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -684,12 +659,7 @@ namespace Services.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
 
@@ -724,16 +694,13 @@ namespace Services.Migrations
                         {
                             Id = 1,
                             Bio = "",
-                            CreatedAt = new DateTime(2025, 9, 7, 12, 2, 41, 831, DateTimeKind.Utc).AddTicks(7135),
+                            CreatedAt = new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4713),
                             Email = "admin@justspeak.com",
                             FirstName = "Admin",
                             ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
                             LastName = "User",
                             PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 1
+                            PasswordSalt = "salt"
                         });
                 });
 
@@ -748,31 +715,13 @@ namespace Services.Migrations
                         {
                             Id = 4,
                             Bio = "",
-                            CreatedAt = new DateTime(2025, 9, 7, 12, 2, 41, 831, DateTimeKind.Utc).AddTicks(7193),
+                            CreatedAt = new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4795),
                             Email = "hans@justspeak.com",
-                            FirstName = "Hans",
+                            FirstName = "Elvir",
                             ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
-                            LastName = "Muller",
+                            LastName = "Student",
                             PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 3
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 9, 7, 12, 2, 41, 831, DateTimeKind.Utc).AddTicks(7195),
-                            Email = "yuki@justspeak.com",
-                            FirstName = "Yuki",
-                            ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
-                            LastName = "Tanaka",
-                            PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 3
+                            PasswordSalt = "salt"
                         });
                 });
 
@@ -787,31 +736,13 @@ namespace Services.Migrations
                         {
                             Id = 2,
                             Bio = "",
-                            CreatedAt = new DateTime(2025, 9, 7, 12, 2, 41, 831, DateTimeKind.Utc).AddTicks(7167),
-                            Email = "maria@justspeak.com",
-                            FirstName = "Maria",
+                            CreatedAt = new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4762),
+                            Email = "mike@gmail.com",
+                            FirstName = "Mike",
                             ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
-                            LastName = "Garcia",
+                            LastName = "Tutor",
                             PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 9, 7, 12, 2, 41, 831, DateTimeKind.Utc).AddTicks(7170),
-                            Email = "jean@justspeak.com",
-                            FirstName = "Jean",
-                            ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
-                            LastName = "Dubois",
-                            PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 2
+                            PasswordSalt = "salt"
                         });
                 });
 
@@ -848,15 +779,14 @@ namespace Services.Migrations
             modelBuilder.Entity("Services.Database.Comment", b =>
                 {
                     b.HasOne("Services.Database.User", "Author")
-                        .WithMany("Comments")
+                        .WithMany()
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Services.Database.Comment", "ParentComment")
                         .WithMany("Replies")
-                        .HasForeignKey("ParentCommentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("ParentCommentId");
 
                     b.HasOne("Services.Database.Post", "Post")
                         .WithMany("Comments")
@@ -1035,17 +965,6 @@ namespace Services.Migrations
                     b.Navigation("Tutor");
                 });
 
-            modelBuilder.Entity("Services.Database.User", b =>
-                {
-                    b.HasOne("Services.Database.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("SessionTag", b =>
                 {
                     b.HasOne("Services.Database.Session", null)
@@ -1083,11 +1002,6 @@ namespace Services.Migrations
             modelBuilder.Entity("Services.Database.TutorSchedule", b =>
                 {
                     b.Navigation("AvailableDays");
-                });
-
-            modelBuilder.Entity("Services.Database.User", b =>
-                {
-                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("Services.Database.Student", b =>

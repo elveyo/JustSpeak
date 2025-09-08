@@ -3,6 +3,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Model.Responses;
 using Model.SearchObjects;
+using Models.Enums;
 using Models.Requests;
 using Models.Responses;
 using Models.SearchObjects;
@@ -40,7 +41,7 @@ namespace Services.Services
                 .Users.Include(user => user.Role)
                 .FirstOrDefaultAsync(u => u.Id == search.UserId.Value);
             var levels = new List<LevelResponse>();
-            if (user.Role?.Name == "Student")
+            if (user.Role == UserRole.Student)
             {
                 var studentLanguages = await _context
                     .StudentLanguages.Include(sl => sl.Level)

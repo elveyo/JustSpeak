@@ -12,8 +12,8 @@ using Services.Database;
 namespace Services.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250827153153_ImageAdded")]
-    partial class ImageAdded
+    [Migration("20250908210305_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -95,6 +95,7 @@ namespace Services.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -180,6 +181,9 @@ namespace Services.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Levels");
@@ -190,35 +194,40 @@ namespace Services.Migrations
                             Id = 1,
                             Description = "Embarking on the language journey, learning greetings and essential words.",
                             MaxPoints = 100,
-                            Name = "Wanderer"
+                            Name = "Wanderer",
+                            Order = 1
                         },
                         new
                         {
                             Id = 2,
                             Description = "Navigating simple conversations and discovering basic grammar structures.",
                             MaxPoints = 200,
-                            Name = "Explorer"
+                            Name = "Explorer",
+                            Order = 2
                         },
                         new
                         {
                             Id = 3,
                             Description = "Confidently sharing stories and engaging in daily discussions.",
                             MaxPoints = 400,
-                            Name = "Storyteller"
+                            Name = "Storyteller",
+                            Order = 3
                         },
                         new
                         {
                             Id = 4,
                             Description = "Mastering complex topics, idioms, and nuanced expressions.",
                             MaxPoints = 600,
-                            Name = "Sage"
+                            Name = "Sage",
+                            Order = 4
                         },
                         new
                         {
                             Id = 5,
                             Description = "Achieving legendary fluency and cultural mastery, speaking like a native.",
                             MaxPoints = 1000,
-                            Name = "Polyglot"
+                            Name = "Polyglot",
+                            Order = 5
                         });
                 });
 
@@ -273,28 +282,20 @@ namespace Services.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-               
-
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("SessionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TutorId")
-                        .HasColumnType("int");
+                    b.Property<string>("StripeTransactionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SessionId");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("TutorId");
 
                     b.ToTable("Payments");
                 });
@@ -313,6 +314,9 @@ namespace Services.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
@@ -344,23 +348,6 @@ namespace Services.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Admin"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Tutor"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Student"
-                        });
                 });
 
             modelBuilder.Entity("Services.Database.Session", b =>
@@ -377,6 +364,9 @@ namespace Services.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("CurrentNumOfUSers")
+                        .HasColumnType("int");
 
                     b.Property<int>("Duration")
                         .HasColumnType("int");
@@ -471,6 +461,10 @@ namespace Services.Migrations
                     b.Property<int>("TutorId")
                         .HasColumnType("int");
 
+                    b.Property<string>("channelName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LanguageId");
@@ -500,12 +494,7 @@ namespace Services.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("SessionId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("SessionId");
 
                     b.ToTable("Tags");
 
@@ -638,6 +627,10 @@ namespace Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -647,28 +640,19 @@ namespace Services.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsEmailVerified")
-                        .HasColumnType("bit");
-
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -678,18 +662,28 @@ namespace Services.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("User");
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("SessionTag", b =>
+                {
+                    b.Property<int>("SessionsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TagsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SessionsId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("SessionTag");
                 });
 
             modelBuilder.Entity("Services.Database.Admin", b =>
@@ -702,16 +696,14 @@ namespace Services.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(4938),
+                            Bio = "",
+                            CreatedAt = new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4713),
                             Email = "admin@justspeak.com",
                             FirstName = "Admin",
                             ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
                             LastName = "User",
                             PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 1
+                            PasswordSalt = "salt"
                         });
                 });
 
@@ -725,30 +717,14 @@ namespace Services.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(5014),
+                            Bio = "",
+                            CreatedAt = new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4795),
                             Email = "hans@justspeak.com",
-                            FirstName = "Hans",
+                            FirstName = "Elvir",
                             ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
-                            LastName = "Muller",
+                            LastName = "Student",
                             PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 3
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(5018),
-                            Email = "yuki@justspeak.com",
-                            FirstName = "Yuki",
-                            ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
-                            LastName = "Tanaka",
-                            PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 3
+                            PasswordSalt = "salt"
                         });
                 });
 
@@ -756,42 +732,20 @@ namespace Services.Migrations
                 {
                     b.HasBaseType("Services.Database.User");
 
-                    b.Property<string>("Bio")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasDiscriminator().HasValue("Tutor");
 
                     b.HasData(
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(4975),
-                            Email = "maria@justspeak.com",
-                            FirstName = "Maria",
+                            Bio = "",
+                            CreatedAt = new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4762),
+                            Email = "mike@gmail.com",
+                            FirstName = "Mike",
                             ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
-                            LastName = "Garcia",
+                            LastName = "Tutor",
                             PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 2,
-                            Bio = ""
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2025, 8, 27, 15, 31, 53, 337, DateTimeKind.Utc).AddTicks(4979),
-                            Email = "jean@justspeak.com",
-                            FirstName = "Jean",
-                            ImageUrl = "",
-                            IsActive = true,
-                            IsEmailVerified = true,
-                            LastName = "Dubois",
-                            PasswordHash = "hashed_password",
-                            PasswordSalt = "salt",
-                            RoleId = 2,
-                            Bio = ""
+                            PasswordSalt = "salt"
                         });
                 });
 
@@ -828,15 +782,14 @@ namespace Services.Migrations
             modelBuilder.Entity("Services.Database.Comment", b =>
                 {
                     b.HasOne("Services.Database.User", "Author")
-                        .WithMany("Comments")
+                        .WithMany()
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Services.Database.Comment", "ParentComment")
                         .WithMany("Replies")
-                        .HasForeignKey("ParentCommentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("ParentCommentId");
 
                     b.HasOne("Services.Database.Post", "Post")
                         .WithMany("Comments")
@@ -882,23 +835,7 @@ namespace Services.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Services.Database.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Services.Database.Tutor", "Tutor")
-                        .WithMany()
-                        .HasForeignKey("TutorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Session");
-
-                    b.Navigation("Student");
-
-                    b.Navigation("Tutor");
                 });
 
             modelBuilder.Entity("Services.Database.Post", b =>
@@ -993,13 +930,6 @@ namespace Services.Migrations
                     b.Navigation("Tutor");
                 });
 
-            modelBuilder.Entity("Services.Database.Tag", b =>
-                {
-                    b.HasOne("Services.Database.Session", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("SessionId");
-                });
-
             modelBuilder.Entity("Services.Database.TutorLanguage", b =>
                 {
                     b.HasOne("Services.Database.Language", "Language")
@@ -1038,15 +968,19 @@ namespace Services.Migrations
                     b.Navigation("Tutor");
                 });
 
-            modelBuilder.Entity("Services.Database.User", b =>
+            modelBuilder.Entity("SessionTag", b =>
                 {
-                    b.HasOne("Services.Database.Role", "Role")
+                    b.HasOne("Services.Database.Session", null)
                         .WithMany()
-                        .HasForeignKey("RoleId")
+                        .HasForeignKey("SessionsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Role");
+                    b.HasOne("Services.Database.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Services.Database.Comment", b =>
@@ -1068,19 +1002,9 @@ namespace Services.Migrations
                     b.Navigation("Likes");
                 });
 
-            modelBuilder.Entity("Services.Database.Session", b =>
-                {
-                    b.Navigation("Tags");
-                });
-
             modelBuilder.Entity("Services.Database.TutorSchedule", b =>
                 {
                     b.Navigation("AvailableDays");
-                });
-
-            modelBuilder.Entity("Services.Database.User", b =>
-                {
-                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("Services.Database.Student", b =>

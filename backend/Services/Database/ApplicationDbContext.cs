@@ -14,38 +14,6 @@ namespace Services.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //Comments
-
-            modelBuilder.Entity<Comment>(entity =>
-            {
-                entity
-                    .HasOne(c => c.ParentComment)
-                    .WithMany(c => c.Replies)
-                    .HasForeignKey(c => c.ParentCommentId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity
-                    .HasOne(c => c.Post)
-                    .WithMany(p => p.Comments)
-                    .HasForeignKey(c => c.PostId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity
-                    .HasOne(c => c.Author)
-                    .WithMany(u => u.Comments)
-                    .HasForeignKey(c => c.AuthorId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            // Seed Roles
-            modelBuilder
-                .Entity<Role>()
-                .HasData(
-                    new Role { Id = 1, Name = "Admin" },
-                    new Role { Id = 2, Name = "Tutor" },
-                    new Role { Id = 3, Name = "Student" }
-                );
-
             // Seed Languages
             modelBuilder
                 .Entity<Language>()
@@ -128,9 +96,6 @@ namespace Services.Database
                         Email = "admin@justspeak.com",
                         PasswordHash = "hashed_password",
                         PasswordSalt = "salt",
-                        IsEmailVerified = true,
-                        IsActive = true,
-                        RoleId = 1,
                         CreatedAt = DateTime.UtcNow,
                     }
                 );
@@ -140,27 +105,11 @@ namespace Services.Database
                     new Tutor
                     {
                         Id = 2,
-                        FirstName = "Maria",
-                        LastName = "Garcia",
-                        Email = "maria@justspeak.com",
+                        FirstName = "Mike",
+                        LastName = "Tutor",
+                        Email = "mike@gmail.com",
                         PasswordHash = "hashed_password",
                         PasswordSalt = "salt",
-                        IsEmailVerified = true,
-                        IsActive = true,
-                        RoleId = 2,
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                    new Tutor
-                    {
-                        Id = 3,
-                        FirstName = "Jean",
-                        LastName = "Dubois",
-                        Email = "jean@justspeak.com",
-                        PasswordHash = "hashed_password",
-                        PasswordSalt = "salt",
-                        IsEmailVerified = true,
-                        IsActive = true,
-                        RoleId = 2,
                         CreatedAt = DateTime.UtcNow,
                     }
                 );
@@ -170,27 +119,12 @@ namespace Services.Database
                     new Student
                     {
                         Id = 4,
-                        FirstName = "Hans",
-                        LastName = "Muller",
+                        FirstName = "Elvir",
+                        LastName = "Student",
                         Email = "hans@justspeak.com",
                         PasswordHash = "hashed_password",
                         PasswordSalt = "salt",
-                        IsEmailVerified = true,
-                        IsActive = true,
-                        RoleId = 3,
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                    new Student
-                    {
-                        Id = 5,
-                        FirstName = "Yuki",
-                        LastName = "Tanaka",
-                        Email = "yuki@justspeak.com",
-                        PasswordHash = "hashed_password",
-                        PasswordSalt = "salt",
-                        IsEmailVerified = true,
-                        IsActive = true,
-                        RoleId = 3,
+
                         CreatedAt = DateTime.UtcNow,
                     }
                 );

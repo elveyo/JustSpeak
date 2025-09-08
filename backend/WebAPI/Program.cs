@@ -43,13 +43,6 @@ builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddTransient<IMessageBrokerService, MessageBrokerService>();
 builder.Services.AddTransient<IRecommenderService, RecommenderService>();
 
-//Payment machine state
-builder.Services.AddTransient<Services.StateMachine.BasePaymentState>();
-builder.Services.AddTransient<Services.StateMachine.InitialPaymentState>();
-builder.Services.AddTransient<Services.StateMachine.CanceledPaymentState>();
-builder.Services.AddTransient<Services.StateMachine.SucceededPaymentState>();
-builder.Services.AddTransient<Services.StateMachine.FailedPaymentState>();
-
 //Stripe configuration
 var stripeKey = builder.Configuration.GetValue<string>("Stripe:stripe");
 if (string.IsNullOrEmpty(stripeKey))

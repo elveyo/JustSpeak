@@ -81,7 +81,7 @@ namespace Services.Services
                     Content = post.Content,
                     AuthorId = post.AuthorId,
                     AuthorName = post.Author?.FullName ?? "",
-                    UserRole = post.Author?.Role.Name ?? "",
+                    UserRole = post.Author?.Role.ToString(),
                     ImageUrl = post.ImageUrl,
                     NumOfLikes = post.Likes.Count,
                     NumOfComments = post.Comments.Count,

@@ -8,28 +8,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Services.Migrations
 {
     /// <inheritdoc />
-    public partial class SeedData : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "LanguageLevels",
-                columns: table => new
-                {
-                    Id = table
-                        .Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MaxPoints = table.Column<int>(type: "int", nullable: false),
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LanguageLevels", x => x.Id);
-                }
-            );
-
             migrationBuilder.CreateTable(
                 name: "Languages",
                 columns: table => new
@@ -42,6 +25,24 @@ namespace Services.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Languages", x => x.Id);
+                }
+            );
+
+            migrationBuilder.CreateTable(
+                name: "Levels",
+                columns: table => new
+                {
+                    Id = table
+                        .Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MaxPoints = table.Column<int>(type: "int", nullable: false),
+                    Order = table.Column<int>(type: "int", nullable: false),
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Levels", x => x.Id);
                 }
             );
 
@@ -61,35 +62,18 @@ namespace Services.Migrations
             );
 
             migrationBuilder.CreateTable(
-                name: "Sessions",
+                name: "Tags",
                 columns: table => new
                 {
                     Id = table
                         .Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    NumberOfUsers = table.Column<int>(type: "int", nullable: false),
-                    LanguageId = table.Column<int>(type: "int", nullable: false),
-                    LevelId = table.Column<int>(type: "int", nullable: false),
-                    Duration = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Color = table.Column<string>(type: "nvarchar(max)", nullable: false),
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Sessions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Sessions_LanguageLevels_LevelId",
-                        column: x => x.LevelId,
-                        principalTable: "LanguageLevels",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade
-                    );
-                    table.ForeignKey(
-                        name: "FK_Sessions_Languages_LanguageId",
-                        column: x => x.LanguageId,
-                        principalTable: "Languages",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade
-                    );
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                 }
             );
 
@@ -100,61 +84,53 @@ namespace Services.Migrations
                     Id = table
                         .Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(
-                        type: "nvarchar(50)",
-                        maxLength: 50,
-                        nullable: false
-                    ),
-                    LastName = table.Column<string>(
-                        type: "nvarchar(50)",
-                        maxLength: 50,
-                        nullable: false
-                    ),
-                    Email = table.Column<string>(
-                        type: "nvarchar(50)",
-                        maxLength: 50,
-                        nullable: false
-                    ),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Bio = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordSalt = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsEmailVerified = table.Column<bool>(type: "bit", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    RoleId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Discriminator = table.Column<string>(type: "nvarchar(max)", nullable: false),
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Users_Roles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "Roles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade
-                    );
                 }
             );
 
             migrationBuilder.CreateTable(
-                name: "Tags",
+                name: "Sessions",
                 columns: table => new
                 {
                     Id = table
                         .Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Color = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SessionId = table.Column<int>(type: "int", nullable: true),
+                    LanguageId = table.Column<int>(type: "int", nullable: false),
+                    LevelId = table.Column<int>(type: "int", nullable: false),
+                    Duration = table.Column<int>(type: "int", nullable: false),
+                    ChannelName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NumOfUsers = table.Column<int>(type: "int", nullable: false),
+                    CurrentNumOfUSers = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tags", x => x.Id);
+                    table.PrimaryKey("PK_Sessions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Tags_Sessions_SessionId",
-                        column: x => x.SessionId,
-                        principalTable: "Sessions",
-                        principalColumn: "Id"
+                        name: "FK_Sessions_Languages_LanguageId",
+                        column: x => x.LanguageId,
+                        principalTable: "Languages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                    table.ForeignKey(
+                        name: "FK_Sessions_Levels_LevelId",
+                        column: x => x.LevelId,
+                        principalTable: "Levels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade
                     );
                 }
             );
@@ -169,10 +145,18 @@ namespace Services.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TutorId = table.Column<int>(type: "int", nullable: false),
+                    LanguageId = table.Column<int>(type: "int", nullable: false),
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Certificates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Certificates_Languages_LanguageId",
+                        column: x => x.LanguageId,
+                        principalTable: "Languages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade
+                    );
                     table.ForeignKey(
                         name: "FK_Certificates_Users_TutorId",
                         column: x => x.TutorId,
@@ -194,6 +178,7 @@ namespace Services.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AuthorId = table.Column<int>(type: "int", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                 },
                 constraints: table =>
                 {
@@ -249,16 +234,16 @@ namespace Services.Migrations
                 {
                     table.PrimaryKey("PK_StudentLanguages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StudentLanguages_LanguageLevels_LevelId",
-                        column: x => x.LevelId,
-                        principalTable: "LanguageLevels",
+                        name: "FK_StudentLanguages_Languages_LanguageId",
+                        column: x => x.LanguageId,
+                        principalTable: "Languages",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade
                     );
                     table.ForeignKey(
-                        name: "FK_StudentLanguages_Languages_LanguageId",
-                        column: x => x.LanguageId,
-                        principalTable: "Languages",
+                        name: "FK_StudentLanguages_Levels_LevelId",
+                        column: x => x.LevelId,
+                        principalTable: "Levels",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade
                     );
@@ -288,38 +273,39 @@ namespace Services.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Rating = table.Column<int>(type: "int", nullable: true),
+                    channelName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_StudentTutorSessions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StudentTutorSessions_LanguageLevels_LevelId",
-                        column: x => x.LevelId,
-                        principalTable: "LanguageLevels",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction
-                    );
-                    table.ForeignKey(
                         name: "FK_StudentTutorSessions_Languages_LanguageId",
                         column: x => x.LanguageId,
                         principalTable: "Languages",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction
+                        onDelete: ReferentialAction.Restrict
+                    );
+                    table.ForeignKey(
+                        name: "FK_StudentTutorSessions_Levels_LevelId",
+                        column: x => x.LevelId,
+                        principalTable: "Levels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict
                     );
                     table.ForeignKey(
                         name: "FK_StudentTutorSessions_Users_StudentId",
                         column: x => x.StudentId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction
+                        onDelete: ReferentialAction.Restrict
                     );
                     table.ForeignKey(
                         name: "FK_StudentTutorSessions_Users_TutorId",
                         column: x => x.TutorId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction
+                        onDelete: ReferentialAction.Restrict
                     );
                 }
             );
@@ -341,16 +327,16 @@ namespace Services.Migrations
                 {
                     table.PrimaryKey("PK_TutorLanguages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TutorLanguages_LanguageLevels_LevelId",
-                        column: x => x.LevelId,
-                        principalTable: "LanguageLevels",
+                        name: "FK_TutorLanguages_Languages_LanguageId",
+                        column: x => x.LanguageId,
+                        principalTable: "Languages",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade
                     );
                     table.ForeignKey(
-                        name: "FK_TutorLanguages_Languages_LanguageId",
-                        column: x => x.LanguageId,
-                        principalTable: "Languages",
+                        name: "FK_TutorLanguages_Levels_LevelId",
+                        column: x => x.LevelId,
+                        principalTable: "Levels",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade
                     );
@@ -365,17 +351,44 @@ namespace Services.Migrations
             );
 
             migrationBuilder.CreateTable(
+                name: "SessionTag",
+                columns: table => new
+                {
+                    SessionsId = table.Column<int>(type: "int", nullable: false),
+                    TagsId = table.Column<int>(type: "int", nullable: false),
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SessionTag", x => new { x.SessionsId, x.TagsId });
+                    table.ForeignKey(
+                        name: "FK_SessionTag_Sessions_SessionsId",
+                        column: x => x.SessionsId,
+                        principalTable: "Sessions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                    table.ForeignKey(
+                        name: "FK_SessionTag_Tags_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
+
+            migrationBuilder.CreateTable(
                 name: "Comments",
                 columns: table => new
                 {
                     Id = table
                         .Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PostId = table.Column<int>(type: "int", nullable: false),
                     AuthorId = table.Column<int>(type: "int", nullable: false),
                     ParentCommentId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                 },
                 constraints: table =>
                 {
@@ -392,14 +405,14 @@ namespace Services.Migrations
                         column: x => x.PostId,
                         principalTable: "Posts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade
+                        onDelete: ReferentialAction.Restrict
                     );
                     table.ForeignKey(
                         name: "FK_Comments_Users_AuthorId",
                         column: x => x.AuthorId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict
+                        onDelete: ReferentialAction.Cascade
                     );
                 }
             );
@@ -436,11 +449,13 @@ namespace Services.Migrations
                     Id = table
                         .Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    StudentId = table.Column<int>(type: "int", nullable: false),
-                    TutorId = table.Column<int>(type: "int", nullable: false),
                     SessionId = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StripeTransactionId = table.Column<string>(
+                        type: "nvarchar(max)",
+                        nullable: false
+                    ),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                 },
                 constraints: table =>
@@ -451,21 +466,7 @@ namespace Services.Migrations
                         column: x => x.SessionId,
                         principalTable: "StudentTutorSessions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction
-                    );
-                    table.ForeignKey(
-                        name: "FK_Payments_Users_StudentId",
-                        column: x => x.StudentId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction
-                    );
-                    table.ForeignKey(
-                        name: "FK_Payments_Users_TutorId",
-                        column: x => x.TutorId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction
+                        onDelete: ReferentialAction.Cascade
                     );
                 }
             );
@@ -508,44 +509,6 @@ namespace Services.Migrations
             );
 
             migrationBuilder.InsertData(
-                table: "LanguageLevels",
-                columns: new[] { "Id", "Description", "MaxPoints", "Name" },
-                values: new object[,]
-                {
-                    {
-                        1,
-                        "Embarking on the language journey, learning greetings and essential words.",
-                        100,
-                        "Wanderer",
-                    },
-                    {
-                        2,
-                        "Navigating simple conversations and discovering basic grammar structures.",
-                        200,
-                        "Explorer",
-                    },
-                    {
-                        3,
-                        "Confidently sharing stories and engaging in daily discussions.",
-                        400,
-                        "Storyteller",
-                    },
-                    {
-                        4,
-                        "Mastering complex topics, idioms, and nuanced expressions.",
-                        600,
-                        "Sage",
-                    },
-                    {
-                        5,
-                        "Achieving legendary fluency and cultural mastery, speaking like a native.",
-                        1000,
-                        "Polyglot",
-                    },
-                }
-            );
-
-            migrationBuilder.InsertData(
                 table: "Languages",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
@@ -559,13 +522,63 @@ namespace Services.Migrations
             );
 
             migrationBuilder.InsertData(
-                table: "Roles",
-                columns: new[] { "Id", "Name" },
+                table: "Levels",
+                columns: new[] { "Id", "Description", "MaxPoints", "Name", "Order" },
                 values: new object[,]
                 {
-                    { 1, "Admin" },
-                    { 2, "Tutor" },
-                    { 3, "Student" },
+                    {
+                        1,
+                        "Embarking on the language journey, learning greetings and essential words.",
+                        100,
+                        "Wanderer",
+                        1,
+                    },
+                    {
+                        2,
+                        "Navigating simple conversations and discovering basic grammar structures.",
+                        200,
+                        "Explorer",
+                        2,
+                    },
+                    {
+                        3,
+                        "Confidently sharing stories and engaging in daily discussions.",
+                        400,
+                        "Storyteller",
+                        3,
+                    },
+                    {
+                        4,
+                        "Mastering complex topics, idioms, and nuanced expressions.",
+                        600,
+                        "Sage",
+                        4,
+                    },
+                    {
+                        5,
+                        "Achieving legendary fluency and cultural mastery, speaking like a native.",
+                        1000,
+                        "Polyglot",
+                        5,
+                    },
+                }
+            );
+
+            migrationBuilder.InsertData(
+                table: "Tags",
+                columns: new[] { "Id", "Color", "Name" },
+                values: new object[,]
+                {
+                    { 1, "#4CAF50", "Conversation" },
+                    { 2, "#2196F3", "Grammar" },
+                    { 3, "#FF9800", "Pronunciation" },
+                    { 4, "#9C27B0", "Travel" },
+                    { 5, "#FF5722", "Food & Cooking" },
+                    { 6, "#607D8B", "Business" },
+                    { 7, "#E91E63", "Culture" },
+                    { 8, "#795548", "Daily Life" },
+                    { 9, "#00BCD4", "Hobbies" },
+                    { 10, "#8BC34A", "Health & Wellness" },
                 }
             );
 
@@ -574,83 +587,53 @@ namespace Services.Migrations
                 columns: new[]
                 {
                     "Id",
+                    "Bio",
                     "CreatedAt",
                     "Discriminator",
                     "Email",
                     "FirstName",
-                    "IsActive",
-                    "IsEmailVerified",
+                    "ImageUrl",
                     "LastName",
                     "PasswordHash",
                     "PasswordSalt",
-                    "RoleId",
                 },
                 values: new object[,]
                 {
                     {
                         1,
-                        new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6475),
+                        "",
+                        new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4713),
                         "Admin",
                         "admin@justspeak.com",
                         "Admin",
-                        true,
-                        true,
+                        "",
                         "User",
                         "hashed_password",
                         "salt",
-                        1,
                     },
                     {
                         2,
-                        new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6517),
+                        "",
+                        new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4762),
                         "Tutor",
-                        "maria@justspeak.com",
-                        "Maria",
-                        true,
-                        true,
-                        "Garcia",
+                        "mike@gmail.com",
+                        "Mike",
+                        "",
+                        "Tutor",
                         "hashed_password",
                         "salt",
-                        2,
-                    },
-                    {
-                        3,
-                        new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6522),
-                        "Tutor",
-                        "jean@justspeak.com",
-                        "Jean",
-                        true,
-                        true,
-                        "Dubois",
-                        "hashed_password",
-                        "salt",
-                        2,
                     },
                     {
                         4,
-                        new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6551),
+                        "",
+                        new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4795),
                         "Student",
                         "hans@justspeak.com",
-                        "Hans",
-                        true,
-                        true,
-                        "Muller",
-                        "hashed_password",
-                        "salt",
-                        3,
-                    },
-                    {
-                        5,
-                        new DateTime(2025, 8, 10, 14, 33, 45, 734, DateTimeKind.Utc).AddTicks(6555),
+                        "Elvir",
+                        "",
                         "Student",
-                        "yuki@justspeak.com",
-                        "Yuki",
-                        true,
-                        true,
-                        "Tanaka",
                         "hashed_password",
                         "salt",
-                        3,
                     },
                 }
             );
@@ -659,6 +642,12 @@ namespace Services.Migrations
                 name: "IX_AvailableDays_TutorScheduleId",
                 table: "AvailableDays",
                 column: "TutorScheduleId"
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Certificates_LanguageId",
+                table: "Certificates",
+                column: "LanguageId"
             );
 
             migrationBuilder.CreateIndex(
@@ -716,18 +705,6 @@ namespace Services.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_Payments_StudentId",
-                table: "Payments",
-                column: "StudentId"
-            );
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Payments_TutorId",
-                table: "Payments",
-                column: "TutorId"
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Posts_AuthorId",
                 table: "Posts",
                 column: "AuthorId"
@@ -749,6 +726,12 @@ namespace Services.Migrations
                 name: "IX_Sessions_LevelId",
                 table: "Sessions",
                 column: "LevelId"
+            );
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SessionTag_TagsId",
+                table: "SessionTag",
+                column: "TagsId"
             );
 
             migrationBuilder.CreateIndex(
@@ -794,12 +777,6 @@ namespace Services.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tags_SessionId",
-                table: "Tags",
-                column: "SessionId"
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TutorLanguages_LanguageId",
                 table: "TutorLanguages",
                 column: "LanguageId"
@@ -816,8 +793,6 @@ namespace Services.Migrations
                 table: "TutorLanguages",
                 column: "TutorId"
             );
-
-            migrationBuilder.CreateIndex(name: "IX_Users_RoleId", table: "Users", column: "RoleId");
         }
 
         /// <inheritdoc />
@@ -831,9 +806,11 @@ namespace Services.Migrations
 
             migrationBuilder.DropTable(name: "Payments");
 
-            migrationBuilder.DropTable(name: "StudentLanguages");
+            migrationBuilder.DropTable(name: "Roles");
 
-            migrationBuilder.DropTable(name: "Tags");
+            migrationBuilder.DropTable(name: "SessionTag");
+
+            migrationBuilder.DropTable(name: "StudentLanguages");
 
             migrationBuilder.DropTable(name: "TutorLanguages");
 
@@ -845,15 +822,15 @@ namespace Services.Migrations
 
             migrationBuilder.DropTable(name: "Sessions");
 
-            migrationBuilder.DropTable(name: "Posts");
+            migrationBuilder.DropTable(name: "Tags");
 
-            migrationBuilder.DropTable(name: "LanguageLevels");
+            migrationBuilder.DropTable(name: "Posts");
 
             migrationBuilder.DropTable(name: "Languages");
 
-            migrationBuilder.DropTable(name: "Users");
+            migrationBuilder.DropTable(name: "Levels");
 
-            migrationBuilder.DropTable(name: "Roles");
+            migrationBuilder.DropTable(name: "Users");
         }
     }
 }

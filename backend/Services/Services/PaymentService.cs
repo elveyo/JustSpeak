@@ -11,7 +11,6 @@ using Models.Requests;
 using Models.Responses;
 using Services.Database;
 using Services.Interfaces;
-using Services.StateMachine;
 using Stripe;
 
 namespace Services.Services
@@ -26,23 +25,14 @@ namespace Services.Services
         >,
             IPaymentService
     {
-        private readonly BasePaymentState _paymentState;
+        public PaymentService(ApplicationDbContext context, IMapper mapper)
+            : base(context, mapper) { }
 
-        public PaymentService(
-            ApplicationDbContext context,
-            IMapper mapper,
-            BasePaymentState paymentState
-        )
-            : base(context, mapper)
-        {
-            _paymentState = paymentState;
-        }
-
-        public override async Task<PaymentResponse> CreateAsync(PaymentInsertRequest request)
-        {
-            var state = _paymentState.GetPaymentState(nameof(InitialPaymentState));
-            return await state.CreateAsync(request);
-        }
+        /*     public override async Task<PaymentResponse> CreateAsync(PaymentInsertRequest request)
+            {
+                var state = _paymentState.GetPaymentState(nameof(InitialPaymentState));
+                return await state.CreateAsync(request);
+            } */
 
         public override async Task<PagedResult<PaymentResponse>> GetAsync(BaseSearchObject? search)
         {

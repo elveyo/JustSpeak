@@ -3,6 +3,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Model.Responses;
 using Model.SearchObjects;
+using Models.Enums;
 using Models.Requests;
 using Models.Responses;
 using Models.SearchObjects;
@@ -51,7 +52,7 @@ namespace Services.Services
             if (user == null)
                 throw new Exception("User not found");
             var languages = new List<LanguageResponse>();
-            if (user.Role?.Name == "Student")
+            if (user.Role == UserRole.Student)
             {
                 languages = await _context
                     .StudentLanguages.Where(sl => sl.StudentId == search.UserId)

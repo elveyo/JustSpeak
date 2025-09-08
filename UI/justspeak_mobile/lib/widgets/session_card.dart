@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/video_call_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 
 class SessionCard extends StatelessWidget {
@@ -18,6 +19,22 @@ class SessionCard extends StatelessWidget {
     required this.time,
     required this.isActive,
   });
+
+  Future<void> joinChannel(String channelName) async {
+    String role = AuthService().user!.role;
+    String token = "";
+    try {
+      if (role == "tutor") {}
+
+      /*       Navigator.of(context).push(
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  VideoCallScreen(channelName: channelName, token: token),
+        ),
+      ); */
+    } catch (err) {}
+  }
 
   @override
   Widget build(BuildContext context) {

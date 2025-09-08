@@ -142,9 +142,6 @@ namespace Services.Services
             // Map properties from request to user
             _mapper.Map(request, user);
 
-            // Set the role id
-            user.RoleId = request.RoleId;
-
             // Handle password if provided
             if (!string.IsNullOrEmpty(request.Password))
             {
@@ -259,7 +256,7 @@ namespace Services.Services
                         FirstName = u.FirstName,
                         LastName = u.LastName,
                         Bio = u.Bio,
-                        Role = u.Role.Name,
+                        Role = u.Role.ToString(),
                         ImageUrl = u.ImageUrl,
                     },
                     Languages = u
