@@ -23,8 +23,8 @@ namespace WebAPI.Controllers
             _paymentService = service;
         }
 
-        [HttpPost("create-intent")]
         [AllowAnonymous]
+        [HttpPost("create-intent")]
         public ActionResult CreatePaymentIntent([FromBody] CreatePaymentIntent request)
         {
             try

@@ -7,6 +7,6 @@ namespace Models.SearchObjects
         public string? Email { get; set; }
         public int? LanguageId { get; set; }
         public int? LevelId { get; set; }
-        public int? RoleId { get; set; }
+        public string? Role { get; set; }
     }
 }

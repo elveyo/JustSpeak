@@ -1,8 +1,5 @@
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using Model.Responses;
-using Model.SearchObjects;
 using Models.Requests;
 using Models.Responses;
 using Models.SearchObjects;

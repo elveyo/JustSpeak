@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final request = {"email": email, "password": password};
 
       final token = await userProvider.login(request);
-
+      print("token: $token");
       AuthService().saveToken(token);
 
       Navigator.of(context).pushReplacement(

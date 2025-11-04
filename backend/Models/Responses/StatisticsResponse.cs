@@ -1,5 +1,3 @@
-
-
 namespace Models.Responses
 {
     public class StatisticsResponse
@@ -9,9 +7,5 @@ namespace Models.Responses
         public int SessionsNum { get; set; }
         public List<Dictionary<int, int>> Users { get; set; }
         public List<Dictionary<int, int>> Sessions { get; set; }
-
-
     }
-
-    
 }

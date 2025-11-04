@@ -64,8 +64,6 @@ class _AdminScreenMockState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // Optionally, fetch languages and levels from providers if needed
-    // WidgetsBinding.instance.addPostFrameCallback is used to ensure context is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fetchLanguagesAndLevels(context);
     });
@@ -95,7 +93,6 @@ class _AdminScreenMockState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Admin Panel (Mock Data)")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

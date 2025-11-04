@@ -30,7 +30,6 @@ namespace WebAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserInsertRequest request)
         {
-            Console.WriteLine(request.RoleId);
             var user = await _userService.CreateAsync(request);
             return Ok(user);
         }
@@ -53,6 +52,13 @@ namespace WebAPI.Controllers
                 return NotFound();
 
             return Ok(studentProfile);
+        }
+
+        [HttpGet("statistics")]
+        public async Task<IActionResult> GetStatistics()
+        {
+            var statistics = await _userService.GetStatisticsAsync();
+            return Ok(statistics);
         }
     }
 }

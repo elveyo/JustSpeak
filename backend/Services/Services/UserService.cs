@@ -41,11 +41,23 @@ namespace Services.Services
         {
             var query = _context.Users.AsQueryable();
 
-            if (!string.IsNullOrEmpty(search.Email))
-            {
-                query = query.Where(u => u.Email.Contains(search.Email));
-            }
+            query = ApplyFilter(query, search);
+            var totalCount = await query.CountAsync();
+            query = ApplyPagination(query, search);
 
+            var users = await query.ToListAsync();
+            return new PagedResult<UserResponse>
+            {
+                Items = users.Select(_mapper.Map<UserResponse>).ToList(),
+                TotalCount = totalCount,
+            };
+        }
+
+        protected override IQueryable<User> ApplyFilter(
+            IQueryable<User> query,
+            UserSearchObject search
+        )
+        {
             if (!string.IsNullOrEmpty(search.FTS))
             {
                 query = query.Where(u =>
@@ -54,13 +66,45 @@ namespace Services.Services
                     || u.Email.Contains(search.FTS)
                 );
             }
-
-            var users = await query.ToListAsync();
-            return new PagedResult<UserResponse>
+            if (!string.IsNullOrEmpty(search.Role))
             {
-                Items = users.Select(_mapper.Map<UserResponse>).ToList(),
-                TotalCount = users.Count,
-            };
+                query = query.Where(u => u.Discriminator.ToLower() == search.Role.ToLower());
+            }
+
+            if (search.LanguageId.HasValue)
+            {
+                query = query.Where(u =>
+                    (
+                        u is Tutor
+                        && ((Tutor)u).TutorLanguages.Any(tl =>
+                            tl.LanguageId == search.LanguageId.Value
+                        )
+                    )
+                    || (
+                        u is Student
+                        && ((Student)u).StudentLanguages.Any(sl =>
+                            sl.LanguageId == search.LanguageId.Value
+                        )
+                    )
+                );
+            }
+            if (search.LevelId.HasValue)
+            {
+                query = query.Where(u =>
+                    (
+                        u is Tutor
+                        && ((Tutor)u).TutorLanguages.Any(tl => tl.LevelId == search.LevelId.Value)
+                    )
+                    || (
+                        u is Student
+                        && ((Student)u).StudentLanguages.Any(sl =>
+                            sl.LevelId == search.LevelId.Value
+                        )
+                    )
+                );
+            }
+
+            return query;
         }
 
         public override async Task<UserResponse?> GetByIdAsync(int id)
@@ -92,13 +136,8 @@ namespace Services.Services
 
             // Determine the user type based on the role discriminator
             User user;
-            var role = await _context.Roles.FindAsync(request.RoleId);
-            if (role == null)
-            {
-                throw new InvalidOperationException("Invalid role specified.");
-            }
 
-            if (role.Name == "Tutor")
+            if (request.Role == "Tutor")
             {
                 user = new Tutor();
 
@@ -116,11 +155,9 @@ namespace Services.Services
                     tutor.TutorLanguages.Add(tutorLanguage);
                 }
             }
-            else if (role.Name == "Student")
+            else if (request.Role == "Student")
             {
                 user = new Student();
-
-                // Add languages for the student if provided
 
                 var student = user as Student;
                 student.StudentLanguages = new List<StudentLanguage>();
@@ -139,10 +176,8 @@ namespace Services.Services
                 user = new User();
             }
 
-            // Map properties from request to user
             _mapper.Map(request, user);
 
-            // Handle password if provided
             if (!string.IsNullOrEmpty(request.Password))
             {
                 byte[] salt;
@@ -164,7 +199,6 @@ namespace Services.Services
             if (user == null)
                 return null;
 
-            // Check for duplicate email and username (excluding current user)
             if (await _context.Users.AnyAsync(u => u.Email == request.Email && u.Id != id))
             {
                 throw new InvalidOperationException("A user with this email already exists.");
@@ -172,7 +206,6 @@ namespace Services.Services
 
             user = _mapper.Map(request, user);
 
-            // Handle password if provided
             if (!string.IsNullOrEmpty(request.Password))
             {
                 byte[] salt;
@@ -186,9 +219,7 @@ namespace Services.Services
 
         public async Task<UserResponse?> AuthenticateAsync(UserLoginRequest request)
         {
-            var user = await _context
-                .Users.Include(ur => ur.Role)
-                .FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null)
                 return null;
@@ -198,7 +229,10 @@ namespace Services.Services
             var token = _tokenService.GetToken(user);
 
             var response = _mapper.Map<UserResponse>(user);
+
             response.Token = token;
+
+            Console.WriteLine(response.Token);
             return response;
         }
 
@@ -272,69 +306,42 @@ namespace Services.Services
                 .FirstOrDefaultAsync();
 
             return student;
-        } /*
+        }
 
-        public async Task<PagedResult<User>> GetUsersAsync(UserSearchObject request)
+        public async Task<StatisticsResponse> GetStatisticsAsync()
         {
-            var query = _context.Users.AsQueryable();
+            var stats = new StatisticsResponse();
 
-            // Filter by RoleId if provided
-            if (request.RoleId.HasValue)
-            {
-                query = query.Where(u => u.RoleId == request.RoleId.Value);
-            }
+            // Count students and tutors based on Discriminator or Type
+            stats.StudentsNum = await _context.Users.CountAsync(u => u.Discriminator == "Student");
+            stats.TutorsNum = await _context.Users.CountAsync(u => u.Discriminator == "Tutor");
 
-            // Filter by LanguageId and LevelId based on role
-            if (request.LanguageId.HasValue)
-            {
-                if (
-                    request.RoleId.HasValue
-                    && _context.Roles.Any(r =>
-                        r.Id == request.RoleId && r.Name.ToLower() == "tutor"
-                    )
-                )
+            // Count sessions
+            stats.SessionsNum = await _context.StudentTutorSessions.CountAsync();
+
+            // Prepare users registered per month (grouped by Month/Year)
+            stats.Users = await _context
+                .Users.GroupBy(u => new { u.CreatedAt.Year, u.CreatedAt.Month })
+                .OrderBy(g => g.Key.Year)
+                .ThenBy(g => g.Key.Month)
+                .Select(g => new Dictionary<int, int>
                 {
-                    // Tutor: filter by TutorLanguages
-                    query = query.Where(u =>
-                        (u as Tutor).TutorLanguages.Any(tl =>
-                            tl.LanguageId == request.LanguageId.Value
-                        )
-                    );
-                }
-                else
+                    { g.Key.Year * 100 + g.Key.Month, g.Count() },
+                })
+                .ToListAsync();
+
+            // Prepare sessions per month (grouped by Month/Year)
+            stats.Sessions = await _context
+                .Sessions.GroupBy(s => new { s.CreatedAt.Year, s.CreatedAt.Month })
+                .OrderBy(g => g.Key.Year)
+                .ThenBy(g => g.Key.Month)
+                .Select(g => new Dictionary<int, int>
                 {
-                    // Student: filter by StudentLanguages
-                    query = query.Where(u =>
-                        (u as Student).StudentLanguages.Any(sl =>
-                            sl.LanguageId == request.LanguageId.Value
-                        )
-                    );
-                }
-            }
+                    { g.Key.Year * 100 + g.Key.Month, g.Count() },
+                })
+                .ToListAsync();
 
-            // FTS (Full Text Search) on FirstName, LastName, Email
-            if (!string.IsNullOrWhiteSpace(request.FTS))
-            {
-                query = query.Where(u =>
-                    u.FirstName.Contains(request.FTS)
-                    || u.LastName.Contains(request.FTS)
-                    || u.Email.Contains(request.FTS)
-                );
-            }
-
-            // Paging
-            var page = request.Page ?? 0;
-            var pageSize = request.PageSize ?? 10;
-            var totalCount = await query.CountAsync();
-            var items = await query.Skip(page * pageSize).Take(pageSize).ToListAsync();
-
-            return new PagedResult<User>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                Page = page,
-                PageSize = pageSize,
-            };
-        } */
+            return stats;
+        }
     }
 }

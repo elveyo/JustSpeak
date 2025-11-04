@@ -65,6 +65,8 @@ class AuthService {
 
   bool get isAuthenticated => user != null && !JwtDecoder.isExpired(_jwt!);
 
+  String? get token => _jwt;
+
   // Logout
   Future<void> logout() async {
     _jwt = null;

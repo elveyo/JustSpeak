@@ -11,7 +11,6 @@ using Services.Interfaces;
 using Services.Recommender;
 using Services.Services;
 using Stripe;
-using WebAPI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +32,6 @@ builder.Services.AddTransient<IUserContextService, UserContextService>();
 
 builder.Services.AddTransient<ITokenService, Services.Services.TokenService>();
 builder.Services.AddTransient<IUserService, UserService>();
-builder.Services.AddTransient<ICommentService, CommentService>();
 builder.Services.AddTransient<IPostService, PostService>();
 builder.Services.AddTransient<IScheduleService, ScheduleService>();
 builder.Services.AddTransient<ISessionService, SessionService>();
@@ -52,9 +50,6 @@ if (string.IsNullOrEmpty(stripeKey))
     );
 }
 StripeConfiguration.ApiKey = stripeKey;
-
-// Add SignalR
-builder.Services.AddSignalR();
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

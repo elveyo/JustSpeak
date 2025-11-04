@@ -13,5 +13,6 @@ namespace Services.Interfaces
 
         Task<TutorResponse?> GetTutorDataAsync(int id);
         Task<StudentResponse?> GetStudentDataAsync(int id);
+        Task<StatisticsResponse> GetStatisticsAsync();
     }
 }

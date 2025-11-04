@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:justspeak_desktop/models/search_result.dart';
+import 'package:justspeak_desktop/models/statistics.dart';
 import 'package:justspeak_desktop/models/user.dart';
 import 'package:justspeak_desktop/providers/base_provider.dart';
 
@@ -38,9 +39,23 @@ class UserProvider extends BaseProvider<User> {
     if (!isValidResponse(response)) {
       throw Exception("Login failed: ${response.body}");
     }
-    print(response.body);
 
     final data = jsonDecode(response.body);
     return data["token"];
+  }
+
+  Future<StatisticsResponse> getStatistics() async {
+    final uri = buildUri("/statistics");
+    final headers = createHeaders();
+
+    final response = await http.get(uri, headers: headers);
+    if (!isValidResponse(response)) {
+      throw Exception("Statistics failed: ${response.body}");
+    }
+
+    StatisticsResponse data = StatisticsResponse.fromJson(
+      jsonDecode(response.body),
+    );
+    return data;
   }
 }

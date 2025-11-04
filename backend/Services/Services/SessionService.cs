@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using AgoraNET;
 using Azure.Core;
 using MapsterMapper;
@@ -15,7 +11,6 @@ using Models.Responses;
 using Models.SearchObjects;
 using Services.Database;
 using Services.Interfaces;
-using Stripe;
 
 namespace Services.Services
 {
@@ -100,10 +95,8 @@ namespace Services.Services
 
         public async Task<PagedResult<SessionResponse>> GetAsync(SessionSearchObject search)
         {
-            // Create query
             var query = _context.Sessions.AsQueryable();
 
-            // Apply search filters if items exist
             if (search.LanguageId.HasValue)
             {
                 query = query.Where(s => s.LanguageId == search.LanguageId.Value);
@@ -143,7 +136,6 @@ namespace Services.Services
 
         public async Task<int> BookSessionAsync(BookSessionRequest request)
         {
-            // 1. Dohvati tutorov schedule
             var schedule = await _context
                 .Schedules.Include(s => s.AvailableDays)
                 .FirstOrDefaultAsync(s => s.TutorId == request.TutorId);
@@ -151,7 +143,6 @@ namespace Services.Services
             if (schedule == null)
                 throw new Exception("Tutor schedule not found.");
 
-            // 2. Provjeri da li datum i vrijeme odgovara tutorovoj dostupnosti
             var dayRule = schedule.AvailableDays.FirstOrDefault(d =>
                 d.DayOfWeek == request.StartTime.DayOfWeek
             );
@@ -167,7 +158,6 @@ namespace Services.Services
             if (request.StartTime.TimeOfDay < slotStartTime || endTime.TimeOfDay > slotEndTime)
                 throw new Exception("Selected time is outside tutor's available hours.");
 
-            // 3. Provjeri da li je slot već booked
             var isTaken = await _context.StudentTutorSessions.AnyAsync(s =>
                 s.TutorId == request.TutorId && s.StartTime == request.StartTime
             );
@@ -271,7 +261,7 @@ namespace Services.Services
 
             var role = AgoraNET.RtcUserRole.Publisher;
             var expireSeconds = 3600;
-            var currentTimestamp = (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            var currentTimestamp = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var privilegeExpiredTs = (uint)(currentTimestamp + expireSeconds);
 
             var token = new RtcTokenBuilder().BuildToken(

@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
           secondary: Color(0xFF6A1B9A),
         ),
       ),
-      home: isUserLogged ? MasterScreen() : LoginScreen(),
+      home: isUserLogged ? MasterScreen() : MasterScreen(),
     );
   }
 }
