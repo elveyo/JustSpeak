@@ -10,7 +10,7 @@ namespace WebAPI.Controllers
     public class PaymentController
         : BaseCRUDController<
             PaymentResponse,
-            BaseSearchObject,
+            PaymentSearchObject,
             PaymentInsertRequest,
             PaymentUpdateRequest
         >

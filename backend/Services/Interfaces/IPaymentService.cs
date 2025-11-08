@@ -8,7 +8,7 @@ namespace Services.Interfaces
     public interface IPaymentService
         : ICRUDService<
             PaymentResponse,
-            BaseSearchObject,
+            PaymentSearchObject,
             PaymentInsertRequest,
             PaymentUpdateRequest
         >

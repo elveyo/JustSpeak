@@ -5,7 +5,6 @@ part 'payment.g.dart';
 @JsonSerializable()
 class Payment {
   final int id;
-  final int sessionId;
   final double amount;
   final String status;
   String sender;
@@ -14,7 +13,6 @@ class Payment {
 
   Payment({
     required this.id,
-    required this.sessionId,
     required this.amount,
     required this.status,
     required this.createdAt,

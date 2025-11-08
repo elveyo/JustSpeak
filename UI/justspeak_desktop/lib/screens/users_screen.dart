@@ -15,7 +15,7 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersPageState extends State<UsersScreen> {
-  int currentPage = 1; // UI page numbering starts at 1 for users
+  int currentPage = 1;
   int itemsPerPage = 10;
   int totalPages = 1;
   int totalUserCount = 0;

@@ -18,7 +18,7 @@ namespace Services.Services
     public class PaymentService
         : BaseCRUDService<
             PaymentResponse,
-            BaseSearchObject,
+            PaymentSearchObject,
             Payment,
             PaymentInsertRequest,
             PaymentUpdateRequest
@@ -28,13 +28,9 @@ namespace Services.Services
         public PaymentService(ApplicationDbContext context, IMapper mapper)
             : base(context, mapper) { }
 
-        /*     public override async Task<PaymentResponse> CreateAsync(PaymentInsertRequest request)
-            {
-                var state = _paymentState.GetPaymentState(nameof(InitialPaymentState));
-                return await state.CreateAsync(request);
-            } */
-
-        public override async Task<PagedResult<PaymentResponse>> GetAsync(BaseSearchObject? search)
+        public override async Task<PagedResult<PaymentResponse>> GetAsync(
+            PaymentSearchObject? search
+        )
         {
             var query = _context
                 .Set<Payment>()
@@ -43,10 +39,22 @@ namespace Services.Services
                 .Include(p => p.Session.Tutor)
                 .AsQueryable();
 
-            // Apply filters if needed (extend as necessary)
             if (search != null)
             {
-                // Example: add filter logic here if BaseSearchObject is extended
+                if (!string.IsNullOrWhiteSpace(search.FTS))
+                {
+                    var nameQuery = search.FTS.Trim().ToLower();
+                    query = query.Where(p =>
+                        p.Session.Student.FirstName.ToLower().Contains(nameQuery)
+                        || p.Session.Student.LastName.ToLower().Contains(nameQuery)
+                        || p.Session.Tutor.FirstName.ToLower().Contains(nameQuery)
+                        || p.Session.Tutor.LastName.ToLower().Contains(nameQuery)
+                    );
+                }
+            }
+            if (search?.Status != null)
+            {
+                query = query.Where(p => p.Status == search.Status);
             }
 
             var totalCount = await query.CountAsync();
@@ -64,7 +72,6 @@ namespace Services.Services
                 .Select(payment => new PaymentResponse
                 {
                     Id = payment.Id,
-                    SessionId = payment.SessionId,
                     Sender = payment.Session.Student.FullName,
                     Recipient = payment.Session.Tutor.FullName,
                     Amount = payment.Amount,
