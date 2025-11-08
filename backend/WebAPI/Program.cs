@@ -37,6 +37,7 @@ builder.Services.AddTransient<IScheduleService, ScheduleService>();
 builder.Services.AddTransient<ISessionService, SessionService>();
 builder.Services.AddTransient<ILanguageService, LanguageService>();
 builder.Services.AddTransient<ILevelService, LevelService>();
+builder.Services.AddTransient<ITagService, TagService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddTransient<IMessageBrokerService, MessageBrokerService>();
 builder.Services.AddTransient<IRecommenderService, RecommenderService>();

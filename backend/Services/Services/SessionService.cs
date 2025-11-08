@@ -256,9 +256,6 @@ namespace Services.Services
 
         public string Get(string channelName, string userAccount)
         {
-            Console.WriteLine(_agoraAppId);
-            Console.WriteLine(_agoraAppCertificate);
-
             var role = AgoraNET.RtcUserRole.Publisher;
             var expireSeconds = 3600;
             var currentTimestamp = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
