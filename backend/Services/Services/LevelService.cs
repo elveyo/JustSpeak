@@ -37,9 +37,7 @@ namespace Services.Services
             {
                 return await base.GetAsync(search);
             }
-            var user = await _context
-                .Users.Include(user => user.Role)
-                .FirstOrDefaultAsync(u => u.Id == search.UserId.Value);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == search.UserId.Value);
             var levels = new List<LevelResponse>();
             if (user.Role == UserRole.Student)
             {

@@ -18,7 +18,7 @@ namespace Services.Database
 
         public string ImageUrl { get; set; } = string.Empty;
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  
 
         [NotMapped]
         public float[] Embedding { get; set; } = Array.Empty<float>();

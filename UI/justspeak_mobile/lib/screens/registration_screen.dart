@@ -1,28 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/user.dart';
+import 'package:frontend/models/user_role.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/user_onboarding_screen.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:frontend/screens/feed_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
-}
-
-enum UserRole { tutor, student }
-
-// Helper to get roleId from enum
-int getRoleId(UserRole role) {
-  switch (role) {
-    case UserRole.tutor:
-      return 2;
-    case UserRole.student:
-      return 3;
-  }
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
@@ -131,7 +117,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   lastName: _lastNameController.text.trim(),
                   email: _emailController.text.trim(),
                   password: _passwordController.text,
-                  role: getRoleId(_selectedRole) == 2 ? 'tutor' : 'student',
+                  role: _selectedRole.value,
                 ),
               ),
         ),

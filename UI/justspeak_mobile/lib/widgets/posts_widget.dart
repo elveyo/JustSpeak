@@ -57,7 +57,6 @@ class _PostsListWidgetState extends State<PostsListWidget> {
       final pageToFetch = initial ? 0 : _currentPage;
       final filter = {"page": pageToFetch, "pageSize": _pageSize};
 
-      // Ako je userId proslijeđen, dodaj ga u filter
       if (widget.userId != null) {
         filter["userId"] = widget.userId!;
       }
@@ -114,7 +113,11 @@ class _PostsListWidgetState extends State<PostsListWidget> {
         itemBuilder: (context, index) {
           if (index < posts!.items!.length) {
             final item = posts!.items![index];
-            return FeedCard(item: item, onLike: (postId) => _likePost(postId));
+            return FeedCard(
+              item: item,
+              onLike: (postId) => _likePost(postId),
+              onRefresh: _refreshPosts,
+            );
           } else {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 24),

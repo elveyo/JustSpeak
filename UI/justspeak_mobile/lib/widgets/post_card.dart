@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/models/comment.dart';
 import 'package:frontend/providers/post_provider.dart';
+import 'package:frontend/screens/add_post_screen.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -13,9 +15,14 @@ import '../screens/student_profile_screen.dart';
 class FeedCard extends StatefulWidget {
   final Post item;
   final Function(int postId) onLike;
+  final VoidCallback? onRefresh; // Callback to refresh the list
 
-  const FeedCard({Key? key, required this.item, required this.onLike})
-    : super(key: key);
+  const FeedCard({
+    Key? key,
+    required this.item,
+    required this.onLike,
+    this.onRefresh,
+  }) : super(key: key);
 
   @override
   State<FeedCard> createState() => _FeedCardState();
@@ -82,6 +89,56 @@ class _FeedCardState extends State<FeedCard> {
     );
   }
 
+  void _showDeleteDialog(BuildContext context, Post post) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Post'),
+          content: const Text(
+            'Are you sure you want to delete this post? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                try {
+                  final postProvider = Provider.of<PostProvider>(
+                    context,
+                    listen: false,
+                  );
+                  // Use the delete method from BaseProvider
+                  await postProvider.delete(post.id);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Post deleted successfully'),
+                      ),
+                    );
+                    // Refresh the feed
+                    widget.onRefresh?.call();
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to delete post: $e')),
+                    );
+                  }
+                }
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
@@ -140,7 +197,7 @@ class _FeedCardState extends State<FeedCard> {
                         Row(
                           children: [
                             Text(
-                              item.authorName ?? '',
+                              item.authorName,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -163,6 +220,60 @@ class _FeedCardState extends State<FeedCard> {
                     timeago.format(DateTime.parse(item.createdAt)),
                     style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
+                  // Show 3 dots menu if current user is the creator
+                  if (AuthService().userId == item.authorId) ...[
+                    const SizedBox(width: 8),
+                    PopupMenuButton<String>(
+                      icon: const Icon(
+                        Icons.more_vert,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => CreatePostScreen(post: item),
+                            ),
+                          );
+                        } else if (value == 'delete') {
+                          _showDeleteDialog(context, item);
+                        }
+                      },
+                      itemBuilder:
+                          (BuildContext context) => [
+                            const PopupMenuItem<String>(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Edit'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete,
+                                    size: 18,
+                                    color: Colors.red,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                    ),
+                  ],
                 ],
               ),
             ),

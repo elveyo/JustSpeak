@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:frontend/models/search_result.dart';
-import 'package:frontend/services/agora_service.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
@@ -80,6 +79,18 @@ abstract class BaseProvider<T> with ChangeNotifier {
       var data = jsonDecode(response.body);
       return fromJson(data);
     } else {
+      throw new Exception("Unknown error");
+    }
+  }
+
+  Future<void> delete(int id) async {
+    var url = "$_baseUrl$_endpoint/$id";
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.delete(uri, headers: headers);
+
+    if (!isValidResponse(response)) {
       throw new Exception("Unknown error");
     }
   }

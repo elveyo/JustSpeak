@@ -42,11 +42,11 @@ namespace Services.Services
         public override async Task<PagedResult<PostResponse>> GetAsync(BaseSearchObject search)
         {
             int? userId = _userContextService.GetUserId();
+
             if (userId == null)
                 throw new Exception("User not found!");
             var query = _context
                 .Posts.Include(p => p.Author)
-                .ThenInclude(a => a.Role)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
                 .AsQueryable();
@@ -64,6 +64,12 @@ namespace Services.Services
 
             query = ApplyPagination(query, search);
             var posts = await query.ToListAsync();
+            if (posts.Count == 0)
+                return new PagedResult<PostResponse>
+                {
+                    Items = new List<PostResponse>(),
+                    TotalCount = 0,
+                };
             var finalFeed = posts;
             if (search.Page == 0 && !search.UserId.HasValue)
             {

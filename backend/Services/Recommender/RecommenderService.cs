@@ -79,6 +79,7 @@ namespace JustSpeak.Services.Recommender
             lock (_lock)
             {
                 var posts = _context.Posts.ToList();
+
                 var data = posts.Select(p => new TextData { Text = p.Content }).ToList();
 
                 var trainingData = _mlContext.Data.LoadFromEnumerable(data);

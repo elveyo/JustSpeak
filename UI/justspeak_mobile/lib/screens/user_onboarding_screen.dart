@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/models/language.dart';
 import 'package:frontend/models/level.dart';
 import 'package:frontend/models/user.dart';
+import 'package:frontend/models/user_role.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
 import 'package:frontend/providers/user_provider.dart';
@@ -44,10 +45,10 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
   }
 
   Future<void> register() async {
-    // Build the request object
-    final request = {
+    // Build the request object explicitly without roleId
+    final request = <String, dynamic>{
       "bio": bio,
-      "roleId": widget.user.role == 'tutor' ? 2 : 3,
+      "role": widget.user.role,
       "firstName": widget.user.firstName,
       "lastName": widget.user.lastName,
       "email": widget.user.email,
@@ -148,10 +149,10 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
       // Must have at least one language to go next
       return selectedLanguages.isNotEmpty;
     }
+    // For profile step (step 2), image and bio are now optional
+    // Always return true here to always enable the Finish button:
     if (_currentStep == 2) {
-      // Must have image and bio to finish
-      return (profileImageBase64 != null && profileImageBase64!.isNotEmpty) &&
-          (bio != null && bio!.trim().isNotEmpty);
+      return true;
     }
     // For welcome step, always true (but button not shown)
     return true;
@@ -235,7 +236,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
   Widget _buildStepContent() {
     switch (_currentStep) {
       case 0:
-        return widget.user.role == 'tutor'
+        return widget.user.role == UserRole.tutor.value
             ? TutorWelcomeStep(onNext: _nextStep)
             : StudentWelcomeStep(onNext: _nextStep);
       case 1:
@@ -269,14 +270,14 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.user.role == 'tutor'
+              widget.user.role == UserRole.tutor.value
                   ? "🌍  Teaching Languages"
                   : "🌍  Learning Languages",
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 4),
             Text(
-              widget.user.role == 'tutor'
+              widget.user.role == UserRole.tutor.value
                   ? "Add the languages you can teach and your proficiency level."
                   : "Add the languages you want to learn and your current level.",
               style: const TextStyle(fontSize: 14, color: Colors.black54),
@@ -406,7 +407,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
     );
   }
 
-  // STEP 2: Modern Profile (image + bio)
+  // STEP 2: Modern Profile (image + bio), now both optional
   Widget _buildProfileStep() {
     return Center(
       key: const ValueKey(2),
@@ -426,9 +427,9 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              widget.user.role == 'tutor'
-                  ? "Tell us something about yourself. Share your look, interests, or fun facts!"
-                  : "Tell us about your learning goals, interests, or fun facts!",
+              widget.user.role == UserRole.tutor.value
+                  ? "Tell us something about yourself. Share your look, interests, or fun facts! (Optional)"
+                  : "Tell us about your learning goals, interests, or fun facts! (Optional)",
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 15, color: Colors.black54),
             ),
@@ -495,7 +496,7 @@ class _UserOnboardingScreenState extends State<UserOnboardingScreen> {
                   maxLines: null, // allow any length
                   decoration: const InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Write something about yourself...",
+                    hintText: "Write something about yourself... (Optional)",
                   ),
                   onChanged: (val) => setState(() => bio = val),
                 ),

@@ -171,9 +171,15 @@ namespace Services.Services
                     student.StudentLanguages.Add(studentLanguage);
                 }
             }
+            else if (request.Role == "Admin")
+            {
+                user = new Admin();
+            }
             else
             {
-                user = new User();
+                throw new ArgumentException(
+                    $"Invalid role: {request.Role}. Valid roles are: Student, Tutor, Admin"
+                );
             }
 
             _mapper.Map(request, user);

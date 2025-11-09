@@ -45,9 +45,7 @@ namespace Services.Services
             {
                 return await base.GetAsync(search);
             }
-            var user = await _context
-                .Users.Include(user => user.Role)
-                .FirstOrDefaultAsync(u => u.Id == search.UserId.Value);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == search.UserId.Value);
 
             if (user == null)
                 throw new Exception("User not found");

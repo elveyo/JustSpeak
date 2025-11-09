@@ -52,7 +52,6 @@ abstract class BaseProvider<T> with ChangeNotifier {
     } else {
       return throw new Exception("Unknown error");
     }
-    // print("response: ${response.request} ${response.statusCode}, ${response.body}");
   }
 
   Future<T> insert(dynamic request) async {

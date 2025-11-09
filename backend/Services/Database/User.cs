@@ -21,7 +21,12 @@ namespace Services.Database
         public string PasswordSalt { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Discriminator { get; set; } = null!;
-        public UserRole Role => Enum.Parse<UserRole>(Discriminator);
+        public UserRole Role =>
+            Enum.TryParse<UserRole>(Discriminator, out var role)
+                ? role
+                : throw new ArgumentException(
+                    $"Invalid role discriminator: {Discriminator}. Valid values are: {string.Join(", ", Enum.GetNames<UserRole>())}"
+                );
 
         public string FullName => FirstName + " " + LastName;
     }

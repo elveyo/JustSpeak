@@ -1,13 +1,9 @@
 import 'dart:convert';
 
-import 'package:frontend/models/level.dart';
-import 'package:frontend/models/post.dart';
-import 'package:frontend/models/session.dart';
 import 'package:frontend/models/student.dart';
 import 'package:frontend/models/tutor.dart';
 import 'package:frontend/models/user.dart';
 import 'package:frontend/providers/base_provider.dart';
-import 'package:frontend/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 
 class UserProvider extends BaseProvider<User> {
@@ -29,7 +25,6 @@ class UserProvider extends BaseProvider<User> {
     if (!isValidResponse(response)) {
       throw Exception("Registration failed: ${response.body}");
     }
-    print(response.body);
 
     final data = jsonDecode(response.body);
     return data["token"];
