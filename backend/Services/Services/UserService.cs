@@ -3,6 +3,7 @@ using System.Text;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Model.Responses;
+using Models.Enums;
 using Models.Requests;
 using Models.Responses;
 using Models.SearchObjects;
@@ -238,7 +239,6 @@ namespace Services.Services
 
             response.Token = token;
 
-            Console.WriteLine(response.Token);
             return response;
         }
 
@@ -280,6 +280,23 @@ namespace Services.Services
                         .ToList(),
                 })
                 .FirstOrDefaultAsync();
+
+            if (tutor != null)
+            {
+                tutor.SessionCount = await _context.StudentTutorSessions.CountAsync(s => s.TutorId == id);
+                tutor.StudentCount = await _context
+                    .StudentTutorSessions.Where(s => s.TutorId == id)
+                    .Select(s => s.StudentId)
+                    .Distinct()
+                    .CountAsync();
+                
+                // Get price from TutorSchedule
+                var schedule = await _context.Schedules
+                    .Include(s => s.AvailableDays)
+                    .FirstOrDefaultAsync(ts => ts.TutorId == id);
+                tutor.Price = schedule?.Price;
+                tutor.HasSchedule = schedule != null && schedule.AvailableDays != null && schedule.AvailableDays.Any();
+            }
 
             return tutor;
         }

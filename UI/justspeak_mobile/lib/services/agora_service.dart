@@ -24,27 +24,59 @@ class AgoraService {
   }
 
   Future<void> joinChannel(String channelName, String token) async {
-    await _engine!.joinChannelWithUserAccount(
-      token: token,
-      channelId: channelName,
-      userAccount: AuthService().user!.fullName,
-      options: const ChannelMediaOptions(),
-    );
+    if (_engine == null) {
+      print("❌ Cannot join channel: Engine is null");
+      return;
+    }
+    final user = AuthService().user;
+    if (user == null) {
+      print("❌ Cannot join channel: User is null");
+      return;
+    }
+    
+    print("🔄 Joining channel with account: ${user.id}:${user.fullName}");
+
+    try {
+      await _engine!.joinChannelWithUserAccount(
+        token: token,
+        channelId: channelName,
+        userAccount: "${user.id}:${user.fullName}",
+        options: const ChannelMediaOptions(),
+      );
+    } catch (e) {
+      print("❌ Error joining channel: $e");
+      rethrow;
+    }
   }
 
   Future<void> leaveChannel() async {
-    await _engine!.leaveChannel();
-    print("🚪 Napustio kanal");
+    if (_engine == null) return;
+    try {
+      await _engine!.leaveChannel();
+      print("🚪 Napustio kanal");
+    } catch (e) {
+      print("❌ Error leaving channel: $e");
+    }
   }
 
   Future<void> toggleMic(bool mute) async {
-    await _engine!.muteLocalAudioStream(mute);
-    print(mute ? "🎙 Mikrofon isključen" : "🎙 Mikrofon uključen");
+    if (_engine == null) return;
+    try {
+      await _engine!.muteLocalAudioStream(mute);
+      print(mute ? "🎙 Mikrofon isključen" : "🎙 Mikrofon uključen");
+    } catch (e) {
+      print("❌ Error toggling mic: $e");
+    }
   }
 
   Future<void> toggleCamera(bool mute) async {
-    await _engine!.muteLocalVideoStream(mute);
-    print(mute ? "📷 Kamera isključena" : "📷 Kamera uključena");
+    if (_engine == null) return;
+    try {
+      await _engine!.muteLocalVideoStream(mute);
+      print(mute ? "📷 Kamera isključena" : "📷 Kamera uključena");
+    } catch (e) {
+      print("❌ Error toggling camera: $e");
+    }
   }
 
   Future<void> dispose() async {

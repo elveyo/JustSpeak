@@ -72,6 +72,7 @@ namespace Services.Services
                 .Select(payment => new PaymentResponse
                 {
                     Id = payment.Id,
+                    SessionId = payment.SessionId,
                     Sender = payment.Session.Student.FullName,
                     Recipient = payment.Session.Tutor.FullName,
                     Amount = payment.Amount,

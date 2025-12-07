@@ -19,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final String _selectedRole = 'client'; // Default role
 
   @override
   void dispose() {
@@ -29,12 +28,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() async {
+    print("handle login");
     if (_formKey.currentState!.validate()) {
-      print('Login button pressed');
+      print("ojha");
       final token = await loginApi(
         _emailController.text,
         _passwordController.text,
       );
+
+      print("token: $token");
 
       if (token != null) {
         AuthService().saveToken(token);
@@ -49,6 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // Dummy loginApi for demonstration
   Future<String?> loginApi(String email, String password) async {
     final body = jsonEncode({'email': email, 'password': password});
+
     print(Uri.parse("$baseUrl/User/login"));
     try {
       final response = await http.post(
@@ -56,17 +59,39 @@ class _LoginScreenState extends State<LoginScreen> {
         headers: {'Content-Type': 'application/json'},
         body: body,
       );
-
+print(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Registracija uspješna!');
         final data = jsonDecode(response.body);
-        print('Response: $data');
         return data['token'];
+      } else if (response.statusCode == 401) {
+        // Handle unauthorized - wrong credentials
+        final data = jsonDecode(response.body);
+        final errorMessage = data['message'] ?? 'Wrong email or password';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
       } else {
-        print('Greška prilikom registracije: ${response.body}');
+        // Handle other errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login failed. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
-      print('Exception: $e');
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Login failed. Please check your credentials and try again.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
     return null;
   }
@@ -206,21 +231,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: ElevatedButton(
                         onPressed: _handleLogin,
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           backgroundColor: Colors.purple,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: TextButton(
-                          onPressed: _handleLogin,
-                          child: const Text(
-                            'Login',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),

@@ -12,8 +12,8 @@ using Services.Database;
 namespace Services.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250908210305_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20251123160256_InitMigration")]
+    partial class InitMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -331,6 +331,188 @@ namespace Services.Migrations
                     b.HasIndex("AuthorId");
 
                     b.ToTable("Posts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AuthorId = 2,
+                            Content = "Bonjour! Today I want to share my experience learning French. It's been an amazing journey!",
+                            CreatedAt = new DateTime(2025, 10, 14, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "My French Learning Journey"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AuthorId = 3,
+                            Content = "Learning a new language opens doors to new cultures and perspectives. I've been studying German for 6 months now and I'm loving every moment of it. The grammar can be challenging, but practice makes perfect!",
+                            CreatedAt = new DateTime(2025, 11, 15, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Why I Love Learning German"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AuthorId = 4,
+                            Content = "日本語を勉強しています。とても楽しいです！",
+                            CreatedAt = new DateTime(2025, 11, 16, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "日本語の勉強"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            AuthorId = 5,
+                            Content = "English is such a versatile language. Whether you're traveling, working, or just connecting with people from around the world, English skills are invaluable.",
+                            CreatedAt = new DateTime(2025, 10, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "The Power of English"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            AuthorId = 6,
+                            Content = "Bosanski jezik je predivan! Učim ga već godinu dana i svaki dan otkrivam nešto novo.",
+                            CreatedAt = new DateTime(2025, 11, 13, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Učenje bosanskog jezika"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            AuthorId = 7,
+                            Content = "French pronunciation can be tricky, but here are some tips that helped me: focus on nasal sounds, practice with native speakers, and don't be afraid to make mistakes!",
+                            CreatedAt = new DateTime(2025, 11, 8, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "French Pronunciation Tips"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            AuthorId = 8,
+                            Content = "German compound words are fascinating. Did you know that 'Donaudampfschiffahrtsgesellschaftskapitän' is a real word?",
+                            CreatedAt = new DateTime(2025, 10, 11, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Fascinating German Words"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            AuthorId = 9,
+                            Content = "今日は天気がいいですね。",
+                            CreatedAt = new DateTime(2025, 10, 24, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "今日の天気"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            AuthorId = 10,
+                            Content = "Language learning is not just about memorizing vocabulary. It's about understanding culture, history, and the way people think. When I started learning Japanese, I discovered a whole new way of expressing ideas.",
+                            CreatedAt = new DateTime(2025, 11, 13, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Beyond Vocabulary: Understanding Culture"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            AuthorId = 11,
+                            Content = "Practice speaking every day, even if it's just for 10 minutes. Consistency is key!",
+                            CreatedAt = new DateTime(2025, 10, 9, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Daily Practice Matters"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            AuthorId = 2,
+                            Content = "I love how different languages express the same concept differently. In English we say 'I'm hungry', but in French it's 'J'ai faim' which literally means 'I have hunger'. So interesting!",
+                            CreatedAt = new DateTime(2025, 11, 9, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Interesting Language Differences"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            AuthorId = 3,
+                            Content = "Bosnian grammar has cases, which can be challenging for English speakers. But once you understand the pattern, it becomes much easier.",
+                            CreatedAt = new DateTime(2025, 11, 8, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Mastering Bosnian Cases"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            AuthorId = 4,
+                            Content = "Watching movies in the target language with subtitles is a great way to improve listening skills. I've been doing this with French films and it's really helping!",
+                            CreatedAt = new DateTime(2025, 10, 24, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Learning Through Movies"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            AuthorId = 5,
+                            Content = "Language exchange is amazing. I found a language partner online and we practice speaking twice a week. It's free and very effective!",
+                            CreatedAt = new DateTime(2025, 11, 4, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Language Exchange Benefits"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            AuthorId = 6,
+                            Content = "今日、新しい漢字を学びました。",
+                            CreatedAt = new DateTime(2025, 11, 1, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "新しい漢字"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            AuthorId = 7,
+                            Content = "Don't worry about making mistakes. Every native speaker makes mistakes too. The important thing is to communicate and keep learning. I've been learning German for a year now, and I still make plenty of errors, but I can have conversations and that's what matters!",
+                            CreatedAt = new DateTime(2025, 11, 8, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Don't Fear Mistakes"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            AuthorId = 8,
+                            Content = "Reading books in your target language is challenging at first, but it's one of the best ways to expand vocabulary. Start with children's books and work your way up.",
+                            CreatedAt = new DateTime(2025, 10, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Reading in Target Language"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            AuthorId = 9,
+                            Content = "French culture is so rich and diverse. Learning the language has given me insights into French history, art, literature, and cuisine. It's like opening a window to a whole new world!",
+                            CreatedAt = new DateTime(2025, 11, 21, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "French Culture Insights"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            AuthorId = 10,
+                            Content = "Consistency beats intensity. It's better to study for 20 minutes every day than to cram for 3 hours once a week. I've been following this approach with Japanese and I'm seeing great progress!",
+                            CreatedAt = new DateTime(2025, 10, 6, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Consistency is Key"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            AuthorId = 11,
+                            Content = "Language learning apps are helpful, but nothing beats real conversation. Find opportunities to speak with native speakers, whether online or in person. It's the fastest way to improve!",
+                            CreatedAt = new DateTime(2025, 10, 20, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            ImageUrl = "",
+                            Title = "Real Conversation Practice"
+                        });
                 });
 
             modelBuilder.Entity("Services.Database.Role", b =>
@@ -421,6 +603,98 @@ namespace Services.Migrations
                     b.HasIndex("StudentId");
 
                     b.ToTable("StudentLanguages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DateAdded = new DateTime(2025, 10, 24, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 1,
+                            LevelId = 2,
+                            Points = 75,
+                            StudentId = 7
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DateAdded = new DateTime(2025, 11, 8, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 3,
+                            LevelId = 1,
+                            Points = 45,
+                            StudentId = 7
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DateAdded = new DateTime(2025, 9, 24, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 4,
+                            LevelId = 3,
+                            Points = 320,
+                            StudentId = 8
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DateAdded = new DateTime(2025, 11, 3, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 5,
+                            LevelId = 1,
+                            Points = 85,
+                            StudentId = 8
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DateAdded = new DateTime(2025, 8, 25, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 2,
+                            LevelId = 4,
+                            Points = 550,
+                            StudentId = 9
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DateAdded = new DateTime(2025, 10, 9, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 1,
+                            LevelId = 2,
+                            Points = 120,
+                            StudentId = 9
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DateAdded = new DateTime(2025, 10, 29, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 3,
+                            LevelId = 1,
+                            Points = 60,
+                            StudentId = 10
+                        },
+                        new
+                        {
+                            Id = 8,
+                            DateAdded = new DateTime(2025, 10, 4, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 4,
+                            LevelId = 2,
+                            Points = 180,
+                            StudentId = 10
+                        },
+                        new
+                        {
+                            Id = 9,
+                            DateAdded = new DateTime(2025, 9, 9, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 5,
+                            LevelId = 3,
+                            Points = 380,
+                            StudentId = 11
+                        },
+                        new
+                        {
+                            Id = 10,
+                            DateAdded = new DateTime(2025, 11, 13, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            LanguageId = 2,
+                            LevelId = 1,
+                            Points = 95,
+                            StudentId = 11
+                        });
                 });
 
             modelBuilder.Entity("Services.Database.StudentTutorSession", b =>
@@ -593,6 +867,98 @@ namespace Services.Migrations
                     b.HasIndex("TutorId");
 
                     b.ToTable("TutorLanguages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Experience = 10,
+                            LanguageId = 1,
+                            LevelId = 5,
+                            PricePerHour = 35,
+                            TutorId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Experience = 8,
+                            LanguageId = 3,
+                            LevelId = 4,
+                            PricePerHour = 30,
+                            TutorId = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Experience = 15,
+                            LanguageId = 5,
+                            LevelId = 5,
+                            PricePerHour = 40,
+                            TutorId = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Experience = 12,
+                            LanguageId = 1,
+                            LevelId = 4,
+                            PricePerHour = 35,
+                            TutorId = 3
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Experience = 9,
+                            LanguageId = 4,
+                            LevelId = 5,
+                            PricePerHour = 32,
+                            TutorId = 4
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Experience = 11,
+                            LanguageId = 2,
+                            LevelId = 5,
+                            PricePerHour = 28,
+                            TutorId = 4
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Experience = 7,
+                            LanguageId = 3,
+                            LevelId = 5,
+                            PricePerHour = 30,
+                            TutorId = 5
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Experience = 6,
+                            LanguageId = 1,
+                            LevelId = 5,
+                            PricePerHour = 28,
+                            TutorId = 5
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Experience = 8,
+                            LanguageId = 5,
+                            LevelId = 4,
+                            PricePerHour = 38,
+                            TutorId = 6
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Experience = 10,
+                            LanguageId = 2,
+                            LevelId = 5,
+                            PricePerHour = 25,
+                            TutorId = 6
+                        });
                 });
 
             modelBuilder.Entity("Services.Database.TutorSchedule", b =>
@@ -628,7 +994,6 @@ namespace Services.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Bio")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -647,7 +1012,6 @@ namespace Services.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
@@ -696,14 +1060,12 @@ namespace Services.Migrations
                         new
                         {
                             Id = 1,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4713),
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
                             Email = "admin@justspeak.com",
                             FirstName = "Admin",
-                            ImageUrl = "",
                             LastName = "User",
-                            PasswordHash = "hashed_password",
-                            PasswordSalt = "salt"
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
                         });
                 });
 
@@ -716,15 +1078,53 @@ namespace Services.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 4,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4795),
-                            Email = "hans@justspeak.com",
-                            FirstName = "Elvir",
-                            ImageUrl = "",
-                            LastName = "Student",
-                            PasswordHash = "hashed_password",
-                            PasswordSalt = "salt"
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "james.brown@justspeak.com",
+                            FirstName = "James",
+                            LastName = "Brown",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "maria.garcia@justspeak.com",
+                            FirstName = "Maria",
+                            LastName = "Garcia",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "robert.taylor@justspeak.com",
+                            FirstName = "Robert",
+                            LastName = "Taylor",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "jennifer.davis@justspeak.com",
+                            FirstName = "Jennifer",
+                            LastName = "Davis",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "william.wilson@justspeak.com",
+                            FirstName = "William",
+                            LastName = "Wilson",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
                         });
                 });
 
@@ -738,14 +1138,52 @@ namespace Services.Migrations
                         new
                         {
                             Id = 2,
-                            Bio = "",
-                            CreatedAt = new DateTime(2025, 9, 8, 21, 3, 5, 73, DateTimeKind.Utc).AddTicks(4762),
-                            Email = "mike@gmail.com",
-                            FirstName = "Mike",
-                            ImageUrl = "",
-                            LastName = "Tutor",
-                            PasswordHash = "hashed_password",
-                            PasswordSalt = "salt"
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "sarah.johnson@justspeak.com",
+                            FirstName = "Sarah",
+                            LastName = "Johnson",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "michael.chen@justspeak.com",
+                            FirstName = "Michael",
+                            LastName = "Chen",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "emma.williams@justspeak.com",
+                            FirstName = "Emma",
+                            LastName = "Williams",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "david.martinez@justspeak.com",
+                            FirstName = "David",
+                            LastName = "Martinez",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 11, 23, 16, 2, 56, 646, DateTimeKind.Utc).AddTicks(9259),
+                            Email = "lisa.anderson@justspeak.com",
+                            FirstName = "Lisa",
+                            LastName = "Anderson",
+                            PasswordHash = "FwwLVIQL84DVKossXEHd0t7yQCaQDGlkEKcND+nsCEQ=",
+                            PasswordSalt = "vew6OzACMpTcQjQiOQEgEQ=="
                         });
                 });
 

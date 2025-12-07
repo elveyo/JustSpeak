@@ -38,6 +38,7 @@ builder.Services.AddTransient<ISessionService, SessionService>();
 builder.Services.AddTransient<ILanguageService, LanguageService>();
 builder.Services.AddTransient<ILevelService, LevelService>();
 builder.Services.AddTransient<ITagService, TagService>();
+builder.Services.AddTransient<ICertificateService, CertificateService>();
 builder.Services.AddTransient<IPaymentService, PaymentService>();
 builder.Services.AddTransient<IMessageBrokerService, MessageBrokerService>();
 builder.Services.AddTransient<IRecommenderService, RecommenderService>();
@@ -125,10 +126,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-/* using (var scope = app.Services.CreateScope())
+using (var scope = app.Services.CreateScope())
 {
     var dataContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dataContext.Database.Migrate();
-} */
+}
 
 app.Run();

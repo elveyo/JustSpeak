@@ -1,4 +1,4 @@
 const String baseUrl = String.fromEnvironment(
   "baseUrl",
-  defaultValue: "http://10.0.2.2:5280/api",
+  defaultValue: "http://10.0.2.2:5255/api",
 );

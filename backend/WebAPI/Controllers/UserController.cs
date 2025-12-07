@@ -24,6 +24,11 @@ namespace WebAPI.Controllers
         {
             var user = await _userService.AuthenticateAsync(request);
 
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Wrong email or password" });
+            }
+
             return Ok(user);
         }
 

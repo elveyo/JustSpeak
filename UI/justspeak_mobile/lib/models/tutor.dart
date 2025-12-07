@@ -15,7 +15,16 @@ class Tutor {
     required this.user,
     required this.certificates,
     required this.languages,
+    required this.sessionCount,
+    required this.studentCount,
+    this.price,
+    this.hasSchedule = false,
   });
+
+  final int sessionCount;
+  final int studentCount;
+  final double? price;
+  final bool hasSchedule;
 
   factory Tutor.fromJson(Map<String, dynamic> json) => _$TutorFromJson(json);
   Map<String, dynamic> toJson() => _$TutorToJson(this);

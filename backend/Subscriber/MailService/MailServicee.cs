@@ -28,6 +28,8 @@ namespace Subscriber.MailService
 
         public async Task SendEmail(Email emailObj)
         {
+            Console.WriteLine("Sending email...");
+            Console.WriteLine(emailObj);
             if (emailObj == null)
                 return;
             if (string.IsNullOrEmpty(_password))

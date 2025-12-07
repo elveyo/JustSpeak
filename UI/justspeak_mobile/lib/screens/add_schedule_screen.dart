@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:frontend/models/tutor_schedule.dart';
 import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class ManageScheduleScreen extends StatefulWidget {
-  const ManageScheduleScreen({super.key});
+  final Schedule? existingSchedule;
+  
+  const ManageScheduleScreen({super.key, this.existingSchedule});
 
   @override
   State<ManageScheduleScreen> createState() => _ManageScheduleScreenState();
@@ -23,6 +26,57 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
 
   Duration sessionDuration = const Duration(hours: 1);
   double sessionPrice = 20.0;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // If editing, pre-populate form with existing data
+    if (widget.existingSchedule != null) {
+      final schedule = widget.existingSchedule!;
+      
+      // Set price and duration
+      sessionPrice = schedule.price?.toDouble() ?? 20.0;
+      sessionDuration = Duration(minutes: schedule.duration ?? 1);
+      
+      // Set selected days and times from available days
+      if (schedule.availableDays != null && schedule.availableDays!.isNotEmpty) {
+        selectedDays.clear();
+        
+        final dayMap = {
+          1: "MON",
+          2: "TUE",
+          3: "WED",
+          4: "THRU",
+          5: "FRI",
+        };
+        
+        for (var day in schedule.availableDays!) {
+          final dayName = dayMap[day.dayOfWeek];
+          if (dayName != null) {
+            selectedDays.add(dayName);
+          }
+        }
+        
+        // Use first available day's times as default
+        final firstDay = schedule.availableDays!.first;
+        if (firstDay.startTime != null) {
+          final parts = firstDay.startTime!.split(':');
+          startTime = TimeOfDay(
+            hour: int.parse(parts[0]),
+            minute: int.parse(parts[1]),
+          );
+        }
+        if (firstDay.endTime != null) {
+          final parts = firstDay.endTime!.split(':');
+          endTime = TimeOfDay(
+            hour: int.parse(parts[0]),
+            minute: int.parse(parts[1]),
+          );
+        }
+      }
+    }
+  }
 
   Future<void> _pickTime(bool isStart) async {
     final picked = await showTimePicker(
@@ -42,7 +96,6 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
   }
 
   Future<void> _postSchedule() async {
-    // INSERT_YOUR_CODE
     final scheduleProvider = Provider.of<ScheduleProvider>(
       context,
       listen: false,
@@ -75,16 +128,38 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         "duration": sessionDuration.inMinutes,
         "price": sessionPrice,
       };
-      await scheduleProvider.insert(request);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Schedule saved successfully!')));
-      Navigator.pop(context);
+      
+      // Check if we're editing or creating
+      if (widget.existingSchedule != null && widget.existingSchedule!.id != null) {
+        // Update existing schedule
+        await scheduleProvider.updateSchedule(widget.existingSchedule!.id!, request);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Schedule updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // Create new schedule
+        await scheduleProvider.insert(request);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Schedule created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+      
+      Navigator.pop(context, true); // Return true to indicate success
     } catch (e) {
       // Handle error, show error message
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to save schedule: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save schedule: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
     }
   }
 
@@ -250,7 +325,7 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
                   ),
                   value: sessionDuration.inMinutes,
                   items:
-                      [30, 45, 60]
+                      [1, 45, 60]
                           .map(
                             (min) => DropdownMenuItem(
                               value: min,

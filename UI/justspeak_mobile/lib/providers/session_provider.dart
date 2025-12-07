@@ -65,21 +65,53 @@ class SessionProvider extends BaseProvider<Session> {
   }
 
   Future<String> getToken(String channelName) async {
-    final userId = AuthService().user!.id;
+    final user = AuthService().user;
+    if (user == null) {
+      throw Exception("User not logged in");
+    }
+    final userId = user.id;
     Uri uri = buildUri("/generate-token");
     var headers = createHeaders();
     var request = {
       "channelName": channelName,
-      "userAccount": AuthService().user!.fullName,
+      "userAccount": "${user.id}:${user.fullName}",
     };
-    print(request);
     var jsonRequest = jsonEncode(request);
     final response = await http.post(uri, headers: headers, body: jsonRequest);
     if (!isValidResponse(response)) {
       throw Exception("Unknown error");
     }
-    print(response.body);
     return response.body;
+  }
+
+  Future<bool> joinSession(int sessionId) async {
+    Uri uri = buildUri("/$sessionId/join");
+    var headers = createHeaders();
+    final response = await http.post(uri, headers: headers);
+    print(response);
+    if (response.statusCode == 200) {
+      print("Session joined successfully");
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<void> leaveSession(int sessionId) async {
+    Uri uri = buildUri("/$sessionId/leave");
+    var headers = createHeaders();
+    await http.post(uri, headers: headers);
+  }
+
+  Future<bool> startSession(int sessionId) async {
+    Uri uri = buildUri("/$sessionId/start");
+    var headers = createHeaders();
+    final response = await http.post(uri, headers: headers);
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   Future<SearchResult<Tag>> getTags() async {
@@ -96,5 +128,34 @@ class SessionProvider extends BaseProvider<Session> {
     result.items =
         (tagJson['items'] as List).map((item) => Tag.fromJson(item)).toList();
     return result;
+  }
+
+
+  Future<void> rateUsers(
+    int sessionId,
+    int languageId,
+    int levelId,
+    List<Map<String, dynamic>> ratings,
+  ) async {
+    Uri uri = buildUri("/rate-users");
+    var headers = createHeaders();
+    var request = {
+      "sessionId": sessionId,
+      "languageId": languageId,
+      "levelId": levelId,
+      "ratings": ratings,
+    };
+    var jsonRequest = jsonEncode(request);
+    await http.post(uri, headers: headers, body: jsonRequest);
+  }
+
+  Future<bool> completeSession(int sessionId, String? note) async {
+    Uri uri = buildUri("/$sessionId/complete");
+    var headers = createHeaders();
+    var request = {"note": note};
+    var jsonRequest = jsonEncode(request);
+    
+    final response = await http.post(uri, headers: headers, body: jsonRequest);
+    return response.statusCode == 200;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:frontend/providers/certificate_provider.dart';
 import 'package:frontend/providers/language_level_provider.dart';
 import 'package:frontend/providers/language_provider.dart';
 import 'package:frontend/providers/payment_provider.dart';
@@ -48,6 +49,9 @@ void main() async {
         ),
         ChangeNotifierProvider<UserProvider>(
           create: (context) => UserProvider(),
+        ),
+        ChangeNotifierProvider<CertificateProvider>(
+          create: (context) => CertificateProvider(),
         ),
       ],
       child: MyApp(isUserAuthenticated: authService.isAuthenticated),

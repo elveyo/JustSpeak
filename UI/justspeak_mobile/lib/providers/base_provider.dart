@@ -15,7 +15,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
     _endpoint = endpoint;
     _baseUrl = const String.fromEnvironment(
       "baseUrl",
-      defaultValue: "http://10.0.2.2:5280/api/",
+      defaultValue: "http://10.0.2.2:5255/api/",
     );
     AuthService().loadToken();
   }
@@ -35,8 +35,11 @@ abstract class BaseProvider<T> with ChangeNotifier {
     var uri = Uri.parse(url);
 
     var headers = createHeaders();
+
+    print(headers);
     print(uri);
     var response = await http.get(uri, headers: headers);
+    print(response.statusCode);
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
       var result = SearchResult<T>();
@@ -47,6 +50,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
       print(result.items);
       return result;
     } else {
+      print(response.body);
       return throw new Exception("Unknown error");
     }
     // print("response: ${response.request} ${response.statusCode}, ${response.body}");

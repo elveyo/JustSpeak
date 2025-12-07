@@ -44,6 +44,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
   }
 
   Future<void> _bookSession() async {
+    print("Starting _bookSession");
     final sessionProvider = Provider.of<SessionProvider>(
       context,
       listen: false,
@@ -54,35 +55,58 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
     );
 
     try {
+      print("Preparing request...");
+      final price = _schedule!.price.toInt();
       final request = {
         "studentId": AuthService().user!.id,
         "tutorId": widget.tutorId,
         "languageId": _selectedLanguage,
         "levelId": _selectedLevel,
         "startTime": _selectedSlot,
-        "price": _schedule!.price,
+        "price": price,
       };
+      print("Request data: $request");
+      
+      print("Calling sessionProvider.bookSession...");
       var sessionId = await sessionProvider.bookSession(request);
+      print("Session booked with ID: $sessionId");
 
-      var paymentResult = await paymentProvider.payWithPaymentSheet(20);
+      print("Initiating payment...");
+      var paymentResult = await paymentProvider.payWithPaymentSheet(price);
+      print("Payment result: ${paymentResult.success}");
 
-      var payment = {
-        'sessionId': sessionId,
-        'amount': 20,
-        'stripeTransactionId': paymentResult.stripeTransactionId,
-      };
+      if (paymentResult.success) {
+        var payment = {
+          'sessionId': sessionId,
+          'amount': price,
+          'stripeTransactionId': paymentResult.stripeTransactionId,
+        };
 
-      await paymentProvider.insert(payment);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => StudentSessionsScreen()),
-      );
+        print("Inserting payment record...");
+        await paymentProvider.insert(payment);
+        print("Payment inserted.");
+        
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => StudentSessionsScreen()),
+        );
+      } else {
+        print("Payment failed: ${paymentResult.errorMessage}");
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Payment failed: ${paymentResult.errorMessage}")),
+        );
+        // Optionally cancel booking here if payment is required
+      }
     } catch (error) {
+      print("Error in _bookSession: $error");
+      if (!mounted) return;
       showDialog(
         context: context,
         builder:
             (context) => AlertDialog(
-              title: Text(""),
+              title: Text("Error"),
               content: Text(error.toString()),
               actions: [
                 TextButton(
@@ -192,7 +216,63 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
       body:
           _schedule == null
               ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
+              : (_schedule!.slots == null || _schedule!.slots!.isEmpty)
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              size: 80,
+                              color: Colors.grey.shade400,
+                            ),
+                            const SizedBox(height: 24),
+                            const Text(
+                              "Tutor has no available sessions",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFB000FF),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "This tutor hasn't set up their schedule yet. Please check back later.",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 32),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFB000FF),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                "Go Back",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(12.0, 25.0, 12.0, 12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

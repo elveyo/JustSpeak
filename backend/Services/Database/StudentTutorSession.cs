@@ -14,7 +14,8 @@ namespace Services.Database
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public bool IsActive { get; set; } = false;
-        public string? Notes { get; set; }
+        public bool IsCompleted { get; set; } = false;
+        public string? Note { get; set; }
         public int? Rating { get; set; } = null;
         public string channelName { get; set; } = null!;
         public DateTime CreatedAt { get; set; } = DateTime.Now;

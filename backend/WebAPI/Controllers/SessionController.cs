@@ -39,6 +39,51 @@ namespace WebAPI.Controllers
             return _sessionService.Get(request.ChannelName, request.userAccount);
         }
 
+        [HttpPost("{id}/join")]
+        public async Task<IActionResult> JoinSession(int id)
+        {
+            var success = await _sessionService.JoinSessionAsync(id);
+            if (!success)
+            {
+                return BadRequest("Session is full or does not exist.");
+            }
+            return Ok();
+        }
+
+        [HttpPost("{id}/leave")]
+        public async Task<IActionResult> LeaveSession(int id)
+        {
+            await _sessionService.LeaveSessionAsync(id);
+            return Ok();
+        }
+
+        [HttpPost("{id}/start")]
+        public async Task<IActionResult> StartSession(int id)
+        {
+            var success = await _sessionService.StartSessionAsync(id);
+            if (!success)
+            {
+                return BadRequest("Session not found.");
+            }
+            return Ok();
+        }
+
+        public class CompleteSessionRequest
+        {
+            public string? Note { get; set; }
+        }
+
+        [HttpPost("{id}/complete")]
+        public async Task<IActionResult> CompleteSession(int id, [FromBody] CompleteSessionRequest request)
+        {
+            var success = await _sessionService.CompleteSessionAsync(id, request.Note);
+            if (!success)
+            {
+                return BadRequest("Session not found.");
+            }
+            return Ok();
+        }
+
         [HttpPost("book-session")]
         public async Task<IActionResult> BookSession([FromBody] BookSessionRequest request)
         {
@@ -80,6 +125,12 @@ namespace WebAPI.Controllers
 
             var pagedTags = await _sessionService.GetTagsAsync(searchObject);
             return Ok(pagedTags);
+        }
+        [HttpPost("rate-users")]
+        public async Task<IActionResult> RateUsers([FromBody] RateUserRequest request)
+        {
+            await _sessionService.RateUsersAsync(request);
+            return Ok();
         }
     }
 }

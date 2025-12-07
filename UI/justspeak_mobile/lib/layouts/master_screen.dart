@@ -110,7 +110,7 @@ class MasterScreen extends StatelessWidget {
           }
 
           if (targetPage != null) {
-            Navigator.pushReplacement(context, _fadeTo(targetPage));
+            Navigator.push(context, _fadeTo(targetPage));
           }
         },
         destinations: destinations,

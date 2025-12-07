@@ -37,7 +37,14 @@ class UserProvider extends BaseProvider<User> {
 
     final response = await http.post(uri, headers: headers, body: body);
     if (!isValidResponse(response)) {
-      throw Exception("Login failed: ${response.body}");
+      // Try to extract error message from response
+      try {
+        final data = jsonDecode(response.body);
+        final errorMessage = data['message'] ?? 'Wrong email or password';
+        throw Exception(errorMessage);
+      } catch (e) {
+        throw Exception('Wrong email or password');
+      }
     }
 
     final data = jsonDecode(response.body);

@@ -87,67 +87,73 @@ class _StudentSessionsScreenState extends State<StudentSessionsScreen> {
   Widget build(BuildContext context) {
     return MasterScreen(
       title: 'Lessons',
-      child:
-          _bookedSessions == null
-              ? const Center(child: CircularProgressIndicator())
-              : _bookedSessions!.isEmpty
+      child: _bookedSessions == null
+          ? const Center(child: CircularProgressIndicator())
+          : _bookedSessions!.isEmpty
               ? const Center(
-                child: Text(
-                  'You have no booked lessons.',
-                  style: TextStyle(fontSize: 18),
-                ),
-              )
+                  child: Text(
+                    'You have no booked lessons.',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                )
               : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ..._groupSessionsByDate(_bookedSessions!).entries.expand((
-                      entry,
-                    ) {
-                      final date = entry.key;
-                      final sessions = entry.value;
-                      return [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: 16.0,
-                            bottom: 8.0,
-                            left: 4.0,
-                          ),
-                          child: Text(
-                            _formatDateLabel(date),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.purple,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ..._groupSessionsByDate(_bookedSessions!).entries.expand((
+                        entry,
+                      ) {
+                        final date = entry.key;
+                        final sessions = entry.value;
+                        return [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: 16.0,
+                              bottom: 8.0,
+                              left: 4.0,
+                            ),
+                            child: Text(
+                              _formatDateLabel(date),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.purple,
+                              ),
                             ),
                           ),
-                        ),
-                        ...List.generate(sessions.length, (i) {
-                          final session = sessions[i];
-                          return Column(
-                            children: [
-                              SessionCard(
-                                imageUrl: session.userImageUrl,
-                                name: session.userName,
-                                sessionTitle:
-                                    '${session.language} (${session.level})',
-                                date: DateFormat(
-                                  'yyyy-MM-dd',
-                                ).format(session.date),
-                                time:
-                                    '${session.startTime.hour.toString().padLeft(2, '0')}:${session.startTime.minute.toString().padLeft(2, '0')} - ${session.endTime.hour.toString().padLeft(2, '0')}:${session.endTime.minute.toString().padLeft(2, '0')}',
-                                isActive: session.isActive,
-                              ),
-                              if (i != sessions.length - 1)
-                                const SizedBox(height: 12),
-                            ],
-                          );
-                        }),
-                      ];
-                    }),
-                  ],
+                          ...List.generate(sessions.length, (i) {
+                            final session = sessions[i];
+                            return Column(
+                              children: [
+                                SessionCard(
+                                  sessionId: session.id,
+                                  channelName: session.channelName,
+                                  imageUrl: session.userImageUrl,
+                                  name: session.userName,
+                                  sessionTitle:
+                                      '${session.language} (${session.level})',
+                                  languageId: session.languageId,
+                                  levelId: session.levelId,
+                                  date: DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(session.date),
+                                  time:
+                                      '${session.startTime.hour.toString().padLeft(2, '0')}:${session.startTime.minute.toString().padLeft(2, '0')} - ${session.endTime.hour.toString().padLeft(2, '0')}:${session.endTime.minute.toString().padLeft(2, '0')}',
+                                  isActive: session.isActive,
+                                  endTime: session.endTime,
+                                  isCompleted: session.isCompleted,
+                                  note: session.note,
+                                ),
+                                if (i != sessions.length - 1)
+                                  const SizedBox(height: 12),
+                              ],
+                            );
+                          }),
+                        ];
+                      }),
+                    ],
+                  ),
                 ),
-              ),
     );
   }
 }

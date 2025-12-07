@@ -3,16 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:frontend/services/agora_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:frontend/providers/session_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:frontend/screens/rate_users_screen.dart';
+import 'package:frontend/screens/session_completion_screen.dart';
+import 'package:frontend/services/auth_service.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final String channelName;
   final String token;
   final int remainingSeconds;
+  final int sessionId;
+  final int languageId;
+  final int levelId;
+  final bool isGroupSession;
+  
   const VideoCallScreen({
     super.key,
     required this.channelName,
     required this.token,
     required this.remainingSeconds,
+    required this.sessionId,
+    required this.languageId,
+    required this.levelId,
+    this.isGroupSession = true,
   });
 
   @override
@@ -43,12 +57,85 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     _countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (_remainingSeconds <= 0) {
         timer.cancel();
+        _onTimerEnd();
       } else {
         setState(() {
           _remainingSeconds--;
         });
       }
     });
+  }
+
+  Future<void> _onTimerEnd() async {
+    // Delete session if it's a group session
+    if (widget.isGroupSession) {
+      try {
+        await Provider.of<SessionProvider>(context, listen: false)
+            .delete(widget.sessionId);
+      } catch (e) {
+        print("Error deleting session: $e");
+      }
+    } else {
+      // Booked session logic
+      final user = AuthService().user;
+      if (user?.role == "Tutor") {
+        if (mounted) {
+           final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SessionCompletionScreen(sessionId: widget.sessionId),
+            ),
+          );
+          if (mounted && result == true) {
+            Navigator.pop(context);
+            return;
+          }
+        }
+      }
+    }
+
+    // Show rating screen for all sessions (if not already handled by completion)
+    try {
+      final participants = <ParticipantInfo>[];
+
+      for (var entry in _remoteUsers.entries) {
+        final userAccount = entry.value;
+        final parts = userAccount.split(':');
+        if (parts.length == 2) {
+          final userId = int.tryParse(parts[0]);
+          final userName = parts[1];
+
+          if (userId != null) {
+            participants.add(ParticipantInfo(
+              userId: userId,
+              name: userName,
+              imageUrl: null,
+            ));
+          }
+        }
+      }
+
+      if (participants.isNotEmpty && mounted) {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => RateUsersScreen(
+                  sessionId: widget.sessionId,
+                  languageId: widget.languageId,
+                  levelId: widget.levelId,
+                  participants: participants,
+                ),
+          ),
+        );
+
+        if (mounted && result == true) {
+          Navigator.pop(context);
+        }
+      }
+    } catch (e) {
+      print('Error showing rating screen: $e');
+    }
   }
 
   String _formatTime(int seconds) {
@@ -71,68 +158,86 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       await agoraService.initialize();
       if (agoraService.engine == null) {
         print("❌ Agora engine is null after initialization!");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Failed to initialize video engine")),
+          );
+        }
         return;
       }
-      await agoraService.engine!.setVideoEncoderConfiguration(
-        const VideoEncoderConfiguration(
-          dimensions: VideoDimensions(width: 640, height: 480),
-          frameRate: 30,
-          bitrate: 0,
-        ),
-      );
+      
+      try {
+        await agoraService.engine!.setVideoEncoderConfiguration(
+          const VideoEncoderConfiguration(
+            dimensions: VideoDimensions(width: 640, height: 480),
+            frameRate: 30,
+            bitrate: 0,
+          ),
+        );
+      } catch (e) {
+        print("⚠️ Video encoder configuration failed (emulator?): $e");
+      }
+      
       agoraService.engine!.registerEventHandler(
         RtcEngineEventHandler(
           onUserJoined: (connection, uid, elapsed) async {
             print("User joined: $uid");
-            // Add to joined set
-            setState(() {
-              _joinedUids.add(uid);
-            });
-            // Try to get user info (if available)
+            if (mounted) {
+              setState(() {
+                _joinedUids.add(uid);
+              });
+            }
             try {
-              final userInfo = await agoraService.engine!.getUserInfoByUid(uid);
-              if (userInfo.userAccount != null &&
-                  userInfo.userAccount!.isNotEmpty) {
-                setState(() {
-                  _remoteUsers[uid] = userInfo.userAccount!;
-                });
+              final userInfo = await agoraService.engine?.getUserInfoByUid(uid);
+              if (userInfo?.userAccount != null &&
+                  userInfo!.userAccount!.isNotEmpty) {
+                if (mounted) {
+                  setState(() {
+                    _remoteUsers[uid] = userInfo.userAccount!;
+                  });
+                }
               }
             } catch (e) {
-              // ignore if not available
+              print("⚠️ Failed to get user info: $e");
             }
           },
           onUserOffline: (connection, uid, reason) {
             print("User offline: $uid");
-            setState(() {
-              _joinedUids.remove(uid);
-              _remoteUsers.remove(uid);
-            });
+            if (mounted) {
+              setState(() {
+                _joinedUids.remove(uid);
+                _remoteUsers.remove(uid);
+              });
+            }
           },
           onJoinChannelSuccess: (connection, elapsed) {
             print("Join channel success: ${connection.localUid}");
-            setState(() {
-              _localUid = connection.localUid!;
-              _joinedUids.add(_localUid!);
-            });
+            if (connection.localUid != null && mounted) {
+              setState(() {
+                _localUid = connection.localUid!;
+                _joinedUids.add(_localUid!);
+              });
+            }
           },
           onUserInfoUpdated: (uid, userInfo) {
             print("User info updated: ${userInfo.userAccount}");
-            setState(() {
-              _remoteUsers[uid] = userInfo.userAccount ?? '';
-            });
+            if (mounted) {
+              setState(() {
+                _remoteUsers[uid] = userInfo.userAccount ?? '';
+              });
+            }
           },
           onRejoinChannelSuccess: (connection, elapsed) {
             print("Rejoin channel success: ${connection.localUid}");
-            setState(() {
-              if (connection.localUid != null) {
+            if (connection.localUid != null && mounted) {
+              setState(() {
                 _localUid = connection.localUid!;
                 _joinedUids.add(_localUid!);
-              }
-            });
+              });
+            }
           },
           onConnectionStateChanged: (connection, state, reason) {
             print("Connection state changed: $state, reason: $reason");
-            // Optionally handle reconnection logic here
           },
           onError: (errorCode, msg) {
             print("❌ AGORA ERROR: $errorCode - $msg");
@@ -142,14 +247,43 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       await _startCall();
     } catch (e) {
       print("❌ Error initializing Agora: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error initializing video: $e")),
+        );
+      }
     }
   }
 
   Future<void> _startCall() async {
-    if (agoraService.engine == null) return;
-    await agoraService.engine!.enableVideo();
-    await agoraService.engine!.startPreview();
-    await agoraService.joinChannel(widget.channelName, widget.token);
+    if (agoraService.engine == null) {
+      print("❌ Cannot start call: engine is null");
+      return;
+    }
+    
+    try {
+      await agoraService.engine!.enableVideo();
+    } catch (e) {
+      print("⚠️ Enable video failed (emulator?): $e");
+    }
+    
+    try {
+      await agoraService.engine!.startPreview();
+    } catch (e) {
+      print("⚠️ Start preview failed (emulator?): $e");
+    }
+    
+    try {
+      print("Joining channel: ${widget.channelName} ${widget.token}");
+      await agoraService.joinChannel(widget.channelName, widget.token);
+    } catch (e) {
+      print("❌ Join channel failed: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to join session: $e")),
+        );
+      }
+    }
   }
 
   @override
@@ -159,7 +293,21 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     agoraService.leaveChannel();
     agoraService.engine?.release();
     agoraService.dispose();
+    _leaveSession();
     super.dispose();
+  }
+
+  Future<void> _leaveSession() async {
+    if (!widget.isGroupSession) return; // Only leave session for group sessions
+    try {
+      final sessionProvider = Provider.of<SessionProvider>(
+        context,
+        listen: false,
+      );
+      await sessionProvider.leaveSession(widget.sessionId);
+    } catch (e) {
+      print('Error leaving session: $e');
+    }
   }
 
   Future<void> _toggleMic() async {
@@ -174,6 +322,27 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
   Widget _buildVideo(int uid, {bool showLabel = true}) {
     final isLocal = uid == _localUid;
+    
+    // Check if engine is available
+    if (agoraService.engine == null) {
+      return Container(
+        color: Colors.black,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.videocam_off, color: Colors.white, size: 48),
+              const SizedBox(height: 8),
+              Text(
+                isLocal ? "Camera unavailable" : "Waiting for video...",
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
     final videoWidget =
         isLocal
             ? AgoraVideoView(
@@ -277,7 +446,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               if (_localUid == null) {
                 return const Center(child: CircularProgressIndicator());
               }
-              // Use _joinedUids to track all currently joined users (including local)
               final remoteUids =
                   _joinedUids.where((uid) => uid != _localUid).toList();
               final allUids = [_localUid!, ...remoteUids];
@@ -422,7 +590,36 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                         color: Colors.red,
                         size: 36,
                       ),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () async {
+                        // Handle session completion for tutors in booked sessions
+                        if (!widget.isGroupSession) {
+                          final user = AuthService().user;
+                          if (user?.role == "Tutor") {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => SessionCompletionScreen(sessionId: widget.sessionId),
+                              ),
+                            );
+                            if (result == true) {
+                              if (mounted) Navigator.pop(context);
+                              return;
+                            }
+                          }
+                        } else {
+                          // For group sessions, decrement numOfUsers before leaving
+                          try {
+                            final sessionProvider = Provider.of<SessionProvider>(
+                              context,
+                              listen: false,
+                            );
+                            await sessionProvider.leaveSession(widget.sessionId);
+                          } catch (e) {
+                            print('Error leaving session: $e');
+                          }
+                        }
+                        if (mounted) Navigator.pop(context);
+                      },
                       tooltip: 'Leave Call',
                     ),
                   ],

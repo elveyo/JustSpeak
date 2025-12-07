@@ -15,8 +15,8 @@ namespace Services.Database
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string ImageUrl { get; set; } = string.Empty;
-        public string Bio { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
+        public string? Bio { get; set; }
         public string PasswordHash { get; set; } = string.Empty;
         public string PasswordSalt { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -8,7 +8,10 @@ class Session {
   final int id;
   final String? language;
   final String? level;
+  final int? languageId;
+  final int? levelId;
   final int numOfUsers;
+  final int currentNumOfUsers;
   final int duration;
   final DateTime createdAt;
   final String? channelName;
@@ -19,7 +22,10 @@ class Session {
     required this.id,
     this.language = "",
     this.level = "",
+    this.languageId,
+    this.levelId,
     required this.numOfUsers,
+    this.currentNumOfUsers = 0,
     required this.duration,
     required this.createdAt,
     this.channelName,

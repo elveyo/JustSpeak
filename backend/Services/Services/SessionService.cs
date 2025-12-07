@@ -58,6 +58,7 @@ namespace Services.Services
             var session = new Session
             {
                 NumOfUsers = request.NumOfUsers,
+                CurrentNumOfUSers = 1,
                 LanguageId = request.LanguageId,
                 LevelId = request.LevelId,
                 Duration = request.Duration,
@@ -71,13 +72,14 @@ namespace Services.Services
             await _context.SaveChangesAsync();
             await _context.Entry(session).Reference(s => s.Language).LoadAsync();
             await _context.Entry(session).Reference(s => s.Level).LoadAsync();
-            var token = Get(request.ChannelName, user.FullName);
+            var token = Get(request.ChannelName, $"{user.Id}:{user.FullName}");
             return new SessionResponse
             {
                 Id = session.Id,
                 Language = session.Language.Name,
                 Level = session.Level.Name,
                 NumOfUsers = session.NumOfUsers,
+                CurrentNumOfUsers = session.CurrentNumOfUSers,
                 Duration = session.Duration,
                 CreatedAt = session.CreatedAt,
                 ChannelName = session.ChannelName,
@@ -115,9 +117,12 @@ namespace Services.Services
                 {
                     Id = s.Id,
                     Language = s.Language.Name,
+                    LanguageId = s.LanguageId,
                     Level = s.Level.Name,
+                    LevelId = s.LevelId,
                     NumOfUsers = s.NumOfUsers,
-                    Duration = s.Duration,
+                    CurrentNumOfUsers = s.CurrentNumOfUSers,
+                    Duration = 1,
                     CreatedAt = s.CreatedAt,
                     ChannelName = s.ChannelName,
                     Tags = s
@@ -173,14 +178,15 @@ namespace Services.Services
                 LevelId = request.LevelId,
                 StartTime = request.StartTime,
                 EndTime = endTime,
-                IsActive = true,
+                IsActive = false,
+                channelName = Guid.NewGuid().ToString(),
                 CreatedAt = DateTime.UtcNow,
             };
 
             _context.StudentTutorSessions.Add(session);
             await _context.SaveChangesAsync();
 
-            //_messageBrokerService.Publish(session, "session-booked");
+            _messageBrokerService.Publish(session, "session-booked");
             return session.Id;
         }
 
@@ -196,13 +202,19 @@ namespace Services.Services
                 .Select(s => new BookedSessionResponse
                 {
                     Language = s.Language.Name,
+                    LanguageId = s.LanguageId,
                     Level = s.Level.Name,
+                    LevelId = s.LevelId,
                     UserName = s.Student.FullName,
                     UserImageUrl = s.Student.ImageUrl,
                     Date = s.StartTime.Date,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
                     IsActive = s.IsActive,
+                    IsCompleted = s.IsCompleted,
+                    Note = s.Note,
+                    Id = s.Id,
+                    ChannelName = s.channelName,
                 })
                 .ToArrayAsync();
 
@@ -213,18 +225,24 @@ namespace Services.Services
         {
             var bookedSessions = await _context
                 .StudentTutorSessions.Where(sts =>
-                    sts.StudentId == UserId!.Value && sts.StartTime > DateTime.UtcNow
+                    sts.StudentId == UserId!.Value
                 )
                 .Select(s => new BookedSessionResponse
                 {
                     Language = s.Language.Name,
+                    LanguageId = s.LanguageId,
                     Level = s.Level.Name,
+                    LevelId = s.LevelId,
                     UserName = s.Tutor.FullName,
                     UserImageUrl = s.Tutor.ImageUrl,
                     Date = s.StartTime.Date,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
                     IsActive = s.IsActive,
+                    IsCompleted = s.IsCompleted,
+                    Note = s.Note,
+                    Id = s.Id,
+                    ChannelName = s.channelName,
                 })
                 .ToArrayAsync();
 
@@ -271,6 +289,96 @@ namespace Services.Services
             );
 
             return token;
+        }
+
+        public async Task<bool> JoinSessionAsync(int sessionId)
+        {
+            var session = await _context.Sessions.FindAsync(sessionId);
+            if (session == null)
+            {
+                return false;
+            }
+
+            if (session.CurrentNumOfUSers >= session.NumOfUsers)
+            {
+                return false;
+            }
+
+            session.CurrentNumOfUSers++;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> LeaveSessionAsync(int sessionId)
+        {
+            var session = await _context.Sessions.FindAsync(sessionId);
+            if (session == null) return false;
+
+            if (session.CurrentNumOfUSers > 0)
+            {
+                session.CurrentNumOfUSers--;
+                await _context.SaveChangesAsync();
+            }
+            return true;
+        }
+
+        public async Task<bool> StartSessionAsync(int sessionId)
+        {
+            var session = await _context.StudentTutorSessions.FindAsync(sessionId);
+            if (session == null) return false;
+
+            session.IsActive = true;
+            
+            // Reset time to start from now
+            var duration = session.EndTime - session.StartTime;
+            session.StartTime = DateTime.UtcNow;
+            session.EndTime = session.StartTime.Add(duration);
+            
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task RateUsersAsync(RateUserRequest request)
+        {
+            foreach (var rating in request.Ratings)
+            {
+                // Find the student's language record for this language/level
+                var studentLanguage = await _context.StudentLanguages
+                    .FirstOrDefaultAsync(sl => 
+                        sl.StudentId == rating.UserId && 
+                        sl.LanguageId == request.LanguageId);
+                
+                if (studentLanguage != null)
+                {
+                    // Points logic based on rating:
+                    // Rating 1-2: No points
+                    // Rating 3: +5 points
+                    // Rating 4: +10 points
+                    // Rating 5: +20 points
+                    
+                    int pointsIncrement = 0;
+                    if (rating.Rating == 3) pointsIncrement = 5;
+                    else if (rating.Rating == 4) pointsIncrement = 10;
+                    else if (rating.Rating == 5) pointsIncrement = 20;
+
+                    studentLanguage.Points += pointsIncrement;
+                }
+            }
+            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> CompleteSessionAsync(int sessionId, string? note)
+        {
+            var session = await _context.StudentTutorSessions.FindAsync(sessionId);
+            if (session == null) return false;
+
+            session.IsActive = false;
+            session.IsCompleted = true;
+            session.Note = note;
+            
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

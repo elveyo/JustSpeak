@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:frontend/models/booked_session.dart';
 import 'package:frontend/models/calendar_slot.dart';
 import 'package:frontend/models/tutor_schedule.dart';
+import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/providers/session_provider.dart';
 import 'package:frontend/screens/add_schedule_screen.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/widgets/calendar.dart';
 import 'package:frontend/widgets/session_card.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +29,7 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
   void initState() {
     super.initState();
     _getTutorSessions();
+    _loadSchedule();
   }
 
   Future<void> _getTutorSessions() async {
@@ -42,6 +45,40 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
         _bookedSessions = bookedSessions;
       });
     } catch (error) {}
+  }
+
+  Future<void> _loadSchedule() async {
+    final scheduleProvider = Provider.of<ScheduleProvider>(
+      context,
+      listen: false,
+    );
+
+    try {
+      final userId = AuthService().user?.id;
+      if (userId != null) {
+        final schedule = await scheduleProvider.getSchedule(userId);
+        setState(() {
+          tutorSchedule = schedule;
+        });
+      }
+    } catch (error) {
+      // Schedule might not exist yet
+      print('Error loading schedule: $error');
+    }
+  }
+
+  Future<void> _navigateToEditSchedule() async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ManageScheduleScreen(existingSchedule: tutorSchedule),
+      ),
+    );
+
+    // Refresh if schedule was updated
+    if (result == true) {
+      _loadSchedule();
+      _getTutorSessions();
+    }
   }
 
   @override
@@ -71,12 +108,16 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.of(context).push(
+                      onPressed: () async {
+                        final result = await Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => ManageScheduleScreen(),
+                            builder: (_) => const ManageScheduleScreen(),
                           ),
                         );
+                        if (result == true) {
+                          _getTutorSessions();
+                          _loadSchedule();
+                        }
                       },
                       child: const Text(
                         "Set Schedule",
@@ -105,61 +146,86 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
             return sessionsByDate[key] ?? [];
           }
 
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                Calendar<BookedSession>(
-                  firstDay: DateTime.now(),
-                  lastDay: DateTime.now().add(const Duration(days: 30)),
-                  initialFocusedDay: _focusedDay,
-                  events: _bookedSessions!, // lista svih booked sesija
-                  getEventsForDay: _getSessionsForDay,
-                  onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      _selectedDay = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-                  },
-                  selectedColor: Theme.of(context).colorScheme.secondary,
-                  eventColor: Theme.of(context).primaryColor,
-                ),
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Calendar<BookedSession>(
+                        firstDay: DateTime.now(),
+                        lastDay: DateTime.now().add(const Duration(days: 30)),
+                        initialFocusedDay: _focusedDay,
+                        events: _bookedSessions!, // lista svih booked sesija
+                        getEventsForDay: _getSessionsForDay,
+                        onDaySelected: (selectedDay, focusedDay) {
+                          setState(() {
+                            _selectedDay = selectedDay;
+                            _focusedDay = focusedDay;
+                          });
+                        },
+                        selectedColor: Theme.of(context).colorScheme.secondary,
+                        eventColor: Theme.of(context).primaryColor,
+                      ),
 
-                const SizedBox(height: 20),
-                if (_selectedDay == null)
-                  const Center(child: Text('Select a day'))
-                else
-                  Builder(
-                    builder: (context) {
-                      final sessions = _getSessionsForDay(_selectedDay!);
-                      if (sessions.isEmpty) {
-                        return const Center(
-                          child: Text('No sessions for this day'),
-                        );
-                      }
-                      return Column(
-                        children: [
-                          for (int i = 0; i < sessions.length; i++) ...[
-                            SessionCard(
-                              imageUrl: sessions[i].userImageUrl,
-                              name: sessions[i].userName,
-                              sessionTitle:
-                                  '${sessions[i].language} (${sessions[i].level})',
-                              date: sessions[i].date
-                                  .toIso8601String()
-                                  .substring(0, 10),
-                              time:
-                                  '${sessions[i].startTime.hour.toString().padLeft(2, '0')}:${sessions[i].startTime.minute.toString().padLeft(2, '0')} - ${sessions[i].endTime.hour.toString().padLeft(2, '0')}:${sessions[i].endTime.minute.toString().padLeft(2, '0')}',
-                              isActive: sessions[i].isActive,
-                            ),
-                            if (i != sessions.length - 1)
-                              const SizedBox(height: 12),
-                          ],
-                        ],
-                      );
-                    },
+                      const SizedBox(height: 20),
+                      if (_selectedDay == null)
+                        const Center(child: Text('Select a day'))
+                      else
+                        Builder(
+                          builder: (context) {
+                            final sessions = _getSessionsForDay(_selectedDay!);
+                            if (sessions.isEmpty) {
+                              return const Center(
+                                child: Text('No sessions for this day'),
+                              );
+                            }
+                            return Column(
+                              children: [
+                                for (int i = 0; i < sessions.length; i++) ...[
+                                    SessionCard(
+                                      sessionId: sessions[i].id,
+                                      channelName: sessions[i].channelName,
+                                      imageUrl: sessions[i].userImageUrl,
+                                      name: sessions[i].userName,
+                                      sessionTitle:
+                                          '${sessions[i].language} (${sessions[i].level})',
+                                      languageId: sessions[i].languageId,
+                                      levelId: sessions[i].levelId,
+                                      date: sessions[i].date
+                                          .toIso8601String()
+                                          .substring(0, 10),
+                                      time:
+                                          '${sessions[i].startTime.hour.toString().padLeft(2, '0')}:${sessions[i].startTime.minute.toString().padLeft(2, '0')} - ${sessions[i].endTime.hour.toString().padLeft(2, '0')}:${sessions[i].endTime.minute.toString().padLeft(2, '0')}',
+                                      isActive: sessions[i].isActive,
+                                      endTime: sessions[i].endTime,
+                                      isCompleted: sessions[i].isCompleted,
+                                      note: sessions[i].note,
+                                    ),
+                                  if (i != sessions.length - 1)
+                                    const SizedBox(height: 12),
+                                ],
+                              ],
+                            );
+                          },
+                        ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+              ),
+              
+              // Edit button - simple FAB when schedule exists
+              if (tutorSchedule != null)
+                Positioned(
+                  bottom: 16,
+                  right: 16,
+                  child: FloatingActionButton(
+                    onPressed: _navigateToEditSchedule,
+                    backgroundColor: Colors.purple,
+                    child: const Icon(Icons.edit, color: Colors.white),
+                  ),
+                ),
+            ],
           );
         },
       ),

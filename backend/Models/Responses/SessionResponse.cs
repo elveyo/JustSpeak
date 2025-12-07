@@ -6,8 +6,11 @@ namespace Models.Responses
     {
         public int Id { get; set; }
         public string Language { get; set; }
+        public int LanguageId { get; set; }
         public string Level { get; set; }
+        public int LevelId { get; set; }
         public int NumOfUsers { get; set; }
+        public int CurrentNumOfUsers { get; set; }
         public int Duration { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? ChannelName { get; set; }

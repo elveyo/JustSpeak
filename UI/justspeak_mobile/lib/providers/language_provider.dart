@@ -11,4 +11,4 @@ class LanguageProvider extends BaseProvider<Language> {
   Language fromJson(dynamic json) {
     return Language.fromJson(json);
   }
-}
+} 

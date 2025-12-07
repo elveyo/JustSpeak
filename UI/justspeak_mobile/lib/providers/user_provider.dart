@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:frontend/models/search_result.dart';
 import 'package:frontend/models/student.dart';
 import 'package:frontend/models/tutor.dart';
 import 'package:frontend/models/user.dart';
@@ -54,5 +55,10 @@ class UserProvider extends BaseProvider<User> {
     }
     var data = jsonDecode(response.body);
     return Student.fromJson(data);
+  }
+
+  Future<SearchResult<User>> searchUsers(String query) async {
+    final filter = {"FTS": query, "page": 0, "pageSize": 10};
+    return await get(filter: filter);
   }
 }

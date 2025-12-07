@@ -129,6 +129,7 @@ namespace Services
 
             if (schedule == null)
             {
+                // Creating new schedule - no validation needed
                 schedule = new TutorSchedule
                 {
                     TutorId = userId!.Value,
@@ -148,6 +149,58 @@ namespace Services
             }
             else
             {
+                // Updating existing schedule - validate against booked sessions
+                var now = DateTime.UtcNow;
+                
+                // Find the last booked appointment for this tutor
+                var lastBookedSession = await _context
+                    .StudentTutorSessions
+                    .Where(s => s.TutorId == userId!.Value && s.IsActive && s.EndTime > now)
+                    .OrderByDescending(s => s.EndTime)
+                    .FirstOrDefaultAsync();
+
+                // If there are active bookings, validate the new schedule doesn't conflict
+                if (lastBookedSession != null)
+                {
+                    var nextAvailableDate = lastBookedSession.EndTime.Date.AddDays(1);
+                    
+                    // Get all future booked sessions
+                    var futureBookedSessions = await _context
+                        .StudentTutorSessions
+                        .Where(s => s.TutorId == userId!.Value && s.IsActive && s.StartTime >= now)
+                        .Select(s => new { s.StartTime, s.EndTime, DayOfWeek = s.StartTime.DayOfWeek })
+                        .ToListAsync();
+
+                    // Validate that all existing booked sessions would still be valid under the new schedule
+                    foreach (var bookedSession in futureBookedSessions)
+                    {
+                        var newDayRule = request.AvailableDays.FirstOrDefault(d => d.DayOfWeek == bookedSession.DayOfWeek);
+                        
+                        if (newDayRule == null)
+                        {
+                            throw new InvalidOperationException(
+                                $"Cannot update schedule: You have booked sessions on {bookedSession.DayOfWeek}. " +
+                                $"The new schedule must include this day or cancel existing appointments first. " +
+                                $"Last appointment ends on {lastBookedSession.EndTime:yyyy-MM-dd HH:mm}."
+                            );
+                        }
+
+                        var sessionStartTime = bookedSession.StartTime.TimeOfDay;
+                        var sessionEndTime = bookedSession.EndTime.TimeOfDay;
+
+                        if (sessionStartTime < newDayRule.StartTime || sessionEndTime > newDayRule.EndTime)
+                        {
+                            throw new InvalidOperationException(
+                                $"Cannot update schedule: Booked sessions exist outside the new working hours on {bookedSession.DayOfWeek}. " +
+                                $"Current booking: {sessionStartTime:hh\\:mm} - {sessionEndTime:hh\\:mm}. " +
+                                $"Please ensure new schedule covers these times or cancel existing appointments first. " +
+                                $"Last appointment ends on {lastBookedSession.EndTime:yyyy-MM-dd HH:mm}."
+                            );
+                        }
+                    }
+                }
+
+                // Update schedule
                 schedule.Duration = request.Duration;
                 schedule.Price = request.Price;
 

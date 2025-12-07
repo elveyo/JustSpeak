@@ -22,5 +22,10 @@ namespace Services.Interfaces
         Task<BookedSessionResponse[]?> GetTutorSessionsAsync();
         Task<BookedSessionResponse[]> GetStudentSessionsAsync();
         string Get(string channelName, string userAccount);
+        Task<bool> JoinSessionAsync(int sessionId);
+        Task<bool> LeaveSessionAsync(int sessionId);
+        Task<bool> StartSessionAsync(int sessionId);
+        Task<bool> CompleteSessionAsync(int sessionId, string? note);
+        Task RateUsersAsync(RateUserRequest request);
     }
 }

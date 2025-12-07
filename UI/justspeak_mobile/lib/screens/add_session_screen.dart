@@ -101,6 +101,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   channelName: session.channelName!,
                   token: session.token!,
                   remainingSeconds: session.duration * 60,
+                  sessionId: session.id,
+                  languageId: session.languageId ?? values["language"],
+                  levelId: session.levelId ?? values["level"],
                 ),
           ),
         );
@@ -329,14 +332,14 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
                           FormBuilderField<int>(
                             name: 'duration',
-                            initialValue: 30,
+                            initialValue: 1,
                             builder: (FormFieldState<int?> field) {
                               // Three boxes for 30min, 45min, 60min, spaced to fill row
                               return Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children:
-                                    [30, 45, 60].map((duration) {
+                                    [1, 2, 3].map((duration) {
                                       final isSelected =
                                           field.value == duration;
                                       return Expanded(
@@ -347,7 +350,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                                           child: Container(
                                             margin: EdgeInsets.only(
                                               right:
-                                                  duration != 60 ? 12.0 : 0.0,
+                                                  duration != 3 ? 12.0 : 0.0,
                                             ),
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(

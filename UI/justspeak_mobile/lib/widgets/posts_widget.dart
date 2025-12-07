@@ -109,6 +109,7 @@ class _PostsListWidgetState extends State<PostsListWidget> {
       onRefresh: _refreshPosts,
       child: ListView.builder(
         controller: _scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: posts!.items!.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index < posts!.items!.length) {

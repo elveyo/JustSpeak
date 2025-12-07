@@ -52,7 +52,6 @@ class _FeedCardState extends State<FeedCard> {
     }
   }
 
-  // Method to fetch comments from backend and update _comments list
   Future<void> _fetchComments(int postId) async {
     try {
       final postProvider = Provider.of<PostProvider>(context, listen: false);
@@ -191,31 +190,31 @@ class _FeedCardState extends State<FeedCard> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              item.authorName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
+                        Flexible(
+                          child: Text(
+                            item.authorName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
-                            if (item.userRole == 'Tutor') ...[
-                              const SizedBox(width: 6),
-                              const Icon(
-                                Icons.verified,
-                                size: 18,
-                                color: Color.fromARGB(255, 53, 220, 100),
-                              ),
-                            ],
-                          ],
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         ),
+                        if (item.userRole == 'Tutor') ...[ 
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.verified,
+                            size: 18,
+                            color: Color.fromARGB(255, 53, 220, 100),
+                          ),
+                        ],
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
                     timeago.format(DateTime.parse(item.createdAt)),
                     style: TextStyle(color: Colors.grey[600], fontSize: 12),

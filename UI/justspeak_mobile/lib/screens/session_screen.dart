@@ -48,6 +48,10 @@ class _SessionsScreenState extends State<SessionsScreen> {
       setState(() {
         sessions = fetchedSessions.items;
       });
+
+      for (var session in sessions!) {
+        print(session.toJson());
+      }
     } catch (error) {}
   }
 
@@ -113,6 +117,9 @@ class _SessionsScreenState extends State<SessionsScreen> {
           selectedLevel = null;
         }
       });
+      
+      // Load sessions with the new language and level selection
+      await _loadSessions();
     } catch (e) {
       // Optionally handle error, e.g. show a snackbar or log
     }
@@ -124,25 +131,55 @@ class _SessionsScreenState extends State<SessionsScreen> {
       listen: false,
     );
     try {
+      bool joined = await sessionProvider.joinSession(session.id);
+      if (!joined) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Session is full or unavailable."),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        _loadSessions();
+        return;
+      }
+
       String token = await sessionProvider.getToken(session.channelName!);
       int remainingSeconds = getSessionSecondsLeft(
         session.createdAt!,
         session.duration!,
       );
-      print(remainingSeconds);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (_) => VideoCallScreen(
-                channelName: session.channelName!,
-                token: token,
-                remainingSeconds: remainingSeconds,
-              ),
-        ),
-      );
+
+
+  
+      if (mounted) {
+        print("Joining session: ${session.toJson()}");
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => VideoCallScreen(
+                  channelName: session.channelName!,
+                  token: token,
+                  remainingSeconds: remainingSeconds,
+                  sessionId: session.id,
+                  languageId: session.languageId!,
+                  levelId: session.levelId!,
+                ),
+          ),
+        );
+      }
     } catch (error) {
       print(error);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("An error occurred while joining."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -152,10 +189,6 @@ class _SessionsScreenState extends State<SessionsScreen> {
     final nowFromString = DateTime.parse(nowString);
     final sessionEnd = createdAt.add(Duration(minutes: durationMinutes));
     final secondsLeft = sessionEnd.difference(nowFromString).inSeconds;
-    print(createdAt);
-    print(nowFromString);
-    print(sessionEnd);
-    print(secondsLeft);
     return secondsLeft > 0 ? secondsLeft : 0;
   }
 
@@ -302,7 +335,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                                     Row(
                                       children: [
                                         Text(
-                                          '0/${session.numOfUsers}',
+                                          '${session.currentNumOfUsers}/${session.numOfUsers}',
                                           style: TextStyle(
                                             color:
                                                 Theme.of(

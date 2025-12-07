@@ -8,10 +8,9 @@ part of 'student.dart';
 
 Student _$StudentFromJson(Map<String, dynamic> json) => Student(
   user: User.fromJson(json['user'] as Map<String, dynamic>),
-  languages:
-      (json['languages'] as List<dynamic>)
-          .map((e) => LanguageLevel.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  languages: (json['languages'] as List<dynamic>)
+      .map((e) => LanguageLevel.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$StudentToJson(Student instance) => <String, dynamic>{
