@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/edit_profile_screen.dart';
+import 'package:frontend/models/user.dart';
 import 'package:frontend/models/student.dart';
 import 'package:frontend/models/language_level.dart';
 import 'package:frontend/providers/user_provider.dart';
@@ -7,6 +9,7 @@ import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/widgets/posts_widget.dart';
 import 'package:provider/provider.dart';
+import '../widgets/user_avatar.dart';
 
 class StudentProfileScreen extends StatefulWidget {
   final int id;
@@ -67,7 +70,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen>
           return CustomScrollView(
             controller: _scrollController,
             slivers: [
-              _buildSliverAppBar(context, user.fullName, user.imageUrl),
+              _buildSliverAppBar(context, user),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -114,8 +117,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen>
     );
   }
 
-  Widget _buildSliverAppBar(
-      BuildContext context, String displayName, String? avatarUrl) {
+  Widget _buildSliverAppBar(BuildContext context, User user) {
     return SliverAppBar(
       expandedHeight: MediaQuery.of(context).size.height * 0.35,
       floating: false,
@@ -127,7 +129,23 @@ class _StudentProfileScreenState extends State<StudentProfileScreen>
         onPressed: () => Navigator.of(context).pop(),
       ),
       actions: [
-        if (AuthService().userId == widget.id)
+        if (AuthService().userId == widget.id) ...[
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditProfileScreen(user: user),
+                ),
+              );
+              if (result == true) {
+                setState(() {
+                  _studentFuture = _userProvider.getStudentData(widget.id);
+                });
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: () {
@@ -138,6 +156,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen>
               );
             },
           ),
+        ]
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
@@ -171,15 +190,11 @@ class _StudentProfileScreenState extends State<StudentProfileScreen>
                       color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: CircleAvatar(
+                    child: UserAvatar(
                       radius: 60,
-                      backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
-                          ? NetworkImage(avatarUrl)
-                          : null,
+                      imageUrl: user.imageUrl,
                       backgroundColor: Colors.grey.shade200,
-                      child: avatarUrl == null || avatarUrl.isEmpty
-                          ? const Icon(Icons.person, size: 60, color: Colors.grey)
-                          : null,
+                      fallbackIcon: Icons.person,
                     ),
                   ),
                 ],

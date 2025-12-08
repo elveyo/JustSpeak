@@ -67,37 +67,53 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   }
 
   Future<void> _onTimerEnd() async {
-    // Delete session if it's a group session
     if (widget.isGroupSession) {
+      // For group sessions: show rating first, then delete
+      await _showRatingScreen();
       try {
         await Provider.of<SessionProvider>(context, listen: false)
             .delete(widget.sessionId);
       } catch (e) {
         print("Error deleting session: $e");
       }
+      if (mounted) {
+        Navigator.pop(context, true); // Return true to trigger refresh
+      }
     } else {
-      // Booked session logic
+      // For regular (booked) sessions: show rating first, then complete/delete
+      await _showRatingScreen();
+      
+      // After rating, handle session completion
       final user = AuthService().user;
       if (user?.role == "Tutor") {
         if (mounted) {
-           final result = await Navigator.push(
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => SessionCompletionScreen(sessionId: widget.sessionId),
             ),
           );
           if (mounted && result == true) {
-            Navigator.pop(context);
+            Navigator.pop(context, true); // Return true to trigger refresh
             return;
           }
         }
+      } else {
+        // For students, just pop back (session completion is handled by tutor)
+        if (mounted) {
+          Navigator.pop(context, true); // Return true to trigger refresh
+        }
       }
     }
+  }
 
-    // Show rating screen for all sessions (if not already handled by completion)
+  Future<void> _showRatingScreen() async {
     try {
       final participants = <ParticipantInfo>[];
+      final currentUser = AuthService().user;
+      final currentUserId = currentUser?.id;
 
+      // Collect remote users (other participants)
       for (var entry in _remoteUsers.entries) {
         final userAccount = entry.value;
         final parts = userAccount.split(':');
@@ -105,7 +121,8 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           final userId = int.tryParse(parts[0]);
           final userName = parts[1];
 
-          if (userId != null) {
+          if (userId != null && userId != currentUserId) {
+            // Only add other participants, not ourselves
             participants.add(ParticipantInfo(
               userId: userId,
               name: userName,
@@ -115,8 +132,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         }
       }
 
+      // For booked sessions, if no remote users found, we might need to get the other participant
+      // from the session data. But for now, if we have participants, show the rating screen.
       if (participants.isNotEmpty && mounted) {
-        final result = await Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder:
@@ -128,10 +147,9 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                 ),
           ),
         );
-
-        if (mounted && result == true) {
-          Navigator.pop(context);
-        }
+      } else if (widget.isGroupSession && participants.isEmpty) {
+        // For group sessions, if no participants found, skip rating
+        print('No participants to rate');
       }
     } catch (e) {
       print('Error showing rating screen: $e');
@@ -595,6 +613,9 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                         if (!widget.isGroupSession) {
                           final user = AuthService().user;
                           if (user?.role == "Tutor") {
+                            // Show rating screen first
+                            await _showRatingScreen();
+                            // Then show completion screen
                             final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -602,12 +623,18 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                               ),
                             );
                             if (result == true) {
-                              if (mounted) Navigator.pop(context);
+                              if (mounted) Navigator.pop(context, true); // Return true to trigger refresh
                               return;
                             }
+                          } else {
+                            // For students, show rating screen before leaving
+                            await _showRatingScreen();
+                            if (mounted) Navigator.pop(context, true); // Return true to trigger refresh
+                            return;
                           }
                         } else {
-                          // For group sessions, decrement numOfUsers before leaving
+                          // For group sessions, show rating first, then leave
+                          await _showRatingScreen();
                           try {
                             final sessionProvider = Provider.of<SessionProvider>(
                               context,
@@ -618,7 +645,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                             print('Error leaving session: $e');
                           }
                         }
-                        if (mounted) Navigator.pop(context);
+                        if (mounted) Navigator.pop(context, true); // Return true to trigger refresh
                       },
                       tooltip: 'Leave Call',
                     ),

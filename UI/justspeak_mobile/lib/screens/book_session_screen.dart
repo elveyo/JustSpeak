@@ -9,7 +9,6 @@ import 'package:frontend/providers/payment_provider.dart';
 import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/providers/session_provider.dart';
 import 'package:frontend/screens/student_sessions.dart';
-import 'package:frontend/screens/tutor_calendar_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/widgets/calendar.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +21,7 @@ class TutorBookingScreen extends StatefulWidget {
   State<TutorBookingScreen> createState() => _TutorBookingScreenState();
 }
 
-class _TutorBookingScreenState extends State<TutorBookingScreen> {
+class _TutorBookingScreenState extends State<TutorBookingScreen> with WidgetsBindingObserver {
   int? _selectedLanguage;
   int? _selectedLevel;
   String? _selectedSlot;
@@ -39,8 +38,23 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _getTutorSchedule();
     _loadLanguagesAndLevels();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh schedule when app comes back to foreground
+      _getTutorSchedule();
+    }
   }
 
   Future<void> _bookSession() async {
@@ -129,16 +143,20 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
       final schedule = await scheduleProvider.getSchedule(widget.tutorId);
 
       if (schedule != null) {
-        for (var slot in schedule.slots!) {
+        // Clear existing slots
+        slotsByDate.clear();
+        for (var slot in schedule.slots) {
           if (slot.isBooked) continue;
           final dateKey = slot.date.toIso8601String().substring(0, 10);
           slotsByDate.putIfAbsent(dateKey, () => []).add(slot);
         }
       }
 
-      setState(() {
-        _schedule = schedule;
-      });
+      if (mounted) {
+        setState(() {
+          _schedule = schedule;
+        });
+      }
     } catch (error) {
       print(error);
     }
@@ -216,7 +234,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
       body:
           _schedule == null
               ? const Center(child: CircularProgressIndicator())
-              : (_schedule!.slots == null || _schedule!.slots!.isEmpty)
+              : (_schedule!.slots.isEmpty)
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(32.0),
@@ -272,9 +290,13 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
                         ),
                       ),
                     )
-                  : SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(12.0, 25.0, 12.0, 12.0),
-                child: Column(
+                  : RefreshIndicator(
+                onRefresh: () async {
+                  await _getTutorSchedule();
+                },
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(12.0, 25.0, 12.0, 12.0),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -415,7 +437,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
                       spacing: 10,
                       runSpacing: 10,
                       children:
-                          (_getSlotsForDay(_selectedDay!) ?? [])
+                          (_getSlotsForDay(_selectedDay!))
                               .map(
                                 (slot) => GestureDetector(
                                   onTap:
@@ -537,7 +559,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  "Price: ${_schedule!.price ?? ''}\$",
+                                  "Price: ${_schedule!.price}\$",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -577,6 +599,7 @@ class _TutorBookingScreenState extends State<TutorBookingScreen> {
                   ],
                 ),
               ),
+            ),
     );
   }
 

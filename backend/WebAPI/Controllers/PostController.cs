@@ -9,6 +9,7 @@ using Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
+    [Authorize]
     public class PostController
         : BaseCRUDController<PostResponse, BaseSearchObject, PostUpsertRequest, PostUpsertRequest>
     {

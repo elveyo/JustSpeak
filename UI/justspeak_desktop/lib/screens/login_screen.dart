@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:justspeak_desktop/providers/user_provider.dart';
-import 'package:justspeak_desktop/screens/statistics_screen.dart';
+import 'package:justspeak_desktop/layouts/master_screen.dart';
 import 'package:justspeak_desktop/services/auth_service.dart';
 import 'package:provider/provider.dart';
 
@@ -30,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
       AuthService().saveToken(token);
 
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => StatisticsScreen()),
+        MaterialPageRoute(builder: (context) => MasterScreen()),
       );
       ScaffoldMessenger.of(
         context,

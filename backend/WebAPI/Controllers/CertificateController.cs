@@ -5,8 +5,11 @@ using Models.Requests;
 using Models.Responses;
 using Services.Interfaces;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace WebAPI.Controllers
 {
+    [Authorize]
     public class CertificateController
         : BaseCRUDController<
             CertificateResponse,

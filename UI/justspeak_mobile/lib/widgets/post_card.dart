@@ -11,6 +11,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../models/post.dart';
 import '../screens/tutor_profile_screen.dart';
 import '../screens/student_profile_screen.dart';
+import 'user_avatar.dart';
 
 class FeedCard extends StatefulWidget {
   final Post item;
@@ -39,16 +40,25 @@ class _FeedCardState extends State<FeedCard> {
     super.dispose();
   }
 
-  Future<void> _createPostComment(int postId, String content) async {
+  Future<List<Comment>> _createPostComment(int postId, String content) async {
     try {
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       await postProvider.postComment(postId, content);
+      
+      // Instantly update comment count
+      setState(() {
+        widget.item.numOfComments++;
+      });
+      
+      // Fetch updated comments list
       await _fetchComments(postId);
       setState(() {});
+      return _comments;
     } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to post comment: $e')));
+      return [];
     }
   }
 
@@ -74,18 +84,31 @@ class _FeedCardState extends State<FeedCard> {
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return _CommentsModal(
-          comments: _comments,
-          commentController: _commentController,
-          onAddComment: (String text) async {
-            if (text.trim().isEmpty) return;
-            await _createPostComment(widget.item.id, text);
-            _commentController.clear();
-            setState(() {}); // Refresh to update comments
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return _CommentsModal(
+              comments: _comments,
+              commentController: _commentController,
+              onAddComment: (String text) async {
+                if (text.trim().isEmpty) return _comments;
+                final updated = await _createPostComment(widget.item.id, text);
+                _commentController.clear();
+                setState(() {
+                  _comments = updated;
+                });
+                setModalState(() {
+                  // Update modal state
+                });
+                return updated;
+              },
+            );
           },
         );
       },
-    );
+    ).then((_) {
+      // Refresh when modal closes to ensure comment count is updated
+      setState(() {});
+    });
   }
 
   void _showDeleteDialog(BuildContext context, Post post) {
@@ -182,11 +205,9 @@ class _FeedCardState extends State<FeedCard> {
               },
               child: Row(
                 children: [
-                  CircleAvatar(
+                  UserAvatar(
                     radius: 20,
-                    backgroundImage: const NetworkImage(
-                      'https://via.placeholder.com/50',
-                    ),
+                    imageUrl: item.authorImageUrl,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -400,7 +421,7 @@ class _FeedCardState extends State<FeedCard> {
 class _CommentsModal extends StatefulWidget {
   final List<Comment> comments;
   final TextEditingController commentController;
-  final Future<void> Function(String) onAddComment;
+  final Future<List<Comment>> Function(String) onAddComment;
 
   const _CommentsModal({
     Key? key,
@@ -515,19 +536,10 @@ class _CommentsModalState extends State<_CommentsModal> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CircleAvatar(
+                                  UserAvatar(
                                     radius: 16,
+                                    imageUrl: comment.authorImage,
                                     backgroundColor: Colors.grey[300],
-                                    child: Text(
-                                      (comment.authorName?.isNotEmpty ?? false)
-                                          ? comment.authorName!
-                                              .substring(0, 1)
-                                              .toUpperCase()
-                                          : "?",
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                      ),
-                                    ),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
@@ -597,8 +609,12 @@ class _CommentsModalState extends State<_CommentsModal> {
                         maxLines: 3,
                         onSubmitted: (text) async {
                           if (text.trim().isNotEmpty) {
-                            await widget.onAddComment(text);
-                            setState(() {});
+                            final updated = await widget.onAddComment(text);
+                            if (mounted) {
+                              setState(() {
+                                _comments = updated;
+                              });
+                            }
                           }
                         },
                       ),
@@ -609,8 +625,12 @@ class _CommentsModalState extends State<_CommentsModal> {
                       onPressed: () async {
                         final text = widget.commentController.text;
                         if (text.trim().isNotEmpty) {
-                          await widget.onAddComment(text);
-                          setState(() {});
+                          final updated = await widget.onAddComment(text);
+                          if (mounted) {
+                            setState(() {
+                              _comments = updated;
+                            });
+                          }
                         }
                       },
                     ),

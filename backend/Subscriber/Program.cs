@@ -5,7 +5,7 @@ using Models.Messages;
 using Subscriber.MailService;
 
 IMailService mailService = new MailService();
-Console.WriteLine("Starting Subscriber...");
+
 
 var rabbitMqHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
 var rabbitMqUsername = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME") ?? "guest";
@@ -32,6 +32,6 @@ await bus.PubSub.SubscribeAsync<SessionBookedMessage>(
     }
 );
 
-Console.WriteLine("Listening for messages...");
+
 
 await Task.Delay(Timeout.Infinite);

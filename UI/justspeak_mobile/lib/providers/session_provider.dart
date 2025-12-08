@@ -74,7 +74,7 @@ class SessionProvider extends BaseProvider<Session> {
     var headers = createHeaders();
     var request = {
       "channelName": channelName,
-      "userAccount": "${user.id}:${user.fullName}",
+      "userAccount": user.fullName,
     };
     var jsonRequest = jsonEncode(request);
     final response = await http.post(uri, headers: headers, body: jsonRequest);

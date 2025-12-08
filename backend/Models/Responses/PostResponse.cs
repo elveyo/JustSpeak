@@ -7,6 +7,7 @@ namespace Models.Responses
         public DateTime CreatedAt { get; set; }
         public int AuthorId { get; set; }
         public string AuthorName { get; set; } = String.Empty;
+        public string AuthorImageUrl { get; set; } = String.Empty;
 
         public string ImageUrl { get; set; } = String.Empty;
 

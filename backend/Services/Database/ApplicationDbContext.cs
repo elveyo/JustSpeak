@@ -476,43 +476,53 @@ namespace Services.Database
             var posts = new List<Post>();
             var random = new System.Random(42); // Fixed seed for reproducibility
             // Author IDs: Tutors (2-6), Students (7-11)
+            // IMPORTANT: All AuthorIds must match existing Users (Tutors 2-6, Students 7-11)
+            // Do NOT use AuthorId = 1 (Admin) or any ID that doesn't exist
             var authorIds = new[]
             {
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
+                2,  // Tutor: Sarah Johnson
+                3,  // Tutor: Michael Chen
+                4,  // Tutor: Emma Williams
+                5,  // Tutor: David Martinez
+                6,  // Tutor: Lisa Anderson
+                7,  // Student: James Brown
+                8,  // Student: Maria Garcia
+                9,  // Student: Robert Taylor
+                10, // Student: Jennifer Davis
+                11, // Student: William Wilson
+                2,  // Tutor: Sarah Johnson
+                3,  // Tutor: Michael Chen
+                4,  // Tutor: Emma Williams
+                5,  // Tutor: David Martinez
+                6,  // Tutor: Lisa Anderson
+                7,  // Student: James Brown
+                8,  // Student: Maria Garcia
+                9,  // Student: Robert Taylor
+                10, // Student: Jennifer Davis
+                11, // Student: William Wilson
             };
 
+            // Validate that all AuthorIds are valid (2-11, excluding Admin ID 1)
+            var validAuthorIds = new HashSet<int> { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+            
             for (int i = 1; i <= 20; i++)
             {
-                posts.Add(
-                    new Post
-                    {
-                        Id = i,
-                        Title = postTitles[i - 1],
-                        Content = postContents[i - 1],
-                        AuthorId = authorIds[i - 1],
-                        ImageUrl = string.Empty,
-                        CreatedAt = baseDate.AddDays(-random.Next(0, 60)),
-                    }
-                );
+                var authorId = authorIds[i - 1];
+                // Only add posts with valid AuthorIds
+                if (validAuthorIds.Contains(authorId))
+                {
+                    posts.Add(
+                        new Post
+                        {
+                            Id = i,
+                            Title = postTitles[i - 1],
+                            Content = postContents[i - 1],
+                            AuthorId = authorId,
+                            ImageUrl = string.Empty,
+                            CreatedAt = baseDate.AddDays(-random.Next(0, 60)),
+                        }
+                    );
+                }
             }
 
             modelBuilder.Entity<Post>().HasData(posts);

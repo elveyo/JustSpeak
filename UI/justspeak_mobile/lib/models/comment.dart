@@ -9,6 +9,7 @@ class Comment {
   final DateTime createdAt;
   final int authorId;
   final String? authorName;
+  final String? authorImage;
 
   Comment({
     required this.id,
@@ -16,6 +17,7 @@ class Comment {
     required this.createdAt,
     required this.authorId,
     this.authorName,
+    this.authorImage,
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) =>

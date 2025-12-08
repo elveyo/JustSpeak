@@ -3,7 +3,6 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:frontend/models/tutor_schedule.dart';
 import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/services/auth_service.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class ManageScheduleScreen extends StatefulWidget {
@@ -36,8 +35,8 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
       final schedule = widget.existingSchedule!;
       
       // Set price and duration
-      sessionPrice = schedule.price?.toDouble() ?? 20.0;
-      sessionDuration = Duration(minutes: schedule.duration ?? 1);
+      sessionPrice = schedule.price.toDouble();
+      sessionDuration = Duration(minutes: schedule.duration);
       
       // Set selected days and times from available days
       if (schedule.availableDays != null && schedule.availableDays!.isNotEmpty) {
@@ -150,7 +149,10 @@ class _ManageScheduleScreenState extends State<ManageScheduleScreen> {
         );
       }
       
-      Navigator.pop(context, true); // Return true to indicate success
+      // Notify listeners that schedule was updated
+      if (mounted) {
+        Navigator.pop(context, true); // Return true to indicate success
+      }
     } catch (e) {
       // Handle error, show error message
       ScaffoldMessenger.of(context).showSnackBar(

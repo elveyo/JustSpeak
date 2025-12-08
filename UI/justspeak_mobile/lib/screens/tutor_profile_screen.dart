@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/edit_profile_screen.dart';
+import 'package:frontend/models/user.dart';
 import 'package:frontend/models/tutor.dart';
 import 'package:frontend/models/certificate.dart';
 import 'package:frontend/providers/user_provider.dart';
@@ -11,6 +13,7 @@ import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/widgets/posts_widget.dart';
 import 'package:provider/provider.dart';
+import '../widgets/user_avatar.dart';
 
 class TutorProfileScreen extends StatefulWidget {
   final int id;
@@ -75,7 +78,7 @@ class _TutorProfilePageState extends State<TutorProfileScreen>
           return CustomScrollView(
             controller: _scrollController,
             slivers: [
-              _buildSliverAppBar(context, user.fullName, user.imageUrl, tutor.hasSchedule),
+              _buildSliverAppBar(context, user, tutor.hasSchedule),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -125,7 +128,7 @@ class _TutorProfilePageState extends State<TutorProfileScreen>
   }
 
   Widget _buildSliverAppBar(
-      BuildContext context, String displayName, String? avatarUrl, bool hasSchedule) {
+      BuildContext context, User user, bool hasSchedule) {
     return SliverAppBar(
       expandedHeight: MediaQuery.of(context).size.height * 0.35,
       floating: false,
@@ -137,7 +140,23 @@ class _TutorProfilePageState extends State<TutorProfileScreen>
         onPressed: () => Navigator.of(context).pop(),
       ),
       actions: [
-        if (AuthService().userId == widget.id)
+        if (AuthService().userId == widget.id) ...[
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditProfileScreen(user: user),
+                ),
+              );
+              if (result == true) {
+                setState(() {
+                  _tutorFuture = _userProvider.getTutorData(widget.id);
+                });
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: () {
@@ -148,6 +167,7 @@ class _TutorProfilePageState extends State<TutorProfileScreen>
               );
             },
           ),
+        ]
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
@@ -170,79 +190,91 @@ class _TutorProfilePageState extends State<TutorProfileScreen>
               ),
             ),
             // Profile Image and Book Button
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 40),
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: constraints.maxHeight * 0.1,
                     ),
-                    child: CircleAvatar(
-                      radius: 60,
-                      backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
-                          ? NetworkImage(avatarUrl)
-                          : null,
-                      backgroundColor: Colors.grey.shade200,
-                      child: avatarUrl == null || avatarUrl.isEmpty
-                          ? const Icon(Icons.person, size: 60, color: Colors.grey)
-                          : null,
-                    ),
-                  ),
-                  // Only show book button if not viewing own profile
-                  if (AuthService().userId != widget.id) ...[
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: hasSchedule
-                          ? () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => TutorBookingScreen(tutorId: widget.id),
-                                ),
-                              );
-                            }
-                          : null, // Disabled when no schedule
-                      icon: const Icon(Icons.calendar_today, size: 18),
-                      label: const Text(
-                        "Book Session",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: hasSchedule ? Colors.white : Colors.grey.shade300,
-                        foregroundColor: hasSchedule ? _primaryColor : Colors.grey.shade600,
-                        disabledBackgroundColor: Colors.grey.shade300,
-                        disabledForegroundColor: Colors.grey.shade600,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        elevation: hasSchedule ? 4 : 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                    ),
-                    if (!hasSchedule)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          "No available sessions",
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: UserAvatar(
+                              radius: constraints.maxHeight < 300 ? 50 : 60,
+                              imageUrl: user.imageUrl,
+                              backgroundColor: Colors.grey.shade200,
+                              fallbackIcon: Icons.person,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                ],
-              ),
+                        // Only show book button if not viewing own profile
+                        if (AuthService().userId != widget.id) ...[
+                          SizedBox(height: constraints.maxHeight < 300 ? 12 : 16),
+                          Flexible(
+                            child: ElevatedButton.icon(
+                              onPressed: hasSchedule
+                                  ? () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => TutorBookingScreen(tutorId: widget.id),
+                                        ),
+                                      );
+                                    }
+                                  : null, // Disabled when no schedule
+                              icon: const Icon(Icons.calendar_today, size: 18),
+                              label: const Text(
+                                "Book Session",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: hasSchedule ? Colors.white : Colors.grey.shade300,
+                                foregroundColor: hasSchedule ? _primaryColor : Colors.grey.shade600,
+                                disabledBackgroundColor: Colors.grey.shade300,
+                                disabledForegroundColor: Colors.grey.shade600,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                elevation: hasSchedule ? 4 : 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (!hasSchedule)
+                            Flexible(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  "No available sessions",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 12,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),

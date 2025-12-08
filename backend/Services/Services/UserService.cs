@@ -213,6 +213,16 @@ namespace Services.Services
 
             user = _mapper.Map(request, user);
 
+            // Explicitly set ImageUrl and Bio to ensure they're updated
+            if (request.ImageUrl != null)
+            {
+                user.ImageUrl = request.ImageUrl;
+            }
+            if (request.Bio != null)
+            {
+                user.Bio = request.Bio;
+            }
+
             if (!string.IsNullOrEmpty(request.Password))
             {
                 byte[] salt;
@@ -261,7 +271,10 @@ namespace Services.Services
                         Id = t.Id,
                         FirstName = t.FirstName,
                         LastName = t.LastName,
+                        Email = t.Email,
                         Bio = t.Bio,
+                        Role = "Tutor",
+                        ImageUrl = t.ImageUrl,
                     },
                     Certificates = t
                         .Certificates.Select(c => new CertificateResponse
@@ -312,6 +325,7 @@ namespace Services.Services
                         Id = u.Id,
                         FirstName = u.FirstName,
                         LastName = u.LastName,
+                        Email = u.Email,
                         Bio = u.Bio,
                         Role = u.Role.ToString(),
                         ImageUrl = u.ImageUrl,

@@ -1,11 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/booked_session.dart';
+import 'package:frontend/providers/session_provider.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../widgets/user_avatar.dart';
 
-class SessionDetailsScreen extends StatelessWidget {
+class SessionDetailsScreen extends StatefulWidget {
   final BookedSession session;
 
   const SessionDetailsScreen({super.key, required this.session});
+
+  @override
+  State<SessionDetailsScreen> createState() => _SessionDetailsScreenState();
+}
+
+class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
+  late BookedSession _session;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _session = widget.session;
+    _fetchLatestSessionData();
+  }
+
+  Future<void> _fetchLatestSessionData() async {
+    try {
+      final sessionProvider = Provider.of<SessionProvider>(context, listen: false);
+      final role = AuthService().user!.role;
+      
+      final sessions = role == "Tutor" 
+          ? await sessionProvider.getTutorSessions()
+          : await sessionProvider.getStudentSessions();
+      
+      final updatedSession = sessions.firstWhere(
+        (s) => s.id == widget.session.id,
+        orElse: () => widget.session,
+      );
+
+      if (mounted) {
+        setState(() {
+          _session = updatedSession;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Error fetching session details: $e");
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +65,17 @@ class SessionDetailsScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        actions: [
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -28,14 +86,14 @@ class SessionDetailsScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  CircleAvatar(
+                  UserAvatar(
                     radius: 50,
-                    backgroundImage: NetworkImage(session.userImageUrl),
+                    imageUrl: _session.userImageUrl,
                     backgroundColor: Colors.grey[200],
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    session.userName,
+                    _session.userName,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -48,18 +106,18 @@ class SessionDetailsScreen extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: session.isCompleted
+                      color: _session.isCompleted
                           ? Colors.green.withOpacity(0.1)
                           : Colors.blue.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: session.isCompleted ? Colors.green : Colors.blue,
+                        color: _session.isCompleted ? Colors.green : Colors.blue,
                       ),
                     ),
                     child: Text(
-                      session.isCompleted ? "Completed" : "Scheduled",
+                      _session.isCompleted ? "Completed" : "Scheduled",
                       style: TextStyle(
-                        color: session.isCompleted ? Colors.green : Colors.blue,
+                        color: _session.isCompleted ? Colors.green : Colors.blue,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -74,7 +132,7 @@ class SessionDetailsScreen extends StatelessWidget {
               context,
               icon: Icons.language,
               title: "Language",
-              value: "${session.language} (${session.level})",
+              value: "${_session.language} (${_session.level})",
             ),
             const SizedBox(height: 16),
             _buildInfoCard(
@@ -82,10 +140,10 @@ class SessionDetailsScreen extends StatelessWidget {
               icon: Icons.calendar_today,
               title: "Date & Time",
               value:
-                  "${dateFormat.format(session.startTime)}\n${timeFormat.format(session.startTime)} - ${timeFormat.format(session.endTime)}",
+                  "${dateFormat.format(_session.startTime)}\n${timeFormat.format(_session.startTime)} - ${timeFormat.format(_session.endTime)}",
             ),
             
-            if (session.note != null && session.note!.isNotEmpty) ...[
+            if (_session.note != null && _session.note!.isNotEmpty) ...[
               const SizedBox(height: 32),
               const Text(
                 "Tutor's Note",
@@ -105,7 +163,7 @@ class SessionDetailsScreen extends StatelessWidget {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Text(
-                  session.note!,
+                  _session.note!,
                   style: const TextStyle(
                     fontSize: 16,
                     height: 1.5,

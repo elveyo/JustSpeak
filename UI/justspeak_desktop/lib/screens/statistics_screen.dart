@@ -312,6 +312,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   lineTouchData: LineTouchData(
                     handleBuiltInTouches: true,
                     touchTooltipData: LineTouchTooltipData(
+                      getTooltipColor: (spot) => Colors.blueGrey.shade800,
+                      tooltipPadding: const EdgeInsets.all(12),
                       fitInsideHorizontally: true,
                       fitInsideVertically: true,
                       getTooltipItems: (spots) {
@@ -321,12 +323,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                               ? _formatLabel(data[idx])
                               : "";
                           return LineTooltipItem(
-                            '$label\n${spot.y.toInt()} $valueLabel',
-                            TextStyle(
-                              color: color,
+                            '$label\n',
+                            const TextStyle(
+                              color: Colors.white70,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
+                            children: [
+                              TextSpan(
+                                text: '${spot.y.toInt()} $valueLabel',
+                                style: TextStyle(
+                                  color: color.withOpacity(1.0), // Use the chart color but bright
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           );
                         }).toList();
                       },

@@ -17,16 +17,7 @@ void main() async {
   final authService = AuthService();
   await authService.loadToken();
 
-  try {
-    Stripe.publishableKey =
-        "pk_test_51RL0ZVAHXQropxlzi4AeoE2awEiSSLusn5TM44Gd0zWsAtkWTTof5ZGB82X5OtQWwFdJgXqz08as63s1b2FLqdta00h2dLDcBL";
 
-    await Stripe.instance.applySettings();
-    print("Stripe initialized successfully");
-  } catch (e) {
-    print("Stripe initialization failed: $e");
-    // Continue with app initialization even if Stripe fails
-  }
   runApp(
     MultiProvider(
       providers: [
@@ -64,7 +55,7 @@ class MyApp extends StatelessWidget {
           secondary: Color(0xFF6A1B9A),
         ),
       ),
-      home: isUserLogged ? MasterScreen() : MasterScreen(),
+      home: isUserLogged ? MasterScreen() : LoginScreen(),
     );
   }
 }

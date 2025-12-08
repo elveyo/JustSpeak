@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/models/booked_session.dart';
-import 'package:frontend/models/calendar_slot.dart';
 import 'package:frontend/models/tutor_schedule.dart';
 import 'package:frontend/providers/schedule_provider.dart';
 import 'package:frontend/providers/session_provider.dart';
@@ -9,7 +8,6 @@ import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/widgets/calendar.dart';
 import 'package:frontend/widgets/session_card.dart';
 import 'package:provider/provider.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:frontend/layouts/master_screen.dart';
 
 class TutorCalendarScreen extends StatefulWidget {
@@ -19,7 +17,7 @@ class TutorCalendarScreen extends StatefulWidget {
   _TutorCalendarScreenState createState() => _TutorCalendarScreenState();
 }
 
-class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
+class _TutorCalendarScreenState extends State<TutorCalendarScreen> with WidgetsBindingObserver {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay = DateTime.now();
   List<BookedSession>? _bookedSessions;
@@ -28,8 +26,23 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _getTutorSessions();
     _loadSchedule();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh when app comes back to foreground
+      _getTutorSessions();
+    }
   }
 
   Future<void> _getTutorSessions() async {
@@ -198,9 +211,11 @@ class _TutorCalendarScreenState extends State<TutorCalendarScreen> {
                                       time:
                                           '${sessions[i].startTime.hour.toString().padLeft(2, '0')}:${sessions[i].startTime.minute.toString().padLeft(2, '0')} - ${sessions[i].endTime.hour.toString().padLeft(2, '0')}:${sessions[i].endTime.minute.toString().padLeft(2, '0')}',
                                       isActive: sessions[i].isActive,
+                                      startTime: sessions[i].startTime,
                                       endTime: sessions[i].endTime,
                                       isCompleted: sessions[i].isCompleted,
                                       note: sessions[i].note,
+                                      onSessionCompleted: _getTutorSessions, // Refresh when session is completed
                                     ),
                                   if (i != sessions.length - 1)
                                     const SizedBox(height: 12),

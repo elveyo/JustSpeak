@@ -34,13 +34,16 @@ class AgoraService {
       return;
     }
     
-    print("🔄 Joining channel with account: ${user.id}:${user.fullName}");
+    
+    print("🔄 Joining channel with account: ${user.fullName}");
+    print("📝 Token: ${token.substring(0, 20)}..."); // Print first 20 chars of token
+    print("📺 Channel: $channelName");
 
     try {
       await _engine!.joinChannelWithUserAccount(
         token: token,
         channelId: channelName,
-        userAccount: "${user.id}:${user.fullName}",
+        userAccount: user.fullName,
         options: const ChannelMediaOptions(),
       );
     } catch (e) {

@@ -8,8 +8,7 @@ namespace WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize]
-    //[Authorize]
+    [Authorize]
     public class BaseController<T, TSearch> : ControllerBase
         where T : class
         where TSearch : BaseSearchObject, new()

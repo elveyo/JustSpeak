@@ -87,6 +87,7 @@ namespace Services.Services
                     Content = post.Content,
                     AuthorId = post.AuthorId,
                     AuthorName = post.Author?.FullName ?? "",
+                    AuthorImageUrl = post.Author?.ImageUrl ?? "",
                     UserRole = post.Author?.Role.ToString(),
                     ImageUrl = post.ImageUrl,
                     NumOfLikes = post.Likes.Count,
@@ -162,6 +163,7 @@ namespace Services.Services
                     CreatedAt = c.CreatedAt,
                     AuthorId = c.AuthorId,
                     AuthorName = c.Author.FullName,
+                    AuthorImage = c.Author.ImageUrl,
                 })
                 .ToListAsync();
 

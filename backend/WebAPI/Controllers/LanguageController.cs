@@ -10,6 +10,7 @@ using Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
+    [Authorize]
     public class LanguageController
         : BaseCRUDController<
             LanguageResponse,
@@ -24,6 +25,12 @@ namespace WebAPI.Controllers
             : base(service)
         {
             _languageService = service;
+        }
+
+        [AllowAnonymous]
+        public override async Task<PagedResult<LanguageResponse>> Get([FromQuery] LanguageSearchObject? search = null)
+        {
+            return await base.Get(search);
         }
 
         [HttpGet("all")]

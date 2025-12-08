@@ -9,6 +9,7 @@ import 'package:frontend/screens/student_profile_screen.dart';
 import 'package:frontend/screens/tutor_profile_screen.dart';
 import 'package:frontend/widgets/posts_widget.dart';
 import 'package:provider/provider.dart';
+import '../widgets/user_avatar.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -385,22 +386,11 @@ class _FeedScreenState extends State<FeedScreen> {
               child: CircleAvatar(
                 radius: 26,
                 backgroundColor: Colors.white,
-                child: CircleAvatar(
+                child: UserAvatar(
                   radius: 24,
+                  imageUrl: user.imageUrl,
                   backgroundColor: isTutor ? Colors.purple[50] : Colors.blue[50],
-                  backgroundImage:
-                      user.imageUrl.isNotEmpty ? NetworkImage(user.imageUrl) : null,
-                  child:
-                      user.imageUrl.isEmpty
-                          ? Text(
-                            user.firstName[0].toUpperCase(),
-                            style: TextStyle(
-                              color: isTutor ? Colors.purple.shade700 : Colors.blue.shade700,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          )
-                          : null,
+                  fallbackIcon: isTutor ? Icons.school : Icons.person,
                 ),
               ),
             ),

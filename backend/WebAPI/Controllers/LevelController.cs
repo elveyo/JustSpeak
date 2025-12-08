@@ -10,6 +10,7 @@ using Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
+    [Authorize]
     public class LevelController
         : BaseCRUDController<
             LevelResponse,
@@ -24,6 +25,12 @@ namespace WebAPI.Controllers
             : base(service)
         {
             _levelService = service;
+        }
+
+        [AllowAnonymous]
+        public override async Task<PagedResult<LevelResponse>> Get([FromQuery] LevelSearchObject? search = null)
+        {
+            return await base.Get(search);
         }
 
         /*   [HttpGet("all")]

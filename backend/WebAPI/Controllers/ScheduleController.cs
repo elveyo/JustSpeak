@@ -8,8 +8,11 @@ using Services;
 using Services.Database;
 using Services.Interfaces;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace WebAPI.Controllers
 {
+    [Authorize]
     public class ScheduleController
         : BaseCRUDController<
             ScheduleResponse,

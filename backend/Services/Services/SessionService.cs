@@ -72,7 +72,7 @@ namespace Services.Services
             await _context.SaveChangesAsync();
             await _context.Entry(session).Reference(s => s.Language).LoadAsync();
             await _context.Entry(session).Reference(s => s.Level).LoadAsync();
-            var token = Get(request.ChannelName, $"{user.Id}:{user.FullName}");
+            var token = Get(request.ChannelName, user.FullName);
             return new SessionResponse
             {
                 Id = session.Id,
@@ -327,6 +327,16 @@ namespace Services.Services
             var session = await _context.StudentTutorSessions.FindAsync(sessionId);
             if (session == null) return false;
 
+            var now = DateTime.UtcNow;
+            var sessionDate = session.StartTime.Date;
+            var todayDate = now.Date;
+
+            // Only allow starting sessions scheduled for today
+            if (sessionDate != todayDate)
+            {
+                return false;
+            }
+
             session.IsActive = true;
             
             // Reset time to start from now
@@ -350,11 +360,7 @@ namespace Services.Services
                 
                 if (studentLanguage != null)
                 {
-                    // Points logic based on rating:
-                    // Rating 1-2: No points
-                    // Rating 3: +5 points
-                    // Rating 4: +10 points
-                    // Rating 5: +20 points
+                 
                     
                     int pointsIncrement = 0;
                     if (rating.Rating == 3) pointsIncrement = 5;
@@ -376,6 +382,7 @@ namespace Services.Services
             session.IsActive = false;
             session.IsCompleted = true;
             session.Note = note;
+            session.EndTime = DateTime.UtcNow; // Set actual finish time
             
             await _context.SaveChangesAsync();
             return true;

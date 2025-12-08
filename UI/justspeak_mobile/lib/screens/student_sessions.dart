@@ -140,9 +140,11 @@ class _StudentSessionsScreenState extends State<StudentSessionsScreen> {
                                   time:
                                       '${session.startTime.hour.toString().padLeft(2, '0')}:${session.startTime.minute.toString().padLeft(2, '0')} - ${session.endTime.hour.toString().padLeft(2, '0')}:${session.endTime.minute.toString().padLeft(2, '0')}',
                                   isActive: session.isActive,
+                                  startTime: session.startTime,
                                   endTime: session.endTime,
                                   isCompleted: session.isCompleted,
                                   note: session.note,
+                                  onSessionCompleted: _getStudentSessions, // Refresh when session is completed
                                 ),
                                 if (i != sessions.length - 1)
                                   const SizedBox(height: 12),

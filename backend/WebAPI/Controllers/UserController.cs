@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Models.Requests;
 using Models.Responses;
 using Models.SearchObjects;
@@ -8,6 +9,7 @@ using Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
+    [Authorize]
     public class UserController
         : BaseCRUDController<UserResponse, UserSearchObject, UserInsertRequest, UserUpdateRequest>
     {
@@ -19,6 +21,7 @@ namespace WebAPI.Controllers
             _userService = service;
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
         {
@@ -32,6 +35,7 @@ namespace WebAPI.Controllers
             return Ok(user);
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserInsertRequest request)
         {

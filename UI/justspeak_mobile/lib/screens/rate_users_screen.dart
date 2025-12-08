@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/session_provider.dart';
 import 'package:provider/provider.dart';
+import '../widgets/user_avatar.dart';
 
 class RateUsersScreen extends StatefulWidget {
   final int sessionId;
@@ -219,23 +220,10 @@ class _RateUsersScreenState extends State<RateUsersScreen> {
                         children: [
                           Row(
                             children: [
-                              CircleAvatar(
+                              UserAvatar(
                                 radius: 32,
-                                backgroundColor: const Color(0xFF7E63F1)
-                                    .withOpacity(0.1),
-                                backgroundImage: participant.imageUrl != null
-                                    ? NetworkImage(participant.imageUrl!)
-                                    : null,
-                                child: participant.imageUrl == null
-                                    ? Text(
-                                        participant.name[0].toUpperCase(),
-                                        style: const TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF7E63F1),
-                                        ),
-                                      )
-                                    : null,
+                                imageUrl: participant.imageUrl,
+                                backgroundColor: const Color(0xFF7E63F1).withOpacity(0.1),
                               ),
                               const SizedBox(width: 16),
                               Expanded(

@@ -65,4 +65,23 @@ class UserProvider extends BaseProvider<User> {
     );
     return data;
   }
+  Future<User> getById(int id) async {
+    final uri = buildUri("/$id");
+    final headers = createHeaders();
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 204) {
+      throw Exception("User not found (204)");
+    }
+
+    if (isValidResponse(response)) {
+      try {
+        return User.fromJson(jsonDecode(response.body));
+      } catch (e) {
+        throw Exception("Parse error: $e. Body: ${response.body}");
+      }
+    } else {
+      throw Exception("Failed to fetch user: ${response.statusCode} ${response.body}");
+    }
+  }
 }

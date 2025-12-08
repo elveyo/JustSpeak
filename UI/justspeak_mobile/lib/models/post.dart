@@ -10,9 +10,10 @@ class Post {
   final String createdAt;
   final int authorId;
   final String authorName;
+  final String authorImageUrl;
   final String userRole;
   int numOfLikes;
-  final int numOfComments;
+  int numOfComments;
   final String imageUrl;
   bool likedByCurrUser;
 
@@ -23,6 +24,7 @@ class Post {
     this.createdAt = '',
     this.authorId = 0,
     this.authorName = '',
+    this.authorImageUrl = '',
     this.numOfComments = 0,
     this.numOfLikes = 0,
     this.userRole = '',
