@@ -72,15 +72,15 @@ The core functionality follows this flow: **Tutor creates schedule → Student b
 
 **Desktop - Admin:**
 - Email: `admin@test.com`
-- Password: `Test123!`
+- Password: `test123`
 
 **Mobile - Tutor:**
 - Email: `tutor@test.com`
-- Password: `Test123!`
+- Password: `test123`
 
 **Mobile - Student:**
 - Email: `student@test.com`
-- Password: `Test123!`
+- Password: `test123`
 
 **Stripe Test Card:**
 - Card: `4242 4242 4242 4242`
